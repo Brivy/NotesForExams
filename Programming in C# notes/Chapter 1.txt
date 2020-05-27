@@ -1,0 +1,347 @@
+1.1 Implement multithreading and asynchronous processing
+==============================================================================================================================
+
+Threads
+	Information:
+	- Can create threads to apply parallelism.
+	- Synchronization means that no two threads can write data to the screen at the exact same time.
+	- You have back- and foreground threads. Foreground threads keep the application alive.
+	- It's possible to abort a thread. When this is done, a ThreadAbortException will be thrown on that specific thread.
+	- Thread pools reuses new threads. Because the pool is limited in size, you do get a lesser degree of parallelism.
+	
+	Code:
+	- Thread.Join
+		Wait for all threads to finish.
+	- Thread.Sleep(0)
+		Used for signal to stop a thread.
+	- new Thread(new ParameterizedThreadStart(ThreadMethod))
+		Used for passing delegates to a thread. The delegate is as follows: "public static void ThreadMethod(object o)".
+		You can specify the parameter with "t.Start(5)".
+	- [ThreadStatic]
+		Marking a property with this attribute will make sure that every thread get it's own copy of that property.
+	- Thread.CurrentThread
+		Retrieves info about a thread.
+	- ThreadPool.QueueUserWorkItem((s) => { ...function... });
+		Queues work to the thread pool
+
+	
+Tasks
+	Information:
+	- Tasks were introduced because there is no built-in way to know when a thread has finished and what his return value is.
+	- It uses a task scheduler to start and manage the Tasks. By default this uses threads from the thread pool to execute Tasks.
+	- If the program waits for the result from another task, it will block the main thread.
+	- It's possible to create child tasks within a task. Only when those finish, the parent is considered finished.
+	
+	Code:
+	- Task t = Task.Run(() => { ...function... });
+		Starting a task that returns void.
+	- Task<int> t = Task.Run(() => { ...function... });
+		Starting a task that returns an integer.
+	- t.Wait, t.Result
+		Wait for the task to be completed.
+	- t.ContinueWith((i) => { ...function... });
+		Continues another task with the result of the previous one (i).
+	- TaskContinuationOptions.'Option'
+		Specify when to continue with another task. Options are: ".OnlyOnCanceled", ".OnlyOnFaulted", ".OnlyOnRanToCompletion".
+	- TaskCreationOptions.AttachedToParent
+		Creates a child task within another task.
+	- TaskFactory tf = new TaskFactory(TaskCreationOptions.AttachedToParent, TaskContinuationOptions.ExecuteSynchronously
+		Object that holds a factory to create tasks.
+	- Task.WaitAll(tasks)
+		Waits for all tasks to be completed.
+	- Task.WaitAny(tasks)
+		Waits until at least one task is completed
+
+
+Parallel
+	Information:
+	- Only use Parallel when (for example a ForEach loop) your work doesn't have to be executed sequentially and the workload is very large.
+	
+	Code:
+	- Parallel.For(0, 10, i => { ...function... });
+		Execute a for loop parallel.
+	- Parallel.ForEach(Enumerable.Range(0, 10), i => { ...function... });
+		Execute a foreach loop parallel.
+	- ParallelLoopResult result = Parallel.For(0, 1000, (int i, ParallelLoopState loopState) => { loopState.Break(); loopState.Stop(); });
+		It's possible to break (finish running iterations) or stop (terminates everything) a parallel loop;
+
+
+Async and Await
+	Information:
+	- Marking a method with async will cause the compiler to respond with transforming your code into a state machine. This will split your code in multiple pieces.
+	- Using await will generate some code. This will check if the asynchronous operation is already finished. If it is, run the code synchronously. If not, hook up a continuation method that should run when the Task completes. Your method yields control to the calling thread, and this thread can be used to do other work.
+	- Some classes (like the FileStream class) expose asynchronous methods that don't use threads while they are waiting on the hard drive of the system to read or write data.
+	- Threads throw AggregateExceptions. To make it readable, only the first of its inner exceptions will be returned.
+	- The SynchronizationContext makes sure that you end up on the right thread when you need to update something on the UI or process a web request.
+	- Await makes sure that the current SynchronizationContext is saved and restored when the Task is finished.
+	- Don't use void for your async functions.
+	
+	Code:
+	- .ConfigureAwait(false)
+		Disables the flow of the SynchronizationContext. Can be used to speed up the application when your continuation code can run on any thread. Use only when you don't need to update the UI!
+
+
+
+PLINQ
+	Information:
+	- PLINQ can be used on objects to potentially turn a sequential query into a parallel one.
+	- Just like parallelism, the order is not guaranteeded (only order when .AsOrdered()). 
+	- All exceptions that are thrown in a parallel query will be combined in an AggregateException.
+	
+	Code:
+	- .AsParallel()
+		Checks runtime if it makes sense to to turn the query into a parallel one. 
+	- .WithExecutionMode()
+		Specify to always run in parallel
+	- .WithDegreeOfParallelism()
+		Specify the number of cores to use (default 64)
+	- .AsOrdered()
+		Order the result even in parallel.
+	- .AsSequential
+		Specify that a part of the query could be executed synchronously
+	- .ForAll()
+		Iterates over a collection when this can be done in a parallel way
+	- .Where, .Select, .SelectMany, .GroupBy, .Join, .OrderBy, .Skip, .Take
+		Methods that can run in parallel with PLINQ.
+		
+
+Concurrent collections
+	Information:
+	- The collections within this chapter are thread safe. This means that they use internally use synchronization to make sure that they can be accessed by multiple threads at the same time.
+	- BlockingCollection is by default a ConcurrentQueue if no options are specified.
+	- When using TryPeek() for a ConcurrentBag, keep in mind that another thread can remove the item before you can access it.
+	- A snapshot is taken when enumerating with a stack or a queue.
+	- A concurrent dictionary has methods that do atomic operations. This means that it will be started and finished as a single step without other threads interfering.
+	
+	Code:
+	- (BC) BlockingCollection<T>, (CB) ConcurrentBag<T>, (CD) ConcurrentDictionary<TKey, T>, (CQ) ConcurrentQueue<T>, (CS) ConcurrentStack<T>
+		Collections that are thread safe.
+		
+	- (BC)col.Add(data)
+		Write data to the collection.
+	- (BC) col.Take()
+		Read and take data from the collection.
+	- (BC) col.CompleteAdding
+		Signal to the collection that no more items will be added.
+	- (BC) col.GetConsumingEnumerable
+		Retrieve an IEnumerable that blocks until it finds a new item.
+
+	- (CB)col.Add(data)
+		Write data to the collection.
+	- (CB) col.TryTake(out result)
+		Tries to take out an item and remove it from the bag.
+	- (CB) col.TryPeek(out result)
+		Tries to take out an item but keeps it in the bag.
+	
+	- (CS) col.Push(i)
+		Pushes an item to the stack
+	- (CS) col.TryPop(out result)
+		Tries to take out an item from the stack.
+		
+	- (CQ) col.Enqueue(i)
+		Enqueue data to the queue.
+	- (CQ) col.TryDequeue(out result)
+		Tries to dequeue data from the queue. 
+		
+	- (CD) col.TryAdd("string", int)
+		Tries to add a key value pair to the dicationary
+	- (CD) col.TryUpdate("string", int, int)
+		Check whether the update can be arranged.
+	- (CD) col.AddOrUpdate("k1", 3, (s, i) => i * 2)
+		Makes sure that the item is added if it's not there, and update to a new value if it is.
+	- (CD) col.GetOrAdd("k2", 3)
+		Gets the current value of an item, but if it isn't available than add it. 
+		
+		
+		
+	
+
+1.2 Implement multithreading and asynchronous processing
+==============================================================================================================================
+
+Synchronizing resources
+	Information:
+	- Atomic means that something consists of both a read and a write that happen at different moments.
+	- Be carefull that you can deadlock the code while using the lock keyword.
+	- Make the lock object private. This prevents other classes to use your lock object.
+	- Also, don't lock the this variable because it could be used by other code to create a lock. 
+	- The statement n++ (n = n + 1) is both a read and a write action (not atomic). Use Interlocked class when building atomic operations.
+
+	Code:
+	- lock (_lock)
+		Locks the _lock object.
+	- private static volatile int _flag = 0;
+		Stops compiler performance optimalization in case it tries to switch around code (but don't use it).
+	
+	- Interlocked.Increment(ref n)
+		Guarantees that the increment is executed atomically.
+	- Interlocked.Decrement(ref n)
+		Guarantees that the decrement is executed atomically.
+	- Interlocked.Exchange(ref isInUse, 1) == 0) { }
+		Retrieves the current value and immediately sets it to the new value in the same operation. It returns the previous value before changing it.
+	- Interlocked.CompareExchange(ref isInUse, 1, 2) == 0) { }
+		Checks to see whether the expected value is there; if it is, it replaces it with another value.
+
+
+Canceling tasks
+	Information:
+	- A CancellationToken can be passed to task, wich then periodically monitors the token to see whether cancellation is requested.
+	- Overload a .WaitAny with an integer to specify an timeout.
+	
+	Code:
+	- CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+		Create a factory for cancellation tokens.
+	- token.IsCancellationRequested
+		Returns true/false whether the token is cancelled.
+	- token.ThrowIfCancellationRequested()
+		Throws an OperationCanceledException when the task is cancelled.
+	- TaskContinuationOptions.OnlyOnCanceled
+		Can be used as option on a continuation task. This runs only when the task has been cancelled.
+	- Task.WaitAny(new[], { longRunning }, 1000)
+		Overload that can be used to make a task timeout.
+		
+		
+
+
+
+1.3 Implement program flow (most of the chapter should be common sense)
+==============================================================================================================================
+
+Working with Boolean expressions
+	Information:
+	- Do not use jump/goto statements :(
+	
+	
+	
+	
+	
+1.4 Create and implement events and callbacks
+==============================================================================================================================
+
+Special topics:
+	Assignment compatibility: An object of a more derived type is assigned to an object of a less derived type. Example: string str = "test"; => object obj = str;.
+	Covariance: An object that is instantiated with a more derived type argument is assigned to an object instantiated with a less derived type argument. Assignment compatibility is preserved.
+	Contravariance: An object that is instantiated with a less derived type argument is assigned to an object instantiated with a more derived type argument.
+
+Understanding delegates
+	Information:
+	- A delegate is a type that defines a method signature. You can instantiate the delegate and let it point to another method. This method can be invoked through the delegate.
+	- An instantiated delegate is an object that can be passed around and for example be used as arguments.
+	- It's possible to multicast delegates by using the + or the += operators. You can also use the - or the -= operators.
+
+	Code:
+	- public delegate int Calculate(int x, int y);
+		A basic delegate.
+	- int invocationCount = del.GetInvocationList().GetLength(0);
+		Gets the number of delegates in the delegate (by using multicasting)
+	
+
+Using lambda expressions
+	Information:
+	- Lambda functions are called anonymous functions because they don't have names
+	- You can have just one line of code or use brackets to specify multiple lines
+	- A Func<...> represent a delegate that return a type and take 0 to 16 parameters
+	- A Action<...> represents a delegate that doesn't return a type tho.
+	- A closure is captured variable that lifes as long as the longest-living delegate. Only happens when a delegate references to a local variable.
+	
+	
+Using events
+	Information:
+	- The code can subscribe to an event and then it is notified when the publisher of the event raises a new event.
+	- Events have a lot of advantages:
+		* Changes the public property to a public field (compiler protects against unwanted access)
+		* Events cannot be directly assigned.
+		* Can only be raised by code that's part of the class that defined the event.
+	- Creating a custom event accessor can be helpfull with adding and removing of subsribers outside the class where the event is defined.
+	- Use a lock when creating custom event accessors to make sure it's thread safe.
+	- When one exception happens in the events, all events after that one will not run.
+	
+	Code:
+	- public event Action OnChange = delegate { };
+		An empty (not null!) event. But you should still use EventHandler() instead of an Action<> (defined below)
+	- public delegate void EventHandler(object sender, EventArgs e);
+		Declaration of the EventHandler.
+	- public event EventHandler<MyArgs> OnChange = delegate { };
+		Specify the object type MyArgs that should be initialized when raising the event.
+	- foreach (Delegate handler in OnChange.GetInvocationList()) { };
+		Handle each event delegate individual.
+	- handler.DynamicInvoke(this, EventArgs.Empty);
+		Invoke an event. 
+		
+
+
+
+
+1.5 Implement exception handling
+==============================================================================================================================
+
+Handling exceptions:
+	Information:
+	- You can dodge the finally by using Environment.FailFast();. Why you should use this is unclear :(.
+	
+	Code:
+	- StackTrace
+		A string that describes all the methods that are currently in execution.
+	- InnerException
+		When a new exception is thrown because another exception happened, the two are linked together with the InnerException property
+	- Message
+		A (hopefully) human friendly message that describes the exception
+	- HelpLink
+		A Uniform Resource Name (URN) or uniform resource locator (URL) that points to a help file.
+	- HResult
+		A 32-bit value that describes the severity of an error.
+	- Source
+		The name of the application that caused the error. If not available it uses the assembly name.
+	- TargetSite
+		Contains the name of the method that caused the exception.
+	- Data
+		A dictionary of key/value pairs that you can use to store extra data for your exception.
+
+
+Throwing exceptions
+	Information:
+	- You can rethrow an exception without an identifier, with the original exception or with a new exception.
+	- When getting an exception on a different thread, C# will capture and rethrow this for you on the main thread.
+
+	Code:
+	- possibleException = ExceptionDispatchInfo.Capture(ex);
+		Store the exception in the variable possibleException. By using possibleException.Throw(), you can throw the captured exception at a later time.
+
+	Exceptions:
+	- There are a lot of exceptions that you need to know. Look at page 78 and 79 of the book for all of them.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
