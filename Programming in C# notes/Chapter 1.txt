@@ -311,29 +311,11 @@ Throwing exceptions
 	- There are a lot of exceptions that you need to know. Look at page 78 and 79 of the book for all of them.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Creating custom exceptions
+	Information:
+	- To create an custom exception you must at least inherit from System.Exception and provide a parameterless constructor.
+	- Best practice is to add other constructors. One that takes a string, one that takes both a string and an exception, and one for serialization.
+	- Also a best practice, use the serializable attribute so it can be serialized and works correctly accross application domains.
 
 
 
