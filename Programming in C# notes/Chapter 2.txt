@@ -1,0 +1,65 @@
+2.1 Create types
+==============================================================================================================================
+
+Create types
+	Information:
+	- There are three different type categories:
+		* Value types. Value is normally stored on the stack. 
+		* Reference types. Value is stored on the heap and the address of this value is stored on the stack. Basically this means that when you ask for the value, it has to look on the 
+		* Pointer types. The unsafe keyword enables the use of pointers, but this is rarely used. 
+	- For more information about this, look at the following link: http://www.albahari.com/valuevsreftypes.aspx
+	- Enums (enumerations) can have a special Flags attribute. This way you can set multiple combinations of values.
+	- Set a field to read-only so that the value can only be set during the construction of the object.
+	- Set a field to constant so that the value will be set at compile time.
+	- WHen you want to store data that's not specific for an instance, you can make it static. 
+	
+	Code:
+	- [Flags] enum Days { None = 0x0, Sunday = 0x1, Monday = 0x2 }
+		Set flags in an emum.
+	- Days readingDays = Days.Monday | Days.Saturday
+		Using multiple combination of enum values.
+
+
+Desiging classes
+	Information:
+	- All principles come down to two characteristics: High cohesion and low coupling. Basically this means that code shouldn't depend on other code when it's not absolutely needed.
+	- Learn SOLID.
+
+
+
+Using generic types
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
