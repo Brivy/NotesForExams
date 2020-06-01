@@ -20,23 +20,62 @@ Create types
 		Using multiple combination of enum values.
 
 
+Giving your types some body
+	Information:
+	- A function implies code that returns a value and doesn't modify anything in the system.
+	- A method implies code that doesn't return data but enables data modification.
+
+
 Desiging classes
 	Information:
 	- All principles come down to two characteristics: High cohesion and low coupling. Basically this means that code shouldn't depend on other code when it's not absolutely needed.
 	- Learn SOLID.
-
+		* Single responsibility principle
+		* Open/closed principle
+		* Liskov subsitution principle
+		* Interface segregation principle
+		* Dependency inversion principle
 
 
 Using generic types
+	Information:
+	- One functionality for generics are Nullables. 
+	- It wouldn't make sense to use a reference type for a nullable class because they are by default null. We have constraints to limit this.
+		
+	Code:	
+	- where T : struct
+		The type argument must be a value type (only Nullable is not allowed)
+	- where T : class
+		The type argument must be a reference type: for example, a classs, interface, delegate or array
+	- where T : new()
+		The type must have a public default constructor
+	- where T : <base class name>
+		The type argument must be or derive from the specified base class
+	- where T : <interface name>
+		The type argument must be or implemented the specified interface. Multiple interface constraints can be specified. The constraining interface can also be generic.
+	- where T : U
+		The type argument supplied fo T must derive from the argument supplied for U
+
+
+Extending existing types
+	Information:
+	- Extension methods need to be declared in a nongeneric, non-nested, static class.
+	- You can extend an interface with extension methods.
+	- When using virtual on a method, you can override it when when you implement that class.
+	- Using the sealed keyword, you can't derive other classes from it.
+
+
+
+
+
+2.2 Consume types
+==============================================================================================================================
+
+Boxing and unboxing
+	Information:
+	- Boxing is the process of taking a value type, putting it inside a new object on the heap, and storing a reference to it on the stack. See the following picture: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/media/boxing-and-unboxing/boxing-operation-i-o-variables.gif
+	- Unboxing takes the item from the heap and returns a value type that contains the value from the heap. See the following picture: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/media/boxing-and-unboxing/unboxing-conversion-operation.gif
 	
-
-
-
-
-
-
-
-
 
 
 
