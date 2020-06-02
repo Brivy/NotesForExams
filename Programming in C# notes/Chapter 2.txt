@@ -75,17 +75,53 @@ Boxing and unboxing
 	Information:
 	- Boxing is the process of taking a value type, putting it inside a new object on the heap, and storing a reference to it on the stack. See the following picture: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/media/boxing-and-unboxing/boxing-operation-i-o-variables.gif
 	- Unboxing takes the item from the heap and returns a value type that contains the value from the heap. See the following picture: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/media/boxing-and-unboxing/unboxing-conversion-operation.gif
+	- If you execute an invalid unbox operation, the runtime will throw an InvalidCastException.
+	- Boxing happens for example when you call GetType, because this can only be called on a object (and boxing does just that).
 	
+	Code:
+	- int i = 42; object o = i;
+		Box an integer to an object.
+	- int x = (int)o;
+		Unbox an object to an integer.
 
 
+Converting between different types
+	Information:
+	- There are a few type conversions
+		* Implicit conversions. Compiler knows it's a safe conversion. It all goes well. 
+		* Explicit conversions. Compiler knows it's not a safe conversion. You have to cast it explicitly. 
+		* User-defined conversions
+		* Conversion with a helper class
+	- Implement the IFormattable interface when you want to use the Convert helper method.
+	
+	- Using the 'is' and 'as' keywords, you can check whether a type can be converted to another type. 
+	- Use 'as' if you want to use the value later, otherwise use 'is'.
+
+	Code:
+	- int i = 42; double d = i;
+		Implicit conversion between an integer to a double (value types).
+	- HttpClient client = new HttpClient(); object o = client; IDisposable d = client;
+		Implicit conversion between an object and it's base types (reference types).
+	- double x = 1234.7; int a; a = (int)x;
+		Explicitly casting a double to an integer (value types).
+	- Object stream = new MemoryStream(); MemoryStream memoryStream = (MemoryStream)stream;
+		Explicitly casting a MemoryStream object to a memoryStream (reference types).
+	-  public static implicit operator decimal(Money money) { return money.Amount; }
+		User-defined implicit function.
+	- public static explicit operator int(Money money) { return (int)money.Amount; }
+		User-defined explicit function.
+	- Convert.ToInt32("42");
+		Helper class to convert a string to an integer.
+	- int.Parse("42");
+		Integer function to convert a string to an integer.
+		
+	- if (connection is SqlConnection) { }
+		Returns true if connection the conversion is allowed.
+	- MemoryStream memoryStream = stream as MemoryStream;
+		If possible, stream is converted in a MemoryStream. Otherwise it will be null.
 
 
-
-
-
-
-
-
+Using dynamic types
 
 
 
