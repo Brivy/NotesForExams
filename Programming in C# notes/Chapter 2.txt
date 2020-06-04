@@ -122,6 +122,68 @@ Converting between different types
 
 
 Using dynamic types
+	Information:
+	- The dynamic keyword doesn't generate compile time errors, but can certainly generate run-time errors :D
+	- When inheriting from DynamicObject, you can create truly dynamic objects with for example methods.
+	- When inheriting from ExpandoObject, you can only get and set properties on a type (like the mvc view bag).
+	
+
+
+
+
+2.3 Enforce encapsulation
+==============================================================================================================================
+	
+Using access modifiers
+	Information:
+	- You have multiple access modifiers:
+		* public. None; restricted access.
+		* internal. Limited to the current assembly.
+		* protected. Limited to the containting class and derived classes.
+		* protected internal. Limited to the current assembly or derived types.
+		* private. Sneaky sneaky.
+	- Enums and interfaces can only be public.
+	- Classes and structs are initially private.
+	- Structs can only be public, internal, private.
+	
+	Code:
+	- [assembly:InternalVisibleTo("Friend1a")]
+		When using the attribute "Friend1a" on a different assembly, you can make the internal method visible for that assembly. Usefull for testing.
+
+
+Using properties
+	Code:
+	- public int Value { get; set; }
+		This is an auto-implemented property. The compiler makes this into a property with a private, anonymous backing field.
+
+
+Using explicit interface implementations
+	Information:
+	- You can implement an interface explicitly. This means that implement the interface, but the create a class, you can't access it.
+	- Two reasons why to use it: 
+		* Hiding the function of the class to outside users.
+		* When two interfaces have the same method, you can explicitly specify the interface per method. 
+		
+	Code:
+	- class Implementation : ICustomInterface { void ICustumInterface.MyMethod() { } }
+		Explicitly implement the ICustomInterface. 
+
+
+
+
+
+2.4 Create and implement a class hierarchy
+==============================================================================================================================
+	
+
+
+
+
+
+
+
+
+
 
 
 
