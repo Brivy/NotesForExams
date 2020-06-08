@@ -220,13 +220,14 @@ Implementing standard .NET Framework interfaces
 
 
 
-2.5 CFind, execute, and create types at runtime by using refleciton
+2.5 CFind, execute, and create types at runtime by using reflection
 ==============================================================================================================================
 
 Creating and using attributes:
 	Information:
 	- Define an attribute above a class/method with square brackets ([]).
 	- Attributes can have parameters.
+	- You can inherit from attributes to create derived attributes
 	
 	Code:
 	- [assembly: AssemblyTitle("hey")]
@@ -236,7 +237,74 @@ Creating and using attributes:
 	- [Conditional("CONDITION1"), Conditional("CONDITION2")]
 		Built conditional attributes.
 	- ConditionalAttribute conditionalAttribute = (ConditionalAttribute) Attribute.GetCustomAttribute(typeof(ConditionalClass), typeof(ConditionalAttribute));
+		Find conditional attributes
+	- [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+		Specify where an attribute can be placed.
+	- [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+		Can specify multiple instances of this attribute on a class
+
+
+Using reflection
+	Information:
+	- When using Assembly.Load("assemblyname"), you can only load it in once. If you want to reload the assembly, you should reload the application.
+	- By using binding flags, you can get specify which information you want to have.
+	
+	Code:
+	- FieldInfo[] fields = obj.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+		Get the non public instance members of the object. More binding fields can be found here: https://docs.microsoft.com/en-us/dotnet/standard/attributes/writing-custom-attributes
 		
+
+Using CodeDom and lambda expressions to generate code
+	Information:
+	- You can use CodeDOM to create an object graph that can be converted to a source file or to a binary assembly that can be executed.
+	- Expression trees can also be used to create code.
+	
+	Code:
+	- CodeCompileUnit compileUnit = new CodeCompileUnit();
+		Create a compilation unit that describes how to autogenerate a class. More info on page 146 of the csharp book.
+	- CSharpCodeProvider provider = new CSharpCodeProvider();
+		Create a source file from the compilation unit. More info on page 146 of the csharp book.
+	- BlockExpression blockExpr = Expression.Block(Expression.Call(null, typeof(Console).GetMethod("Write", new Type[] { typeof(String) }), Expression.Constant("Hello World!");
+		Generate a "Hello world" file.
+		
+
+
+
+
+
+2.6 Manage the object life cycle
+==============================================================================================================================
+
+Understanding garbage collection
+	Information:
+	- The C# stack keeps track of what's executing in your code. This is being cleaned at the end of a method.
+	- The C# heap keeps track of your objects. This is managed by the garbage collector.
+	- The garbage collector is smart and it will only clean if the memory on the heap is low. 
+	- In short, the garbage collector works as follows:
+		* It tries to find a living item on the heap.
+		* Living items are items that are still being referenced by a root item (static field, method parameter, a local variable or a CPU register).
+		* All the living items are grouped together and the other items are disposed.
+		* While doing this, all threads are frozen. 
+		* The living items are promoted to group 1. They will not be cleaned until the group 0 zero are not providing enough space when cleaned up.
+
+
+Managing unmanaged resources
+	Information:
+	- For unmanaged resources, you can create finalizers. They are created by placing a (~) before the class name().
+	- Finalizers are only called when the garbage collection kicks in.
+	- Finalizers increase the life of an object because the .NET framework keeps a reference to the object in a special finalization queue (run on an additional thread). 
+	- You shouldn't depend on the garbage collector to run a finalizer at some point in time. Instead you should do it yourself with the IDisposable interface.
+	- The using statement is some semantic sugar for a try, finally clause. This way, the Dispose is always called :D
+
+	Code:
+	- GC.Collect();
+		Trigger the garbage collection.
+
+
+Implementing IDisposable and a finalizer
+	Information:
+	
+
 
 
 
