@@ -175,6 +175,70 @@ Using explicit interface implementations
 2.4 Create and implement a class hierarchy
 ==============================================================================================================================
 	
+Designing and implementing interfaces
+	Information:
+	- An Interface contains the public signature of methods, properties, events, and indexers.
+	- You can define a property with only a get accessor while the implementing type also has a set accessor.
+	- Because interfaces don't have implementations, you can't use them directly.
+	- Using generic as parameters so you can create generic code.
+	- There is no multiple inhertinace in c#
+
+
+
+Creating and using base classes
+	Information:
+	- you can use the new keyword to explicitly hide the member of a base class.
+	- Declare a class abstract if you don't want it to be instantiated. Logically, you can't create a constructor in this class.
+	- Abstract classes can function as an interface that has a body.
+
+	Code:
+	- base.Execute();
+	Excecute the base method that you are overriding.
+	
+
+
+Implementing standard .NET Framework interfaces
+	Information:
+	- IComparable. The CompareTo method returns an int value that shows how two elements are related. Used when you have an array you want to sort.
+		* > 0. Object staat achter het vergeleken object.
+		* = 0. Object is gelijk aan vergeleken object.
+		* < 0. Object staat voor het vergeleken object.
+	- IEnumerable. Exposes a GetEnumerator method that returns an enumerator. Can be used to write custom loops.
+	- Yield is a special keyword that can be used only in the context of iterators.
+	- IDisposable has the Dispose() method. This is used to free any unmanaged resource.
+	- IUnknown. Yes.
+	
+	Code:
+	- Return this."object".CompareTo(object")
+		Call the base method of IComparable.
+	- using (List<int>.Enumerator enumerator = numbers.GetEnumerator())
+		Foreach without syntactic sugar.
+
+
+
+
+
+
+
+2.5 CFind, execute, and create types at runtime by using refleciton
+==============================================================================================================================
+
+Creating and using attributes:
+	Information:
+	- Define an attribute above a class/method with square brackets ([]).
+	- Attributes can have parameters.
+	
+	Code:
+	- [assembly: AssemblyTitle("hey")]
+		Attributes that specify information about the assembly
+	- if (Attribute.IsDefined(typeof(*class/method name*), typeof(*attribute name*))) { }
+		Check if the attribute has been applied.
+	- [Conditional("CONDITION1"), Conditional("CONDITION2")]
+		Built conditional attributes.
+	- ConditionalAttribute conditionalAttribute = (ConditionalAttribute) Attribute.GetCustomAttribute(typeof(ConditionalClass), typeof(ConditionalAttribute));
+		
+
+
 
 
 
