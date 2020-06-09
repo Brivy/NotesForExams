@@ -295,17 +295,75 @@ Managing unmanaged resources
 	- Finalizers increase the life of an object because the .NET framework keeps a reference to the object in a special finalization queue (run on an additional thread). 
 	- You shouldn't depend on the garbage collector to run a finalizer at some point in time. Instead you should do it yourself with the IDisposable interface.
 	- The using statement is some semantic sugar for a try, finally clause. This way, the Dispose is always called :D
+	- You can make a weak reference. This doesn't hold a real reference to an item on the heap, so it can't be garbage collected. 
 
 	Code:
 	- GC.Collect();
 		Trigger the garbage collection.
+	- Very good example of disposing a stream is found on Page 154
+		Check this sometimes.
+	- data = new WeakReference(LoadLargeList());
+		Creating a weak reference.
+		
+		
+		
 
 
-Implementing IDisposable and a finalizer
+2.7 Manipulate strings
+==============================================================================================================================
+
+Using strings in the .NET Framework
 	Information:
+	- The string object contains an array of Char objects internally.
+	- A string is immutable. This has his advantages like thread safety, but also his disadvantage like creating a different string object each time you modify it. 
+	- When you identical strings are created in one compilation unit, the CLR will only create one string object. This is called string intering.
 	
 
+Manipulating strings
+	Information:
+	- The StringBuilder class enables you to change the value of individual characters inside a string.
+	- When using an arbitrary number of strings, it's better to use stringbuilder. If it's a fixed series of strings, than StringBuilder is't better.
+	- StringWriter and StringBuilder adapt from StringBuilder (and use this internally). This way they can be used on places where a TextWriter or a TextReader is expected.
+	
+	Code:
+	- StringBuilder sb = new StringBuilder(string.Empty);
+		Creating a StringBuilder object.
+	- using (XmlWriter writer = XmlWriter.Create(new StringWriter()) { }
+		Using an instance of a StringWriter
+	
+	
+Searching for strings
+	Information:
+	- There are multiple ways to search into strings: IndexOf, LastIndexOf, StartsWith, EndsWith, SubString and regular expressions.
+	
+	Code:
+	- int indexOfp = value.IndexOf('p');
+		Finds the first occurrence of a character or substring. Returns -1 when nothing found.
+	- if (value.StartsWith("<")) { }
+		Checks if a string starts with a character or substring.
+	- if (value.EndsWith(">")) { }
+		Checks if a string ends with a character or substring.
+	- string subString = value.Substring(3, 6);
+		Retrieve a piece of a string based on the first- and last index.
+	- string pattern = "(Mr\\.? |Mrs\\.? |Miss |Ms\\.?)";
+		Create a regex pattern (just a string).
+	- Console.WriteLine(Regex.Replace(name, pattern, String.Empty));
+		Replace a matched string with Regex.
+		
 
+Enumerating strings
+	Information:
+	- Because the string object implements IEnumerable and IEnumerable<Char>, you can Enumerate a string.
+	
+	Code:
+	- foreach (char c in "test")
+		Enumarate on chars.
+	- foreach (string word in "My sentence separated by spaces".Split(' ')
+		Enumarate on the words of the sentence.
+	
+	
+	
+	
 
 
 
