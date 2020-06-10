@@ -1,0 +1,115 @@
+3.1 Validate application input
+==============================================================================================================================
+
+Why validating application input is important
+	Information:
+	- Evil hackers D:
+
+
+
+Managing data integrity
+	Information:
+	- There are four types of data integrity:
+		* Entity integrity: Each entity should be uniquely identifable. This is mostly done with a primary key.
+		* Domain integrity: Refers to the validity of the data that an entity contains.
+		* Referential integrity: Relationship between entities.
+		* User-defined integrity: Includes business rules that need to be enforced.
+	- User-defined integrity is the only one that can't be fully enforced by the Entity Framework (but you can use triggers in the database if you want to).
+	- You can use transactions to group a set of related operations on a database. It ensures that those operations are seen as one distinct action. If one fails, all fail.
+	- If you run into problems when users work concurrently, consider the transactions and catch exceptions on conflicting data.
+	
+	Code:
+	- [Required, MaxLength(20)]
+		Place some business logic on your properties.
+	- Validator.TryValidateObject(entity, context, results);
+		Make a custom validator.
+
+	
+Using Parse, TryParse and Convert
+	Information:
+	- Parsing dateTime is still not so funny. C# contains multiple Parse() overloads that can handle this.
+	- You can you use the Convert class to convert between base types. The supported base types are Boolean, Char, SByte, Byte, Int16, UInt16, UInt32, UInt64, Single, Double, Decimal, DateTime and String.
+	
+	Code:
+	- bool b = bool.Parse(value);
+		Parse a value (most likely a string) to a bool. Can throw exceptions if value is not correct.
+	- bool success = int.TryParse(value, out result);
+		Try parsing a value (most likely a string) to a bool. Will return true if succeeds or false when not (not throwing exceptions).
+	- decimal d = decimal.Parse(value, NumberStyles.Currency, new CultureInfo("Nl");
+		Parse a string that contains a currency symbol and a decimal separator.
+	- int i = Convert.ToInt32(null);
+		This doesn't throw exceptions but instead returns the default value (0).
+	
+	
+Using Regular expressions
+	Information:
+	- Can simplify code, but you have to write 'correct' regex.
+	
+	
+Validating JSON and XML
+	Information:
+	- Use an XSD (XML Schema Defintion) to validate XML. To view the belonging code, visit page 191 in the programming handbook.
+	
+	Code:
+	- var result = serializer.Deserialize<Dictionary<string, object>>(json);
+		Deserialize a JSON string with the JavaScriptSerializer object.
+	- (Command line commando) Xsd.exe person.xml
+		Create an XSD from an xml.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
