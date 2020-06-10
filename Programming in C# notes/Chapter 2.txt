@@ -362,7 +362,23 @@ Enumerating strings
 		Enumarate on the words of the sentence.
 	
 	
+Formatting strings
+	Information:
+	- Override ToString() to represent a better string :D.
+	- Use ToString() formatting for better output:
+		* DateTime date = new DateTime(2013, 4, 22);
+		* CultureInfo provider = new CultureInfo("en-US");
+		* date.ToString("d", provider) // Displays 4/22/2013
+		* date.ToString("D", provider) // Displays Monday, April 22, 2013
+		* date.ToString("M", provider) // Displays April 22
 	
+	Code:
+	- string.Format("a: {0}, b: {1}", a, b);
+		Creating a composite string formatting.
+		
+
+		
+		
 	
 
 
