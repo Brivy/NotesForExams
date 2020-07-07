@@ -1,0 +1,89 @@
+4.1 Perform I/O operations
+==============================================================================================================================
+
+Working with files
+	Information:
+	- The DriveInfo object only has information. No methods for ejecting usb stuff is there.
+	- Using the Directory and the DirectoryInfo (better for multiple operations) classes to work against the folder structure.
+	- UnauthorizedAccessException will be thrown when you don't have permission.
+	- Using a search pattern of type SearchOption search through directories.
+		* * -> one or more characters
+		* ? -> Exactly one character
+	- Use EnumerateDirectories over GetDirectories when working with large directories because you can enumerate while still finding directories.
+	- Using the File and the FileInfo classes to work against files.
+	- Don't manually create a path. Use the Path class for this.
+	
+	Code:
+	- DriveInfo[] drivesInfo = DriveInfo.GetDrives();
+		Get object of all the drives. Can be used to retrieve drive info like 'driveInfo.VolumeLabel'.
+	
+	- var directory = Directory.CreateDirectory(@"C:\Temp\Test");
+		Create a directory.
+	- var directoryInfo = new DirectoryInfo(@"C:\Temp\Test");
+		Create a directory object. This doesn't create the directory though.
+	- if (Directory.Exists(@"C:\Temp\Test")) { Directory.Delete(@"C:\Temp\Test"); }
+		Checks if the directory exists and delete it. Can be much more simplified with the directoryInfo object.
+	- directorySecurity.AddAccessRule(new FileSystemAccessRule("everyone", FileSystemRights.ReadAndExecute, AccessControlType.Allow));
+		Create a new rule for accessing a specific part of the system.
+	- Directory.Move("@"C:\Temp", @"C:\Test");
+		Move an existing directory to another location.
+	- foreach (string file in Directory.GetFiles(@"C:\Windows")) { ... }
+		List all the files within a directory.
+		
+	- if (File.Exists(path)) { File.Delete(path)); }
+		Check if a file exists on a path and delete it.
+	- fileInfo.MoveTo(destPath);
+		Move a file to a specific location;
+	- fileInfo.CopyTo(destPath)
+		Copy a file to a specific location;
+	
+	- Path.Combine(folder, fileName);
+		Creates a valid path.
+	- Path.GetDirectoryName(path) || Path.GetExtension(path) || Path.GetFileName(path) || Path.GetPathRoot(path)
+		Get cool stuff from the Path class.
+		
+
+
+
+
+Working with streams
+	Information:
+	- Stream has three fundamental operations:
+		* Reading -> a series of bytes that you can translate into meaningful data.
+		* Writing -> translate a object into a series of bytes and send it off to a stream.
+		* Seeking -> query the current position of a cursor and move it around. Not supported by all streams like a network socket.
+	
+	Code:
+	- using (FileStream fileStream = File.Create(path)) { ... }
+		using a filestream to read and write data
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	 
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
