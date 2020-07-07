@@ -257,6 +257,142 @@ Creating a WinMD assembly
 3.4 Debug an application
 ==============================================================================================================================
 
+Build configurations
+	Information:
+	- Release mode fully optimizes the code in comparison with debug mode. Also debug mode can put out more information.
+	- In debug configuration, the compiler inserts extra no-operation (NOP) instructions and branch instructions. 
+
+
+
+Creating and managing compiler directives
+	Information:
+	- A preprocessor is a program that applies some changes before handing it off to the compiler.
+	- While c# doesn't have a preprocessor, you can use preprocessor compiler directives.
+	
+	Code:
+	- #if DEBUG ... #endif
+		Checking if the DEBUG build configuration is used. Try this yourself bij using /debug in the command prompt.
+	- #define MySymbol
+		Creating your own compiler directive symbol.
+	- #undef
+		Can be used to debug a piece of code that is only in the release build.
+	- #warning
+		Report an warning to the compiler.
+	- #error
+		Report an error to the compiler.
+	- #line ...
+		Can be used to change the line number
+	- #pragma warning disable
+		Will disable warnings the compiler throws at you. If you specify a specific error code, you will only disable that one.
+	- [Conditonal("DEBUG")]
+		Attribute that will mark code that will only run in debug mode
+	- [DebuggerDisplay("Name = {FirstName} {LastName}]
+		Apply some better debug information to an object
+		
+
+Managing program database files and symbols
+	Information:
+	- The program database file (PDB) is an extra data source that annotates your application's code with additional information that can be usefull during debugging.
+	- It contains two pieces of information:
+		* Source file names and their lines.
+		* Local variable names.
+	- Microsoft published his own PDB files to its Symbol Server, which is a way to expose the PDB files of applications to the debugger so it can easily find the files.
+	- Set up your own Symbol Server so you can use PDB's with ease.
+	- The PDB contains public and private data. You can chose to remove the private data when for example publishing.
+	
+	
+	
+	
+	
+3.5 Implement diagnostics in an application
+==============================================================================================================================
+	
+Logging and tracing
+	Information:
+	- Trace logging also works on a release build.
+	- The following options are available:
+		* Critial
+		* Error
+		* Warning
+		* Information
+		* Verbose
+	- You can use other listeners for other purposes:
+		* ConsoleTraceListener 			-> Standard one (default one when no selected)
+		* DelimitedListTraceListener 	-> TextWriter
+		* EventLogTraceListener			-> EventLog
+		* EventSchemaTraceListener		-> XML-encoded, schema-compliant log file
+		* TextWriterTraceListener		-> TextWriter
+		* XmlWriterTraceList			-> XML-encoded data to a TextWriter or stream
+	- Can setup the listeners in code or in a configuration file.
+	- Within the configuration file you can specify switches (log or not log a message) and filters (log or not log an event)
+	- It's possible to subscribe to the windows event log.
+	
+	Code:
+	- Debug.WriteLine("Hey");
+		Write something to the output window.
+	- TraceSource traceSource = new TraceSource("myTraceSource", SourceLevels.All);
+		Write something to the output window. If on release version, make sure that you configured a listener.
+	- TextWriterTraceListener textListener = new TextWriterTraceListener(outputfile);
+		Configure where to write the output file to.
+	
+	- TraceSource traceSource = new TraceSource("myTraceSource", SourceLevels.All);
+		Configure the traceSource.
+	- traceSource.Listeners.Add(textListener);
+		Add the listener to the tracesource.
+	
+	- EventLog.CreateEventSource("MySource", "MyNewLog");
+		Using the windows event log to log messages.
+	- EventLog log = new EventLog("MyNewLog");
+		Setup a eventlog object to read from the windows event log.
+	- EventLogEntry last = log.Entries[log.Entries.Count - 1];
+		Read the last event log.
+	- applicationLog.EntryWritten += (sender, e) => { Console.WriteLine(e.Entry.Message); };
+		Subscribe to the windows event log.
+		
+
+Profiling your application
+	Information:
+	- Profiling is the process of determining how your application uses certain resources.
+	- The visual studio 2012 version has multiple options:
+		* CPU sampling				-> lightweight													-> good for initial search to performance problems
+		* Instrumentation 			-> injects code to capture timing information 					-> good for (I/O) and examine larger problems
+		* .Net memory allocation	-> interrupts program when allocates new object or GB is called	-> good for memory uses
+		* Resource contention data 	-> used in multithreaded applications							-> good for finding why methods have to wait for each other befor they can access a shared resource
+	- To run the diagnostic tools, your application must run under full trust or should be administrator or part of the performance monitor group.
+	- Diagnostic tools also use the IDisposable.
+	- It's possible to create your own diagnostic tools to monitor your application.
+	
+	Code:
+	- Stopwatch sw = new Stopwatch();
+		Create a stopwatch object.
+	- using (PerformanceCounter pc = new PerformanceCounter("Memory", "Available Bytes") { ... }
+		Read the performance counter of the pc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
