@@ -43,29 +43,69 @@ Working with files
 		Get cool stuff from the Path class.
 		
 
-
-
-
 Working with streams
 	Information:
 	- Stream has three fundamental operations:
 		* Reading -> a series of bytes that you can translate into meaningful data.
 		* Writing -> translate a object into a series of bytes and send it off to a stream.
 		* Seeking -> query the current position of a cursor and move it around. Not supported by all streams like a network socket.
+	- Combining streams together can be called a decorator pattern.
+		* Combining the GZipStream with a Filestream, you can read/write files and compress the data
+		* Combining the StreamWriter with a BufferedStream, you can read/write files in chunks instead of byte by byte
 	
 	Code:
 	- using (FileStream fileStream = File.Create(path)) { ... }
 		using a filestream to read and write data
+	- using (StreamWriter streamWriter = File.CreateText(path)) { ... }
+		Use a streamwriter to write characters to a stream with a particular encoding (UTF-8, ASCII, BigEndianUnicode, ...)
+	- using (FileStream fileStream = File.OpenRead(path)) { ... }
+		Read a file on a given path.
+	- data[index] = (byte)fileStream.ReadByte();
+		Read a byte from the filestream.
+	- using (StreamReader streamWriter = File.OpenText(path)) { ... }
+		If you know that you are reading a file, use the StreamReader object
+	- Console.WriteLine(streamWriter.ReadLine());
+		Read a line from the StreamReader.
 		
+		
+The file system is not just for you
+	Information:
+	- While the file system is a multithreaded system, it doesn't have any safety regulations regarding locking files.
+	- Catch DirectoryNotFoundException and FileNotFoundException when trying to read/write files
+	
+	
+Communicating over the network
+	Information:
+	- use HttpClient :D
+	
+	Code:
+	- static readonly HttpClient client = new HttpClient();
+		Setup the client
+	- HttpResponseMessage response = await client.GetAsync("hey");
+		Send request
+	- string responseBody = await client.GetStringAsync(uri);
+		Read the body.
+	
+	
+Implementing asynchronous I/O operations
+	Information:
+	- The static File class does not support real asynchronous I/O. If you call asynchronous methods it fakes this by using another tread from the thread pool to work with the file.
+	- For real async I/O, you need to use the FileStream object and pass a true value for the useAsync parameter.
+	
+	Code:
+	- using (fileStream stream = new FileStream("test.dat", FileMode.Create, FileAccess.Write, FileShare.None, 4096, true)) { ... }
+		An asynchronous filestream.
+	- await Task.WhenAll(microsoft, msdn, blogs);
+		Run tasks in parallel.
 	
 	
 	
 	
 	
 	
-	
-	
-	
+4.2 Consume data
+==============================================================================================================================
+
 	
 	
 	 
