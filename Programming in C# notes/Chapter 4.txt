@@ -106,9 +106,331 @@ Implementing asynchronous I/O operations
 4.2 Consume data
 ==============================================================================================================================
 
+Working with a database:
+	Information:
+	- A dataprovider is used for connecting to a database, executing commands and working the resulting data.
+	- A connection is established by using a connection string. 
+	- The SqlConnection object (inherits from DbConnection) can be used to establish a database connection.
+	- Connection pooling is the process of checking for an open connection.
+	- You can batch multiple queries in a SqlCommand object.
+	
+	- A transaction has four key properties that are referred to as ACID:
+		* Atomicity: All operations are grouped together. If one fails, they all fail.
+		* Consistency: Transactions bring the database from one valid state to another.
+		* Isolation: Transactions can operate independently of each other. Multiple concurrent transactions won't influence each other. It will be as if they were executed serially.
+		* Durability: The result of a committed transaction is always stored permanently, even if the database crashes immediately thereafter.
+	- If the transaction uses nested connections, multiple databases or multiple resource types, your transaction is promoted to a distributed transaction.
+	- There are multiple options you can give to the TransactionScope object:
+		* Required (default): Join the ambient transaction or create a new one.
+		* RequiresNew: Start a new transaction.
+		* Suppress: Don't take part in any transaction.
+	- Distributed transactions can have a huge performance hit.
+	
+	- There are different approaches for using the Entity Framework:
+		* Database First: You want to map an existing database to your object structure.
+		* Model First: You want to design your object model with a graphical designer and then create a database that supports it.
+		* Code First: You create your object model in code and then generate a database that can store your data.
+	
+	Code:
+	- using (SqlConnection connection = new SqlConnection(connectionString)) { ... }
+		Instantiate a SqlConnection
+	- var sqlConnectionStringBuilder = new SqlConnectionStringBuilder();
+		Create a object that can dynamically build SqlConnectionString.
+	- string connectionString = ConfigurationManager.ConnectionStrings["hey"].ConnectionString;
+		Retrieve a connection string from the app.config file.
+	
+	- SqlCommand command = new SqlCommand("SELECT * FROM People", connection);
+		- Create a SQL query.
+	- SqlDataReader dataReader = await command.ExecuteReaderAsync();
+		- Execute the query and load in the data.
+	- while (await dataReader.ReadAsync()) { ... }
+		- Read the results from the query.
+	- await dataReader.NextResultAsync();
+		- Read the result of the other next query thats executed in the SqlCommand query batch.
+	- int numberOfUpdatedRows = await command.ExecuteNonQueryAsync();
+		- Execute the query but return the number of affected rows (handy with an update or delete).
+	- SqlCommand command = new SqlCommand("INSERT INTO People([Name]) VALUES(@name), connection);
+		- Setup for a SqlCommand with paramters.
+	- command.Parameters.AddWithValue("@name", "Brian");
+		Fill a paramater of a query.
+	- using (TransactionScope transactionScope = new TransactionScope()) { ... transactionScope.Complete(); }
+		Create a transaction scope and complete it.
 	
 	
-	 
+	
+Using web services
+	Information:	
+	- A WCF service has both an .svc file and a code-behind file that contains the actual service code.
+	- The .svc file contains instructions for how to host your service in the IIS
+	- WCF uses the ABC model:
+		* Address: The endpoint that your service exposes
+		* Binding: Configures the protocols and transports that can be used to call your service.
+		* Contract: This is what the outside world expects of your service.
+	- A proxy client generated form the WCF service uses the app.config file to look for ABC settings.
+	
+	Code:
+	- [ServiceContract]public class MyService { [OperationContract]public string DoWork() { ... } }
+		Create a simple WCF web services
+	
+	
+	
+Consuming XML
+	Information:
+	- The first line of XML specifies that you are looking at XML. This is called the prolog.
+	- To help parsing XML files, the .net framework specifies some important classes:
+		* XmlReader: A fast way of reading an XML file. You can move forward only through the file and nothing is cached.
+		* XmlWriter: A fast way to create an XML file. Just as with the XmlReader, it's forward only and nonchached.
+		* XmlDocument: Represents an in-memory XML document. It supports navigating and editing a document.
+		* XPathNavigator: Helps with navigating through an XML document to find specific information.
+	
+	- I think that you should use XElement in linq to xml. It's far easier to use. Search it up to see what needs to be done.
+	
+	Code:
+	- using (XmlReader xmlReader = XmlReader.Create(stringReader, new XmlReaderSettings() { IgnoreWhitespace = true })) { ... }
+		Create a xmlReader instance.
+	- using (XmlWriter writer = XmlWriter.Create(stream, new XmlWriterSettings() { Indent = true })) { ... }
+		Create a xmlWriter instance.
+	- XmlDocument doc = new XmlDocument(); doc.LoadXml(xml);
+		Load an xml document into memory.
+	- XPathNavigator nav = doc.CreateNavigator();
+		Create a xml navigator.
+		
+	
+	
+Consuming JSON
+	Information:
+	- Yes, you use the Newtonsoft package for this shit.
+	
+	
+		
+		
+		
+		
+		
+		
+4.3 Query and manipulate data and objects by using LINQ
+==============================================================================================================================
+
+Language features that make LINQ possible
+	Information:
+	- Language features of LINQ:
+		- Implicitly typed variables
+		- Object initialization syntax
+		- Lambda expressions
+		- Extension methods
+		- Anonymous types
+	
+	- Implicit typing, the compiler infers the type of variable for you and strongly types your variable to that type.
+	- Object initialization syntax enables you to combine creating a new object and setting its properties in one statement.
+	- Lambdas are shorthand notations for creating anonymous functions.
+	- Extension methods can be used to extend an existing type with new behavior without using inheritance.
+	- An anonymous type is a type that is shaped at compile time without having a formal class definition.
+
+	Code:
+	- var i = 42;
+		Implicit typing by using var.
+	- Person p = new Person { Name = "Brian" };
+		Object initialization
+	- Func<int, int> myDelegate = x => x * 2;
+		A lambda function (shorthand delegate in this case).
+	- var person = new { Name = "brain" };
+		An anonymous type.
+		
+
+
+Using LINQ queries
+	Information:
+	- When working with data, the following steps are always required:
+		* Obtain the data
+		* Create a query
+		* Execute the query
+	- LINQ can be written in:
+		* query syntax:	from d in data
+						where d % 2 == 0
+						select d;
+		* method syntax: data.Where(d => d % 2 == 0);
+
+	- By using projection, you select another type or an anonymous type as the result of your query.
+	- By using the join operator, you can combine data from two or more sources.
+
+
+	Code:
+	- from ... from ... group l by l.Product into p select new { ... }
+		LINQ query using projection and group by.
+	- from ... join n in names on p.Description equals n select package
+		LINQ query using the join operator.
+
+
+How does LINQ work?
+	Information:
+	- For example, the Where() clause is using yield return. 
+	- Because the yield statement is an implementation of the iterator pattern, the code is not executed until the first call to MoveNext is made. This is called deferred execution.
+	- Calling for example .toList() will trigger the query.
+
+	- Using Linq to Xml can be helpfull for searching through an XML file
+	- You first need to load the document in memory with XDocument. This works with objects called XNode's. 
+	- XNode is an abstract class that represents the idea of some segment of content that a document holds.
+	- You can search with:
+		* XDocument.Nodes: Access nodes that form the XML file.
+		* XDocument.Descendants: Access nodes below a node.
+		* XDocument.Elements: Acces nodes :D
+	- Attributes are not nodes, they are key/value pairs that belong to a node. When searching for them, they return XAttributes.
+	- XAttributes have a Value property of type string, but it also implements explicit operators, so you can cast it to most of the basic types in C#.
+	- By using object initializers and collection initializers, you can creat your XML documents in an easy way.
+		
+		
+		
+		
+		
+		
+		
+4.4 Serialize and deserialize data
+==============================================================================================================================
+	
+Using serialization and deserialization
+	Information:
+	- Serializing is transforming an in-memory object into a stream of bytes or text. Deserialization is the opposite.
+	
+
+Using XmlSerializer
+	Information:
+	- The XmlSerializer was created with the idea of Simple Object Access Protocol (SOAP) messaging in mind (that's XML).
+	- By default, each member is serialized as an XmlElement. By using the following attributes, you can specify it per member:
+		* XmlIgnore
+		* XmlAttribute("Insert name here")
+		* XmlElement("Insert name here")
+		* XmlArray("Insert name here")
+		* XmlArrayItem("Insert name here")
+	
+	Code:
+	- [Serializable]
+		Apply this attribute to mark the class serializable.
+	- XmlSerializer serializer = new XmlSerializer(typeof(Person));
+		Create a serializer object that can serialize and deserialize a Person object.
+	- XmlSerializer serializer = new XmlSerializer(typeof(Person), new Type[] { typeof(VIPOrder });
+		Create a serializer object containing inheritance.
+		
+		
+Using binary serialization
+	Information:
+	- Binary serialization is smaller in size than XmlSerializer and you can serialize things like pictures.
+	- Three important points when serializing with binary:
+		* Private fields are serialized by default.
+		* No constructors are executed during serialization.
+		* Binary serialization will throw errors when it can't find a specific field.
+	- Using the following attributes on methods inside the serializable object, you can hook into the process:
+		* OnDeserializedAttribute
+		* OnDeserializingAttribute
+		* OnSerializedAttribute
+		* OnSerializingAttribute
+	- By implementing ISerializable, you can specify which values can be serialized:
+		* GetObjectData(SerializationInfo info, StreamingContext context) { ... } gets called when serializing.
+		* This method should be marked with [System.Security.Permissions.SecurityPermission(SecurityAction.Deman, SerializationFormatter = true)] to allow it serializing.
+		* Creating a protected constructor which takes an SerializationInfo and StreamingContext that gets called during deserialization.
+	
+	Code:
+	- [Serializable] (using the System.Runtime.Serialization and the System.Runtime.Serialization.Formatters.Binary namespaces)
+		Apply this attribute to mark the class binary serializable.
+	- IFormatter formatter = new BinaryFormatter();
+		Create a binary formatter object.
+	- [NonSerialized]
+		Stop a property from serializing.
+	
+		
+Using DataContract
+	Information:
+	- The Data Contract Serializer is used by WCF to serialize your objects to XML or JSON.
+	- With DataContract, you can also use OnDeserializedAttribute, OnDeserializingAttribute, etc.
+	- You need to specifiy a Stream object that has the input or output when serializing or deserializing an object.
+	
+	Code:
+	- [DataContract]
+		Attribute to mark your class for serialization.
+	- [DataMember]
+		Attribute to mark your property for serialization.
+	- DataContractSerializer ser = new DataContractSerializer(typeof(PersonDataContract));
+		Instantiate the DataContractSerializer object.
+	- ser.WriteObject(stream, p);
+		Write an object into the filestream
+		
+		
+Using JSON serializer
+	Information:
+	- Normally this is done automatically, but if you want to do it manually, you can use the DataContractJsonSerializer.
+	- It's easier to use Newtonsoft, but yeah.
+	
+	Code:
+	- [DataContract]
+		Attribute to mark your class for serialization.
+	- DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Person));
+		Instantiate the DataContractJsonSerializer object.
+
+		
+		
+		
+		
+		
+4.5 Store data in and retrieve data from collections
+==============================================================================================================================
+		
+Using arrays
+	Information:
+	- Arrays are fixed size.
+	- Because they implement IEnumerable, you can use it in a foreach loop.
+	
+	Code:
+	- string[,] array2D = new string[3,2] ( ( "one", "two" }, { "three", "four" }};
+		Two-dimensional array.
+	- int[][] jaggedArray = { new int[] {1,3,5,7,9}, new int[] {0,2,4,6,8} };
+		Jagged array.
+		
+
+Understanding generic versus nongeneric
+	Information:
+	- If you use a value type as the type parameter for a generic collection, you need to make sure that you eliminate all scenarios in which boxing could occur.
+	- For example, if your value type does not implement IEquatable<T>, your object needs boxing to call Object.Equals(Object) for checking equality.
+	
+
+Using List
+	Information:
+	- Lists
+		
+
+
+Using Dictionary
+	Information:
+	- Because Dictionary makes use of a hash table, it makes retrieving a value very fast.
+	- The key shouldn't be changed and it can't be null.
+		
+		
+Using sets
+	Information:
+	- A hashset can't have duplicates.
+	
+
+Using queues and stacks
+	Information:
+	- Queue (FIFO) has three important methods:
+		* Enqueue
+		* Dequeue
+		* Peek
+	- Stack (FILO) has three important methods:
+		* Push
+		* Pop
+		* Peek
+
+
+Choosing a collection:
+-
+
+
+Creating a custom collection
+	Information:
+	- As long as you implement IEnumerable or IEnumerable<T> you can create collections.
+	- You can also inherit from List<T> or something like that to have some methods already for you available.
+		
+		
+		
 		
 		
 		
