@@ -1,0 +1,408 @@
+2.1 Create types
+==============================================================================================================================
+
+Create types
+	Information:
+	- There are three different type categories:
+		* Value types. Value is normally stored on the stack. 
+		* Reference types. Value is stored on the heap and the address of this value is stored on the stack. Basically this means that when you ask for the value, it has to look on the 
+		* Pointer types. The unsafe keyword enables the use of pointers, but this is rarely used. 
+	- For more information about this, look at the following link: http://www.albahari.com/valuevsreftypes.aspx
+	- Enums (enumerations) can have a special Flags attribute. This way you can set multiple combinations of values.
+	- Set a field to read-only so that the value can only be set during the construction of the object.
+	- Set a field to constant so that the value will be set at compile time.
+	- WHen you want to store data that's not specific for an instance, you can make it static. 
+	
+	Code:
+	- [Flags] enum Days { None = 0x0, Sunday = 0x1, Monday = 0x2 }
+		Set flags in an emum.
+	- Days readingDays = Days.Monday | Days.Saturday
+		Using multiple combination of enum values.
+
+
+Giving your types some body
+	Information:
+	- A function implies code that returns a value and doesn't modify anything in the system.
+	- A method implies code that doesn't return data but enables data modification.
+
+
+Desiging classes
+	Information:
+	- All principles come down to two characteristics: High cohesion and low coupling. Basically this means that code shouldn't depend on other code when it's not absolutely needed.
+	- Learn SOLID.
+		* Single responsibility principle
+		* Open/closed principle
+		* Liskov subsitution principle
+		* Interface segregation principle
+		* Dependency inversion principle
+
+
+Using generic types
+	Information:
+	- One functionality for generics are Nullables. 
+	- It wouldn't make sense to use a reference type for a nullable class because they are by default null. We have constraints to limit this.
+		
+	Code:	
+	- where T : struct
+		The type argument must be a value type (only Nullable is not allowed)
+	- where T : class
+		The type argument must be a reference type: for example, a classs, interface, delegate or array
+	- where T : new()
+		The type must have a public default constructor
+	- where T : <base class name>
+		The type argument must be or derive from the specified base class
+	- where T : <interface name>
+		The type argument must be or implemented the specified interface. Multiple interface constraints can be specified. The constraining interface can also be generic.
+	- where T : U
+		The type argument supplied fo T must derive from the argument supplied for U
+
+
+Extending existing types
+	Information:
+	- Extension methods need to be declared in a nongeneric, non-nested, static class.
+	- You can extend an interface with extension methods.
+	- When using virtual on a method, you can override it when when you implement that class.
+	- Using the sealed keyword, you can't derive other classes from it.
+
+
+
+
+
+2.2 Consume types
+==============================================================================================================================
+
+Boxing and unboxing
+	Information:
+	- Boxing is the process of taking a value type, putting it inside a new object on the heap, and storing a reference to it on the stack. See the following picture: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/media/boxing-and-unboxing/boxing-operation-i-o-variables.gif
+	- Unboxing takes the item from the heap and returns a value type that contains the value from the heap. See the following picture: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/media/boxing-and-unboxing/unboxing-conversion-operation.gif
+	- If you execute an invalid unbox operation, the runtime will throw an InvalidCastException.
+	- Boxing happens for example when you call GetType, because this can only be called on a object (and boxing does just that).
+	
+	Code:
+	- int i = 42; object o = i;
+		Box an integer to an object.
+	- int x = (int)o;
+		Unbox an object to an integer.
+
+
+Converting between different types
+	Information:
+	- There are a few type conversions
+		* Implicit conversions. Compiler knows it's a safe conversion. It all goes well. 
+		* Explicit conversions. Compiler knows it's not a safe conversion. You have to cast it explicitly. 
+		* User-defined conversions
+		* Conversion with a helper class
+	- Implement the IFormattable interface when you want to use the Convert helper method.
+	
+	- Using the 'is' and 'as' keywords, you can check whether a type can be converted to another type. 
+	- Use 'as' if you want to use the value later, otherwise use 'is'.
+
+	Code:
+	- int i = 42; double d = i;
+		Implicit conversion between an integer to a double (value types).
+	- HttpClient client = new HttpClient(); object o = client; IDisposable d = client;
+		Implicit conversion between an object and it's base types (reference types).
+	- double x = 1234.7; int a; a = (int)x;
+		Explicitly casting a double to an integer (value types).
+	- Object stream = new MemoryStream(); MemoryStream memoryStream = (MemoryStream)stream;
+		Explicitly casting a MemoryStream object to a memoryStream (reference types).
+	-  public static implicit operator decimal(Money money) { return money.Amount; }
+		User-defined implicit function.
+	- public static explicit operator int(Money money) { return (int)money.Amount; }
+		User-defined explicit function.
+	- Convert.ToInt32("42");
+		Helper class to convert a string to an integer.
+	- int.Parse("42");
+		Integer function to convert a string to an integer.
+		
+	- if (connection is SqlConnection) { }
+		Returns true if connection the conversion is allowed.
+	- MemoryStream memoryStream = stream as MemoryStream;
+		If possible, stream is converted in a MemoryStream. Otherwise it will be null.
+
+
+Using dynamic types
+	Information:
+	- The dynamic keyword doesn't generate compile time errors, but can certainly generate run-time errors :D
+	- When inheriting from DynamicObject, you can create truly dynamic objects with for example methods.
+	- When inheriting from ExpandoObject, you can only get and set properties on a type (like the mvc view bag).
+	
+
+
+
+
+2.3 Enforce encapsulation
+==============================================================================================================================
+	
+Using access modifiers
+	Information:
+	- You have multiple access modifiers:
+		* public. None; restricted access.
+		* internal. Limited to the current assembly.
+		* protected. Limited to the containting class and derived classes.
+		* protected internal. Limited to the current assembly or derived types.
+		* private. Sneaky sneaky.
+	- Enums and interfaces can only be public.
+	- Classes and structs are initially private.
+	- Structs can only be public, internal, private.
+	
+	Code:
+	- [assembly:InternalVisibleTo("Friend1a")]
+		When using the attribute "Friend1a" on a different assembly, you can make the internal method visible for that assembly. Usefull for testing.
+
+
+Using properties
+	Code:
+	- public int Value { get; set; }
+		This is an auto-implemented property. The compiler makes this into a property with a private, anonymous backing field.
+
+
+Using explicit interface implementations
+	Information:
+	- You can implement an interface explicitly. This means that implement the interface, but the create a class, you can't access it.
+	- Two reasons why to use it: 
+		* Hiding the function of the class to outside users.
+		* When two interfaces have the same method, you can explicitly specify the interface per method. 
+		
+	Code:
+	- class Implementation : ICustomInterface { void ICustumInterface.MyMethod() { } }
+		Explicitly implement the ICustomInterface. 
+
+
+
+
+
+2.4 Create and implement a class hierarchy
+==============================================================================================================================
+	
+Designing and implementing interfaces
+	Information:
+	- An Interface contains the public signature of methods, properties, events, and indexers.
+	- You can define a property with only a get accessor while the implementing type also has a set accessor.
+	- Because interfaces don't have implementations, you can't use them directly.
+	- Using generic as parameters so you can create generic code.
+	- There is no multiple inhertinace in c#
+
+
+
+Creating and using base classes
+	Information:
+	- you can use the new keyword to explicitly hide the member of a base class.
+	- Declare a class abstract if you don't want it to be instantiated. Logically, you can't create a constructor in this class.
+	- Abstract classes can function as an interface that has a body.
+
+	Code:
+	- base.Execute();
+	Excecute the base method that you are overriding.
+	
+
+
+Implementing standard .NET Framework interfaces
+	Information:
+	- IComparable. The CompareTo method returns an int value that shows how two elements are related. Used when you have an array you want to sort.
+		* > 0. Object staat achter het vergeleken object.
+		* = 0. Object is gelijk aan vergeleken object.
+		* < 0. Object staat voor het vergeleken object.
+	- IEnumerable. Exposes a GetEnumerator method that returns an enumerator. Can be used to write custom loops.
+	- Yield is a special keyword that can be used only in the context of iterators.
+	- IDisposable has the Dispose() method. This is used to free any unmanaged resource.
+	- IUnknown. Yes.
+	
+	Code:
+	- Return this."object".CompareTo(object")
+		Call the base method of IComparable.
+	- using (List<int>.Enumerator enumerator = numbers.GetEnumerator())
+		Foreach without syntactic sugar.
+
+
+
+
+
+
+
+2.5 CFind, execute, and create types at runtime by using reflection
+==============================================================================================================================
+
+Creating and using attributes:
+	Information:
+	- Define an attribute above a class/method with square brackets ([]).
+	- Attributes can have parameters.
+	- You can inherit from attributes to create derived attributes
+	
+	Code:
+	- [assembly: AssemblyTitle("hey")]
+		Attributes that specify information about the assembly
+	- if (Attribute.IsDefined(typeof(*class/method name*), typeof(*attribute name*))) { }
+		Check if the attribute has been applied.
+	- [Conditional("CONDITION1"), Conditional("CONDITION2")]
+		Built conditional attributes.
+	- ConditionalAttribute conditionalAttribute = (ConditionalAttribute) Attribute.GetCustomAttribute(typeof(ConditionalClass), typeof(ConditionalAttribute));
+		Find conditional attributes
+	- [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+		Specify where an attribute can be placed.
+	- [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+		Can specify multiple instances of this attribute on a class
+
+
+Using reflection
+	Information:
+	- When using Assembly.Load("assemblyname"), you can only load it in once. If you want to reload the assembly, you should reload the application.
+	- By using binding flags, you can get specify which information you want to have.
+	
+	Code:
+	- FieldInfo[] fields = obj.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+		Get the non public instance members of the object. More binding fields can be found here: https://docs.microsoft.com/en-us/dotnet/standard/attributes/writing-custom-attributes
+		
+
+Using CodeDom and lambda expressions to generate code
+	Information:
+	- You can use CodeDOM to create an object graph that can be converted to a source file or to a binary assembly that can be executed.
+	- Expression trees can also be used to create code.
+	
+	Code:
+	- CodeCompileUnit compileUnit = new CodeCompileUnit();
+		Create a compilation unit that describes how to autogenerate a class. More info on page 146 of the csharp book.
+	- CSharpCodeProvider provider = new CSharpCodeProvider();
+		Create a source file from the compilation unit. More info on page 146 of the csharp book.
+	- BlockExpression blockExpr = Expression.Block(Expression.Call(null, typeof(Console).GetMethod("Write", new Type[] { typeof(String) }), Expression.Constant("Hello World!");
+		Generate a "Hello world" file.
+		
+
+
+
+
+
+2.6 Manage the object life cycle
+==============================================================================================================================
+
+Understanding garbage collection
+	Information:
+	- The C# stack keeps track of what's executing in your code. This is being cleaned at the end of a method.
+	- The C# heap keeps track of your objects. This is managed by the garbage collector.
+	- The garbage collector is smart and it will only clean if the memory on the heap is low. 
+	- In short, the garbage collector works as follows:
+		* It tries to find a living item on the heap.
+		* Living items are items that are still being referenced by a root item (static field, method parameter, a local variable or a CPU register).
+		* All the living items are grouped together and the other items are disposed.
+		* While doing this, all threads are frozen. 
+		* The living items are promoted to group 1. They will not be cleaned until the group 0 zero are not providing enough space when cleaned up.
+
+
+Managing unmanaged resources
+	Information:
+	- For unmanaged resources, you can create finalizers. They are created by placing a (~) before the class name().
+	- Finalizers are only called when the garbage collection kicks in.
+	- Finalizers increase the life of an object because the .NET framework keeps a reference to the object in a special finalization queue (run on an additional thread). 
+	- You shouldn't depend on the garbage collector to run a finalizer at some point in time. Instead you should do it yourself with the IDisposable interface.
+	- The using statement is some semantic sugar for a try, finally clause. This way, the Dispose is always called :D
+	- You can make a weak reference. This doesn't hold a real reference to an item on the heap, so it can't be garbage collected. 
+
+	Code:
+	- GC.Collect();
+		Trigger the garbage collection.
+	- Very good example of disposing a stream is found on Page 154
+		Check this sometimes.
+	- data = new WeakReference(LoadLargeList());
+		Creating a weak reference.
+		
+		
+		
+
+
+2.7 Manipulate strings
+==============================================================================================================================
+
+Using strings in the .NET Framework
+	Information:
+	- The string object contains an array of Char objects internally.
+	- A string is immutable. This has his advantages like thread safety, but also his disadvantage like creating a different string object each time you modify it. 
+	- When you identical strings are created in one compilation unit, the CLR will only create one string object. This is called string intering.
+	
+
+Manipulating strings
+	Information:
+	- The StringBuilder class enables you to change the value of individual characters inside a string.
+	- When using an arbitrary number of strings, it's better to use stringbuilder. If it's a fixed series of strings, than StringBuilder is't better.
+	- StringWriter and StringBuilder adapt from StringBuilder (and use this internally). This way they can be used on places where a TextWriter or a TextReader is expected.
+	
+	Code:
+	- StringBuilder sb = new StringBuilder(string.Empty);
+		Creating a StringBuilder object.
+	- using (XmlWriter writer = XmlWriter.Create(new StringWriter()) { }
+		Using an instance of a StringWriter
+	
+	
+Searching for strings
+	Information:
+	- There are multiple ways to search into strings: IndexOf, LastIndexOf, StartsWith, EndsWith, SubString and regular expressions.
+	
+	Code:
+	- int indexOfp = value.IndexOf('p');
+		Finds the first occurrence of a character or substring. Returns -1 when nothing found.
+	- if (value.StartsWith("<")) { }
+		Checks if a string starts with a character or substring.
+	- if (value.EndsWith(">")) { }
+		Checks if a string ends with a character or substring.
+	- string subString = value.Substring(3, 6);
+		Retrieve a piece of a string based on the first- and last index.
+	- string pattern = "(Mr\\.? |Mrs\\.? |Miss |Ms\\.?)";
+		Create a regex pattern (just a string).
+	- Console.WriteLine(Regex.Replace(name, pattern, String.Empty));
+		Replace a matched string with Regex.
+		
+
+Enumerating strings
+	Information:
+	- Because the string object implements IEnumerable and IEnumerable<Char>, you can Enumerate a string.
+	
+	Code:
+	- foreach (char c in "test")
+		Enumarate on chars.
+	- foreach (string word in "My sentence separated by spaces".Split(' ')
+		Enumarate on the words of the sentence.
+	
+	
+Formatting strings
+	Information:
+	- Override ToString() to represent a better string :D.
+	- Use ToString() formatting for better output:
+		* DateTime date = new DateTime(2013, 4, 22);
+		* CultureInfo provider = new CultureInfo("en-US");
+		* date.ToString("d", provider) // Displays 4/22/2013
+		* date.ToString("D", provider) // Displays Monday, April 22, 2013
+		* date.ToString("M", provider) // Displays April 22
+	
+	Code:
+	- string.Format("a: {0}, b: {1}", a, b);
+		Creating a composite string formatting.
+		
+
+		
+		
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

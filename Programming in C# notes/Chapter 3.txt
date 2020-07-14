@@ -1,0 +1,420 @@
+3.1 Validate application input
+==============================================================================================================================
+
+Why validating application input is important
+	Information:
+	- Evil hackers D:
+
+
+
+Managing data integrity
+	Information:
+	- There are four types of data integrity:
+		* Entity integrity: Each entity should be uniquely identifable. This is mostly done with a primary key.
+		* Domain integrity: Refers to the validity of the data that an entity contains.
+		* Referential integrity: Relationship between entities.
+		* User-defined integrity: Includes business rules that need to be enforced.
+	- User-defined integrity is the only one that can't be fully enforced by the Entity Framework (but you can use triggers in the database if you want to).
+	- You can use transactions to group a set of related operations on a database. It ensures that those operations are seen as one distinct action. If one fails, all fail.
+	- If you run into problems when users work concurrently, consider the transactions and catch exceptions on conflicting data.
+	
+	Code:
+	- [Required, MaxLength(20)]
+		Place some business logic on your properties.
+	- Validator.TryValidateObject(entity, context, results);
+		Make a custom validator.
+
+	
+Using Parse, TryParse and Convert
+	Information:
+	- Parsing dateTime is still not so funny. C# contains multiple Parse() overloads that can handle this.
+	- You can you use the Convert class to convert between base types. The supported base types are Boolean, Char, SByte, Byte, Int16, UInt16, UInt32, UInt64, Single, Double, Decimal, DateTime and String.
+	
+	Code:
+	- bool b = bool.Parse(value);
+		Parse a value (most likely a string) to a bool. Can throw exceptions if value is not correct.
+	- bool success = int.TryParse(value, out result);
+		Try parsing a value (most likely a string) to a bool. Will return true if succeeds or false when not (not throwing exceptions).
+	- decimal d = decimal.Parse(value, NumberStyles.Currency, new CultureInfo("Nl");
+		Parse a string that contains a currency symbol and a decimal separator.
+	- int i = Convert.ToInt32(null);
+		This doesn't throw exceptions but instead returns the default value (0).
+	
+	
+Using Regular expressions
+	Information:
+	- Can simplify code, but you have to write 'correct' regex.
+	
+	
+Validating JSON and XML
+	Information:
+	- Use an XSD (XML Schema Defintion) to validate XML. To view the belonging code, visit page 191 in the programming handbook.
+	
+	Code:
+	- var result = serializer.Deserialize<Dictionary<string, object>>(json);
+		Deserialize a JSON string with the JavaScriptSerializer object.
+	- (Command line commando) Xsd.exe person.xml
+		Create an XSD from an xml.
+	
+	
+	
+	
+	
+	
+3.2 Perform symmetric and asymmetric encryption
+==============================================================================================================================
+	
+Using symmetric and asymmetric encryption
+	Information:
+	- Encrypting is taking plain text and running an algorithm over it. The result is often called ciphertext. Decryption is the opposite of encryption.
+	- Because the algorithm is public, the key is the thing that should be kept private.
+	- Symmetric is using one key to decrypt (a private key) the ciphertext and asymmetric uses two (a public and a private key).
+	- Symmetric is faster and well-suited for larger data sets and asymmetric can be used for the opposite.
+	- Using an initialization vector (IV) will make sure that two of the same text messages will not generate the same ciphertext.
+	
+	
+Working with encryption in the .NET Framework
+	Information:
+	- Advanced Encryption Standard (AES) (under System.Security.Cryptography) is one of the symmetric algorithm and used by the U.S. government.
+	- Using the RSACryptoServiceProvider and DSACryptoServiceProvider, you can provide asymmetric encryption.
+	- Using a key container to store a private key securely. 
+	
+	Code:
+	- string keyXML = rsa.ToXmlString(bool);
+		Set the bool to false to export the public key to XML and set it to true if you also want to export the private part of your key.
+	- RSA.Encrypt(dataToEncrypt, false);
+		Encrypt the data.
+	- RSA.Decrypt(encryptedData, false);
+		Decrypt the data.
+	- CspParameters csp = new CspParamaters() { KeyContainerName = containerName }; 
+		Specify the key container name.
+	- using (RSACryptoServiceProvider RSA = new RSACryptoServiceProvider(csp))
+		Load in the key container.
+		
+
+Using hashing
+	Information:	
+	- Hashing is the process of taking a large set of data and mapping it to a smaller data set of fixed lenght.
+	- Hashing is used by Hashtable and Dictionary. 
+	- Hashing is an important technique to validate the authenticity of a message.
+	- SHA256Managed is a hashing algorithm that can be used.
+	
+	Code:
+	- int bucket = item.GetHashCode();
+		Get the hashcode of an object. MOSTLY USED FOR OBJECT LOOKUP.
+	- byte[] hashA = sha256.ComputeHash(byteConverter.GetBytes(data));
+		Compute the hashcode of an object. MOSTLY USED FOR ENCRYPTION.
+	
+
+Managing and creating certificates
+	Information:
+	- A digital certificate is part of a Public Key Infrastructure (PKI). A PKI is a system of digital certificates, certificate authorities, and other registration authorities that authenticate and verfiy the validity of each involved party.
+	- A Certificate Authority (CA) is a third-party issuer of certificates that is considered trustworthy by all parties. The CA issues certificates or certs, that contain a public key, a subject to which the certificate is issued and the details of the CA.
+	- On development you can generate X.509 certificates for testing purposes. 
+	- The generated certificate must first be installed on the computer, where it is being stored in a certificate store.
+	- Certificates can also be used to encrypt, but most of the time contain metadata which can be used to identifiy the user.
+	
+	Code:
+	- makecert -n "CN=BrianVanYperen" -sr currentuser -ss testCertStor --sk test.cer
+		Creates a X.509 certificate for testing purposes. Arguments can be found on https://redmondmag.com/articles/2015/01/16/~/media/ECG/redmondmag/Images/2015/01/MakeCert_Fig3.ashx
+	- Code examples can be found on page 203 of the programming book
+		It's to much to fit into this chapter.
+
+	
+Using code access permissions
+	Microsoft warning: https://docs.microsoft.com/en-us/dotnet/framework/misc/code-access-security-basics
+
+	Information:
+	- Code access security (CAS) is a mechanism to protect your computer from malicious code.
+	- Applications that are installed on your computer or on your local intranet have full trust. 
+	- Otherwise, CAS will restrict the following actions:
+		* The right to access a protected resource, such as a file.
+		* The right to perform a protected operation, such as accessing unmanaged code.
+	- Declarative CAS specification means that you use attributes to apply security information to your code.
+	- Imperative CAS specification means that you ask explicitly for permission.
+	
+	Code:
+	- [FileIOPermission(SecurityAction.Demand, AllLocalFiles = FileIOPermissionAccess.Read)]
+		You can read files on the Declarative way.
+	- FileIOPermission f = new FileIOPermission(PermissionState.None);
+		Declare CAS.
+	- f.AllLocalFiles = FileIOPermissionAccess.Read;
+		Use CAS on the Imperative way.
+	
+	
+Securing string data
+	Information:
+	- Strings are not really secure because you can retrieve them in memory.
+	- The idea behind SecureString is:
+		* That it's encrypted.
+		* Pinned to a specific memory location so the GB doesn't move it around.
+		* No multiple copies that can occur.
+		* Implements IDisposable so it will be removed from memory after you are done.
+	- SecureString can only deal with one character at the time.
+	- You get the value by using the Marshal class that is located in the System.Runtime.InteropServices.
+	- Use the correct clear memory method! See also the table on page 208 of the programming handbook.
+	
+	Code:
+	- using (SecureString ss = new SecureString()) { }
+		Initialize a SecureString object.
+	
+	
+	
+	
+	
+	
+	
+3.3 Manage assemblies
+==============================================================================================================================
+
+What is an assembly?
+	Information:
+	- While an assembly still has an .dll or .exe extension compared to the Component Object Model (COM) times, it's different:
+		* Assemblies are completely self-contained; they don't need to write any information to the registry or some other location. Assemblies contain all the information they need to run. This is called the assembly's manifest.
+		* They are language -neutral.
+		* In contrast to an old DLL, an assembly can be versioned.
+		* You can deploy an application by simply copying the DLL to a new machine.
+		
+		
+Signing assemblies using a strong name
+	Information:
+	- The CLR supports two different types of assemblies:
+		* Strong-named assemblies: Signed assembly with a public/private key
+		* Regular assemblies: Standard generated assembly by Visual Studio
+	- The strong-named assembly has multiple advantages:
+		* Strong names guarantee uniqueness.
+		* Strong names protect your versioning lineage.
+		* Strong names provide a strong integrity check.
+	- Basically a strong-named assembly ensures a user that they can trust the origin and content of an assembly.
+	- Strong-named assemblies can only reference strong-named assemblies.
+	- When referencing another assembly, you store only the public key token, which is preserves space in the assembly manifest.
+	- Delayed or partial signing is when you sign the assembly with your public key and delay signing it with your private key until deployment.
+	
+	Code:
+	- sn -k myKey.snk
+		Generate a new key pair file.
+	
+	
+Putting an assembly in the GAC
+	.NET Core: Core apps are meant to be isolated from each other, so you can patch one without fear of affecting the others. You ship all the packages you need with the app.
+
+	Information:
+	- Private assemblies are assemblies that are local to an application.
+	- You can use the Global Assembly Cache (GAC) to deploy an assembly. 
+	- A few reasons to do it:
+		* When an assembly is shared by multiple applications
+		* Improved security (because of administrator mode)
+		* Deploying multiple versions of the same assembly.
+	- It will automatically reference the GAC when used.
+	
+	Code:
+	- gacutil -l 
+		Get all the assemblies in the GAC.
+	- gacutil -i [assembly name]
+		Install the assembly in the GAC.
+	- gacutil -u [assembly name]
+		Remove the assembly from the GAC.
+	
+
+Versioning assemblies
+	Information:
+	- Versioning is as follows: [Major Version].[Minor Version].[Build Number].[Revision]:
+		* Major Version: new features or breaking changes.
+		* Minor Version: small changes to existing features.
+		* Build Number: Automatically incremented for each build by the build server.
+		* Revision: Used for patches to the production environment.
+	- If you create a new project in Visual Studio, it automatically adds an AssemblyInfo.cs file to the properties of your project.
+	- Using side-by-side hosting, you can host multiple assemblies on one computer.
+	- Using the publisher policy file, you can specifiy that if the CLR looks for a specify assembly, it should bind to the new version.
+	- Using the codebase element in the configuration file, you can specify strongly named assemblies from outside of your project.
+	
+	Code:
+	- [assembly: AssemblyVersion("1.0.0.0")]
+		Version number that should be incremented manually when deploying a specific version to production.
+	- [assembly: AssemblyFileVersion("1.0.0.0")]
+		Version number that should be incremented with each build.
+	- <bindingRedirect oldVersion = "1.0.0.0" newVersion="2.0.0.0" />
+		Binding redirect in the publisher policy file.
+	- <assemblybinding xmlns="urn:schemas-microsoft-com:asm.v1> <probing privatePath="MyLibraries"/> </assemblyBinding>
+		Specify an extra location where the CLR should look in the configuration file of the application.
+	- <assemblybinding xmlns="urn:schemas-microsoft-com:asm.v1> <dependentAssembly version="1.0.0.0" href="http://www.brivy.nl/hoi.dll"/> </assemblyBinding>
+		Specify a dependency outside of the project.
+	
+
+Creating a WinMD assembly
+		Information:
+		- Microsoft created a new file type named Windows Metadata (WinMD). This is done for the correct mapping between the native components and the other languages like javascript and C#.
+		- These files are for example used for IntelliSense for Visual Studio. 
+		- There are a few rules you need to follow so it can be compiled into a .winmd file (they can be found on page 218). 
+		- The primary use of this is when you are building a javascript Windows Store app but want to run a C# application behind it.
+	
+	
+	
+	
+
+
+
+3.4 Debug an application
+==============================================================================================================================
+
+Build configurations
+	Information:
+	- Release mode fully optimizes the code in comparison with debug mode. Also debug mode can put out more information.
+	- In debug configuration, the compiler inserts extra no-operation (NOP) instructions and branch instructions. 
+
+
+
+Creating and managing compiler directives
+	Information:
+	- A preprocessor is a program that applies some changes before handing it off to the compiler.
+	- While c# doesn't have a preprocessor, you can use preprocessor compiler directives.
+	
+	Code:
+	- #if DEBUG ... #endif
+		Checking if the DEBUG build configuration is used. Try this yourself bij using /debug in the command prompt.
+	- #define MySymbol
+		Creating your own compiler directive symbol.
+	- #undef
+		Can be used to debug a piece of code that is only in the release build.
+	- #warning
+		Report an warning to the compiler.
+	- #error
+		Report an error to the compiler.
+	- #line ...
+		Can be used to change the line number
+	- #pragma warning disable
+		Will disable warnings the compiler throws at you. If you specify a specific error code, you will only disable that one.
+	- [Conditonal("DEBUG")]
+		Attribute that will mark code that will only run in debug mode
+	- [DebuggerDisplay("Name = {FirstName} {LastName}]
+		Apply some better debug information to an object
+		
+
+Managing program database files and symbols
+	Information:
+	- The program database file (PDB) is an extra data source that annotates your application's code with additional information that can be usefull during debugging.
+	- It contains two pieces of information:
+		* Source file names and their lines.
+		* Local variable names.
+	- Microsoft published his own PDB files to its Symbol Server, which is a way to expose the PDB files of applications to the debugger so it can easily find the files.
+	- Set up your own Symbol Server so you can use PDB's with ease.
+	- The PDB contains public and private data. You can chose to remove the private data when for example publishing.
+	
+	
+	
+	
+	
+3.5 Implement diagnostics in an application
+==============================================================================================================================
+	
+Logging and tracing
+	Information:
+	- Trace logging also works on a release build.
+	- The following options are available:
+		* Critial
+		* Error
+		* Warning
+		* Information
+		* Verbose
+	- You can use other listeners for other purposes:
+		* ConsoleTraceListener 			-> Standard one (default one when no selected)
+		* DelimitedListTraceListener 	-> TextWriter
+		* EventLogTraceListener			-> EventLog
+		* EventSchemaTraceListener		-> XML-encoded, schema-compliant log file
+		* TextWriterTraceListener		-> TextWriter
+		* XmlWriterTraceList			-> XML-encoded data to a TextWriter or stream
+	- Can setup the listeners in code or in a configuration file.
+	- Within the configuration file you can specify switches (log or not log a message) and filters (log or not log an event)
+	- It's possible to subscribe to the windows event log.
+	
+	Code:
+	- Debug.WriteLine("Hey");
+		Write something to the output window.
+	- TraceSource traceSource = new TraceSource("myTraceSource", SourceLevels.All);
+		Write something to the output window. If on release version, make sure that you configured a listener.
+	- TextWriterTraceListener textListener = new TextWriterTraceListener(outputfile);
+		Configure where to write the output file to.
+	
+	- TraceSource traceSource = new TraceSource("myTraceSource", SourceLevels.All);
+		Configure the traceSource.
+	- traceSource.Listeners.Add(textListener);
+		Add the listener to the tracesource.
+	
+	- EventLog.CreateEventSource("MySource", "MyNewLog");
+		Using the windows event log to log messages.
+	- EventLog log = new EventLog("MyNewLog");
+		Setup a eventlog object to read from the windows event log.
+	- EventLogEntry last = log.Entries[log.Entries.Count - 1];
+		Read the last event log.
+	- applicationLog.EntryWritten += (sender, e) => { Console.WriteLine(e.Entry.Message); };
+		Subscribe to the windows event log.
+		
+
+Profiling your application
+	Information:
+	- Profiling is the process of determining how your application uses certain resources.
+	- The visual studio 2012 version has multiple options:
+		* CPU sampling				-> lightweight													-> good for initial search to performance problems
+		* Instrumentation 			-> injects code to capture timing information 					-> good for (I/O) and examine larger problems
+		* .Net memory allocation	-> interrupts program when allocates new object or GB is called	-> good for memory uses
+		* Resource contention data 	-> used in multithreaded applications							-> good for finding why methods have to wait for each other befor they can access a shared resource
+	- To run the diagnostic tools, your application must run under full trust or should be administrator or part of the performance monitor group.
+	- Diagnostic tools also use the IDisposable.
+	- It's possible to create your own diagnostic tools to monitor your application.
+	
+	Code:
+	- Stopwatch sw = new Stopwatch();
+		Create a stopwatch object.
+	- using (PerformanceCounter pc = new PerformanceCounter("Memory", "Available Bytes") { ... }
+		Read the performance counter of the pc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
