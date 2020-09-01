@@ -53,7 +53,7 @@ Validating JSON and XML
 	Code:
 	- var result = serializer.Deserialize<Dictionary<string, object>>(json);
 		Deserialize a JSON string with the JavaScriptSerializer object.
-	- (Command line commando) Xsd.exe person.xml
+	- (Commandline commando) Xsd.exe person.xml
 		Create an XSD from an xml.
 	
 	
@@ -61,7 +61,7 @@ Validating JSON and XML
 	
 	
 	
-3.2 Perform symmetric and asymmetric encryption
+3.2 Perform symmetric and asymmetric encryption (for exam, please check which classes are used for encryption ((a)symmetric) and hashing
 ==============================================================================================================================
 	
 Using symmetric and asymmetric encryption
@@ -242,11 +242,11 @@ Versioning assemblies
 	
 
 Creating a WinMD assembly
-		Information:
-		- Microsoft created a new file type named Windows Metadata (WinMD). This is done for the correct mapping between the native components and the other languages like javascript and C#.
-		- These files are for example used for IntelliSense for Visual Studio. 
-		- There are a few rules you need to follow so it can be compiled into a .winmd file (they can be found on page 218). 
-		- The primary use of this is when you are building a javascript Windows Store app but want to run a C# application behind it.
+	Information:
+	- Microsoft created a new file type named Windows Metadata (WinMD). This is done for the correct mapping between the native components and the other languages like javascript and C#.
+	- These files are for example used for IntelliSense for Visual Studio. 
+	- There are a few rules you need to follow so it can be compiled into a .winmd file (they can be found on page 218). 
+	- The primary use of this is when you are building a javascript Windows Store app but want to run a C# application behind it.
 	
 	
 	

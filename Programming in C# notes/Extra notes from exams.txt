@@ -1,0 +1,221 @@
+Extra information
+==============================================================================================================================
+
+Information:
+	- (Explicitly typed) Strongly typed: explicitly saying what the type is => int i = 10;
+	- (Implicitly typed) Weakly typed: keeping it vague => var i = 10;
+	
+	- LinkedList: A list where the elements are linked with each other using pointers. It consists of nodes where each node contains a data field and a reference(link) to the next node in the list.
+	- SortedList: A collection of key-and-value pairs that are sorted by the keys and are accessible by key and index.
+	
+	- Difference between .Read() and .NextValue() https://stackoverflow.com/questions/27044485/difference-between-sqldatareader-read-and-sqldatareader-nextresult
+	- .GetValues(object[] values) => Populates an array of objects with the column values of the current row.
+	
+	- There is no RELEASE constant (only DEBUG)
+	
+	- Installing aan assembly into the global assembly cache. This place stores assemblies specifically designated to be shared by several applications on the computer.
+		* Windows installer
+		* Global Assembly Cache tool
+	
+	- While using the StreamReader class you can:
+		* ReadLine(Async): Read only the first line. Use "while (sr.Peek() >= 0) { sr.ReadLine(); }" to step through it.
+		* ReadToEnd(Async): Read the entire response.
+		
+	- Cryptographic objects:
+		* RSA (Rivest-Shamir-Adleman) = assymetric encryption algorithm
+		* AES (Advanced Encryption Standard)(also known as Rijndael) = symmetric encryption algorithm
+		* HMAC (hash-based message authenctication code) = hashing 
+		* DES (Data Encryption Standard) = symmetric encryption algorithm BUT AES IS BETTER BECAUSE OF THE SIZE OF THE ENCRYPTION KEY
+		* Triple DES = upgrade from DES, but can also be broken.
+		* DSA (Digital Signature Algorithm) = also a symmetric encryption algorithm
+		* ECDSA (Elliptic Curve Digital Signature Algorithm) = Variant of DSA so also used as a symmetric encryption algorithm
+		* RNGCryptoServiceProvider = Implements a cryptographic Random Number Generator (RNG) using the implementation provided by the cryptographic service provider (CSP)
+		* RC2 (Ron's Code) = Symmetric encryption that is broken so don't use it
+		
+	- Need to check Counter things of the diagnostic class
+	
+	- When using IValidatableObject, you can try multiple ways of validating properties
+		* var results = new List<ValidationResult>();
+		  Validator.TryValidateProperty(this.Prop1, new ValidationContext(this, null, null) { MemberName = "Prop1" }, results);
+			This will add a faulthy property to the results list.
+		* if (Id <= 0)
+		  yield return new ValidationResult("Dit is niet goed.", new[] { "Id" });
+			Return the objects one by one when incorrect.
+	
+	- Managed code is a code whose execution is managed by Common Language Runtime. It gets the managed code and compiles it into machine code.
+	- Unmanged code is:
+		* Applications that are not under the control of the CLR
+		* When using a pointer variable.
+	
+	- The standard "Object.Equals(obj1, obj2);" is nothing more than comparing stuff:
+		* Reference types:
+			+ Do you share the same address? 
+		* Value types:
+			+ if null then false
+			+ if different types then false
+			+ if blittable (like ints) then compare values
+			+ Uses reflection to call Equals and compare fields
+	- Always overwrite the Equals By using IEquatable<T> when using value types because reflection is slow. The interface provides a strongly typed Equals so no boxing is required.
+	- "this.Name.Equals(other.Name)" will throw exceptions when this.Name is null. Because of this you can better use "Object.Equals(this.Name, other.Name)"
+		
+	- IComparable is used for sorting orders		
+			
+	- By creating a new CodeTypeDeclaration();, the ct.IsClass is already set to true.
+			
+	- TraceListeners can't write to debug. So if a .config is configured with TraceListenerLog, you use Trace.WriteLine("data");
+			
+	- Important .exe's for the exam:
+		* al.exe (Assembly Linker): The Assembly Linker generates a file that has an assembly manifest from one or more files that are either modules or resource files. A module is an intermediate language (IL) file that does not have an assembly manifest.
+		* gacutil.exe (Global Assembly Cache Tool): The Global Assembly Cache tool allows you to view and manipulate the contents of the global assembly cache and download cache.
+		* ildasm.exe (IL Disassembler): The IL Disassembler is a companion tool to the IL Assembler (Ilasm.exe). Ildasm.exe takes a portable executable (PE) file that contains intermediate language (IL) code and creates a text file suitable as input to Ilasm.exe.
+		* resgen.exe (Resource File Generator): The Resource File Generator (Resgen.exe) converts text (.txt or .restext) files and XML-based resource format (.resx) files to common language runtime binary (.resources) files that can be embedded in a runtime binary executable or satellite assembly.
+		* sn.exe (Strong Name Tool): The Strong Name tool (Sn.exe) helps sign assemblies with strong names. Sn.exe provides options for key management, signature generation, and signature verification.
+		* csc.exe (C# compiler): Build applications for .NET.
+	
+	- Attributes that can help while working with assemblies:
+		* AssemblyDelaySignAttribute: When this attribute is used on an assembly, space is reserved for the signature which is later filled by a signing tool such as the Sn.exe utility.
+		* AssemblySignatureKeyAttribute: Starting with the .NET Framework 4.5, the AssemblySignatureKeyAttribute attribute allows the assembly metadata to continue to have the old public key token and binary large object (BLOB) so that existing assembly references continue to work. It also ensures that the mapping comes from an owner of the identity key.
+		* AssemblyKeyFileAttribute: Specifies the name of a file containing the key pair used to generate a strong name.
+		* AssemblyKeyNameAttribute: Specifies the name of a key container within the CSP containing the key pair used to generate a strong name.
+	- The AssemblyName object contains information about an assembly, which you can use to bind to that assembly. An assembly's identity consists of the following:
+		* Simple name.
+		* Version number.			=> AssemblyVersionAttribute
+		* Cryptographic key pair.
+		* Supported culture.		=> AssemblyCultureAttribute
+	- Strong names are basically the identity of a Assembly object
+	- BUT strong names don't verify the identity of the publisher. You can publish under Microsofts name for example.
+	- Delay signing is just reserving space for the key to be added later. In the mean time, a partial strong-name is included, just enough information for other assemblies to make a strong reference, but not enough to detect changes or modifications.
+	- Turn of assembly verification when working locally and using delay signing:
+		* sn -Vr myAssembly.dll 			=> Command to turn it off
+		* sn -R myAssembly.dll sgKey.snk	=> Command to sign the assembly
+	
+	- SqlTransaction has a constructor where you can specify the isolation level:
+		* RepeatableRead: Volatile data can be read but not modified during the transaction. New data can be added during the transaction.
+		* ReadCommitted: Volatile data cannot be read during the transaction, but can be modified.
+		* ReadUncommitted: Volatile data can be read and modified during the transaction.
+			
+	- Paging is as follows: var page = items.Skip(i).Take(j);
+	
+	- You can pass an anonymous object to a dynamic parameter
+	- You can use ExpandoObject as a dynamic object and add properties to it in runtime.
+		* dynamic sampleObject = new ExpandoObject();
+		  sampleObject.sampleEvent = null;
+			
+	- Because the exam is pretty old, you still need to know about WebClient and WebRequest. 
+		* WebClient is the higher-level abstraction built on top of HttpWebRequest to simplify tasks. 
+	- For example when you want to download something:
+		* var http = (HttpWebRequest)WebRequest.Create("http://example.com");
+		  var response = http.GetResponse();
+
+		  var stream = response.GetResponseStream();
+		  var sr = new StreamReader(stream);
+		  var content = sr.ReadToEnd();
+		  
+		* var client = new WebClient();
+		  var content = client.DownloadString("http://example.com");
+	- When using "client.UploadValuesTaskAsync(new Uri(url), nvc);", you can upload an encoded name/value collection
+
+	- Stream example:
+		* var ms = new MemoryStream();
+		  var binary = XmlDictionaryWriter.CreateBinaryWriter(ms);
+		  var ser = new DataContractSerializer(typeof(FullName));
+		  ser.WriteObject(binary, name);
+		  binary.Flush();
+		  return ms;
+			
+	- When using streams you can:
+		* Flush(): Clears all buffers for the current writer and causes any buffered data to be written to the underlying device.
+
+	- lock vs Monitor.Enter:
+		* lock is a shortcut for Monitor.Enter with try + finally and Monitor.Exit.
+		* Use lock but if you need Monitor.TryEnter, you will need Monitor.
+		* Monitor.TryEnter tries to get a lock on a object, but returns false if it can't.
+			
+	- Properties vs fields:
+		* Properties expose fields.
+		* Fields should (almost always) be kept private to a class and accessed via get and set properties.
+		* Properties provide a level of abstraction allowing you to change the fields while not affecting the external way they are accessed by the things that use your class.
+			
+	- <gcAllowVeryLargeObjects> in the configuration file makes it possible to create arrays of more than 2 gigabytes.
+			
+	- Read something from the database:
+		* DbDataAdapter: Represents a set of SQL commands and a database connection that are used to fill the DataSet and update the data source.
+		* OleDbDataReader: Provides a way of reading a forward-only stream of data rows from a data source. This class cannot be inherited.
+		* DbDataReader: Reads a forward-only stream of rows from a data source.
+
+	- A WeakReference allows garbage collection (assuming there are no other solid references elsewhere).
+	- WeakReference does not create a "countable" reference, thus you can keep a sort-of-reference to it, but still let it be eligible if your WeakReference is the only thing left looking at it. 
+	- How to create:
+		* static Dictionary<int, WeakReference> _data;
+		* _data.Add(i, new WeakReference(new Class(i * 2), false));
+
+	- AppDomain: Represents an application domain, which is an isolated environment where applications execute. This class cannot be inherited.
+	- Assembly.GetTypes() retrieves all types within that assembly
+			
+	- Using PerformanceCounter(), you can find the CPU and Memory usage (https://stackoverflow.com/questions/4679962/what-is-the-correct-performance-counter-to-get-cpu-and-memory-usage-of-a-process)
+			
+	- Using #define, you can set symbols for the #if directive (https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/preprocessor-directives/preprocessor-define)
+		* #define DEBUG
+		  #if (DEBUG)
+		  [Conditional("DEBUG")]
+	- Using #undef will make the #if directive result into false
+		* #undef DEBUG
+			
+	- You can't add/remove stuff from the source list when using a foreach on it :P
+			
+	- GC.Collect();
+		* Forces garbage collection
+	- GC.SuppressFinalize(object);
+		* Requests that the common language runtime not call the finalizer for the specified object.
+	- GC.WaitForPendingFinalizers();
+		* Suspends the current thread until the thread that is processing the queue of finalizers has emptied that queue.
+	- GC.KeepAlive(hr);
+		* Prevent garbage collector from collecting the object during the execution of the SetConsoleCtrlHandler method.
+	- GC.WaitForFullGCComplete();
+		* Returns the status of a registered notification for determining whether a full, blocking garbage collection by the common language runtime has completed.
+	- GC.WaitForFullGCApproach();
+		* Returns the status of a registered notification for determining whether a full, blocking garbage collection by the common language runtime is imminent.
+			
+	- Checked: The checked keyword is used to explicitly enable overflow checking for integral-type arithmetic operations and conversions.
+	- Unchecked: The checked keyword is used to explicitly enable overflow checking for integral-type arithmetic operations and conversions.
+	
+	
+	
+	Maybe handy to check the PerformanceCounterTypes :joy:			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			

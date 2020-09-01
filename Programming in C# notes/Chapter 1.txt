@@ -228,6 +228,8 @@ Understanding delegates
 	- A delegate is a type that defines a method signature. You can instantiate the delegate and let it point to another method. This method can be invoked through the delegate.
 	- An instantiated delegate is an object that can be passed around and for example be used as arguments.
 	- It's possible to multicast delegates by using the + or the += operators. You can also use the - or the -= operators.
+	- Delegates will return an error when no method has been passed to it.
+	- When multicasting, the order is random.
 
 	Code:
 	- public delegate int Calculate(int x, int y);

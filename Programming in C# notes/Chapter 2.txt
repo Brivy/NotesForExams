@@ -322,7 +322,7 @@ Using strings in the .NET Framework
 Manipulating strings
 	Information:
 	- The StringBuilder class enables you to change the value of individual characters inside a string.
-	- When using an arbitrary number of strings, it's better to use stringbuilder. If it's a fixed series of strings, than StringBuilder is't better.
+	- When using an arbitrary number of strings, it's better to use stringbuilder. If it's a fixed series of strings, than StringBuilder isn't better.
 	- StringWriter and StringBuilder adapt from StringBuilder (and use this internally). This way they can be used on places where a TextWriter or a TextReader is expected.
 	
 	Code:

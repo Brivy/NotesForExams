@@ -182,6 +182,7 @@ Consuming XML
 		* XmlWriter: A fast way to create an XML file. Just as with the XmlReader, it's forward only and nonchached.
 		* XmlDocument: Represents an in-memory XML document. It supports navigating and editing a document.
 		* XPathNavigator: Helps with navigating through an XML document to find specific information.
+	- By using a XPath query, you can specify your search more directly.
 	
 	- I think that you should use XElement in linq to xml. It's far easier to use. Search it up to see what needs to be done.
 	
@@ -194,6 +195,8 @@ Consuming XML
 		Load an xml document into memory.
 	- XPathNavigator nav = doc.CreateNavigator();
 		Create a xml navigator.
+	- string query = "//People/Person[@firstName='Jane']";
+		A XPath query.
 		
 	
 	
@@ -279,7 +282,8 @@ How does LINQ work?
 	- By using object initializers and collection initializers, you can creat your XML documents in an easy way.
 		
 		
-		
+	Code:
+	- Lots of good information on creating XML the right way
 		
 		
 		
@@ -331,6 +335,8 @@ Using binary serialization
 	Code:
 	- [Serializable] (using the System.Runtime.Serialization and the System.Runtime.Serialization.Formatters.Binary namespaces)
 		Apply this attribute to mark the class binary serializable.
+	- [OnSerializing()] internal void OnSerializingMethod(StreamingContext context)
+		Hook into the serializing process.
 	- IFormatter formatter = new BinaryFormatter();
 		Create a binary formatter object.
 	- [NonSerialized]
@@ -365,8 +371,18 @@ Using JSON serializer
 	- DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Person));
 		Instantiate the DataContractJsonSerializer object.
 
-		
-		
+
+Using JavaScriptSerializer
+	Information:
+	- Also a way to serialize and deserialize JSON but without the datacontract and stuff
+	
+	Code:
+	- var serializer = new JavaScriptSerializer();
+		Instantiate the serializer
+	- var serializedResult = serializer.Serialize(Users);
+		Creates a JSON string of the object
+	- var deserializedResult = serializer.Deserialize<List<Person>>(serializedResult);
+		Create a list of persons from the JSON string.
 		
 		
 		
