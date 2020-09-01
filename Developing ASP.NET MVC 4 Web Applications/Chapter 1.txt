@@ -1,0 +1,172 @@
+1.1 Plan the application layers
+==============================================================================================================================
+
+Planning data access
+	Information:
+	- When using data access you have two options:
+		* O/RM (object relational mapper): hydrates the object with the data from the database
+		* Writing own components: Can be used when working not so close with your model or using NoSQL
+	- Three ways of designing with Entity Framework:
+		* Model first: Create your model in Visual Studio
+		* Code first: Create POCO (plain old CLR object) classes
+		* Database first: Create a datbase and tables
+	- The repository pattern is intended to create an abstraction layer between the data access layer and the business logic layer.
+	
+Planning for separation of concert (SoC)
+	Information:
+	- SoC is a software development concept that sparates a computer program into different sections, or concerns, in which each concern has a different purpose (for example N-tier development)
+	- While using MVC, you need to consider two parts of the UI:
+		* The part of the UI rendered on the server
+		* The part of the javascript code on the client side.
+	- Loose coupling is an architectural approach in which the disigner seeks to limit the amount of interdependencies between various parts of a system.
+
+Using models, views, and controllers appropriately
+	Information:
+	- The three components in MVC:
+	- "The model" is the part of the application that handles business logic.
+		* A convention-based aspect of this is the placement (most of the time in the Models folder).
+		* Controllers typically instantiate the model and provide it to the view for display.
+		* Building a model can be done in different ways:
+			+ Domain model: When working in the middle tier of the application (by using the entity framework)
+			+ View model: Is generally the result of aggregating multiple classes into a single object
+			+ Input model: When data is being uploaded to the server from the client with each individual HTTP request (caputure user input).
+		* Using model binders for a simple way of posting form data to an action method as paramater. 
+		* The default model binder (DefaultModelBinder using IModelBinder) contains an GetValue method that retrieves the value of a specified parameter or type. 
+		* It's possible to create custom model binders for exampel when using DI and IoC.
+	- "The controller" is logic for handeling incoming requests, user input and interaction and executes application logic. 
+		* Based on the ControllerBase class and is responsible for: 
+			+ Locating the appropriate action method to call.
+			+ Validating that action method can be called.
+			+ Getting values in the model to use as parameters.
+			+ Managing all errors and calling the view engine to write the page.
+		* Action methods are typically one-to-one mappings to user interactions.
+		* ActionResults is any kind of outcome from an action. It can for example return:
+			+ A view.
+			+ A partial view.
+			+ JSON.
+			+ Binary data.
+			+ Redirect to another action.
+			+ Etc.
+		* For routes, the default MvcHandler will be used. This will extract the controller information by comparing the request with the template values in the routing table. 
+		* The default handler extract the string and sends it to a controller factory that returns the appropriate controller.
+		* Both the handler (IHttpHandler) and the controller factory (IControllerFactory) can be custom made by using their interfaces.
+		* By using attributes, you can provide extra information to the framework:
+			+ ActionName, AcceptVerbs and NonAction help the framework to  determine which action to run.
+			+ OutputCache, ValidateInput and HandleError can be used to add for example caching, validation and error handling.
+			+ Custom actions can be made by overriding the ActionFilter class.
+		* Create async actions to increase performance:
+			+ Create an action that runs synchronously but uses asynchronous work.
+			+ Create an async partial view that will run your work in a different thread.
+			+ Using AJAX to load in a page async.
+	- "The view" is part of the application responsible for displaying information to users.
+		* Using the ViewDataDictionary (which is wrapped by a ViewBag), you can display a set of messages to the user.
+		* There are multiple kinds of views:
+			+ Strongly-typed: No need for casting because you set the attached model explicitly.
+			+ View-specific: Defining and using a view model instead of a model directly.
+			+ Partials: A view that can be defined within a view. Doesn't contain <html> and <head> tags.
+			+ Master or layout: A way to share a design across multiple pages.
+			+ Scaffold template: A template that creates standard pages as part of the process when creating a project.
+		* Web forms is old and the syntax isn't used by the razor syntax.
+		* Webforms uses:
+			+ Code expression: <%: article.Title %>
+			+ Code blocks that create a variable: <% ... %>
+			+ Incorporating plain text into code blocks: <% if (...) { %> ... <% } %>
+			+ Generic method: <%: %>
+		* Razor uses:
+			+ Code expression: @article.Title
+			+ Code blocks that create a variable: @{ ... }
+			+ Incorporating plain text into code blocks: @if (...) { ... }
+			+ Generic method: @()
+		* Both engines are derived from the BuildManagerViewEngine, which is derived from the VirtualPathProviderViewEngine (again, to implement your own engine, you can override them).
+		* You can create HTML helper classes to create HTML programmatically. 
+
+Choosing between client-side and server-side processing
+	Information:
+	- When considering remember that there is always latency when connecting over the internet.
+	
+Designing for scalability
+	Information:
+	- There are two ways in which an application can scale: "Horizontally" or "Vertically".
+	- Horizontally scaling is adding additional nodes to the system (web farm):
+		* Consider where session state information, if you should use caching, where to store files, etc.
+		* Is certainly the cheapest way.
+	- Vertical scaling is adding resources to a single system.
+		* Can be done by increasing the CPU or memory. 
+		* The application should pay more attention to threading, input/output, garbage collection and other decisions that would help the application take better advantage of the additional memory or CPUs.
+		* Is limited by how much you can add.
+		* Single point of failure.
+	- Be aware of the database scalability options like adding a different database with different credentials.
+		
+
+
+
+
+
+
+1.2 Design a distributed application
+==============================================================================================================================
+
+Integrating web services
+	Information:
+	- When using a MVC project, you can inherit the class ApiController for web services. This controller does not use views, but searches for the "Accept" header to determine how to send the data back.
+	- ApiController handles the serialization and deserialization for you. When using a regular controller, you will have to do this on your own.
+	- ASP.NET Web Services (ASMX) is an old (SOAP)-based web service.
+	- You can consume a web service easily by using the "Add a Service Reference" command. This approach expects the presence of a Web Service Description Language (WSDL) at the service you are calling.
+	- The WSDL serves as an endpoint, it includes the network protocal, message type and message format.
+	- The farther the pieces of your application are from each other, the more variables that have to be accounted for like:
+		* latency.
+		* firewalls.
+		* protocol limitations.
+	
+	Code:
+	- using (ServiceProxy proxy = new ServiceProxy()) { ... }
+		* Use a generated web service proxy.
+	- NetworkCredential credential = new NetworkCredential("username", "password");
+		* Create network credentials for a HttpService.
+	- XDocument xml = _httpService.Get(host, path, parameters, credentials);
+		* Get a xml document from the httpservice.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
