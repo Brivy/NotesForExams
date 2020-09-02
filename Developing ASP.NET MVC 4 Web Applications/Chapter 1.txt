@@ -32,7 +32,7 @@ Using models, views, and controllers appropriately
 			+ Input model: When data is being uploaded to the server from the client with each individual HTTP request (caputure user input).
 		* Using model binders for a simple way of posting form data to an action method as paramater. 
 		* The default model binder (DefaultModelBinder using IModelBinder) contains an GetValue method that retrieves the value of a specified parameter or type. 
-		* It's possible to create custom model binders for exampel when using DI and IoC.
+		* It's possible to create custom model binders for example when using DI and IoC.
 	- "The controller" is logic for handeling incoming requests, user input and interaction and executes application logic. 
 		* Based on the ControllerBase class and is responsible for: 
 			+ Locating the appropriate action method to call.
@@ -126,6 +126,35 @@ Integrating web services
 	- XDocument xml = _httpService.Get(host, path, parameters, credentials);
 		* Get a xml document from the httpservice.
 	
+Designing a hybrid application
+	Information:
+	- A hybrid application is an application hosted in multiple places.
+	- There are two primary hybrid patterns:
+		* Client-centric pattern: The client application determines where the application needs to make its service calls
+		* System-centric pattern: This includes a service bus (like Windows AppFabric) that will distribute the service requests for you
+	- When working on-premise, you have low latency and good connection options. This is not guaranteed by using a hybrid application. Other things to mention:
+		* Authorization and access are complicated because of multiple domains
+		* Consistency and concurrency are complicated because of multiple domains
+	
+Planning for session management in a distributed environment
+	Information:
+	- A session is stored on the server and is unique for a user's set of transactions. The browser needs to pass back a unique identifier, called SessionId, which can be sent as part of a small cookie or added onto the query string where it can be accessed by the default handler.
+	- While ASP.NET MVC lies on top of ASP.NET, you can access session information and use it. However, ASP.NET MVC is designed to run in a stateless manner.
+	- If working sessionless in a distributed environment (because session management can be difficult), you can use one of the three modes in IIS:
+		* InProc (default): Web sessions are stored in the web server's local memory. Best for performance but is not clusterable.
+		* StateServer: Session information stored in memory on seperate server. You'll need to have a connection string for that.
+		* SQLServer: Same advantage as StateServer, but will add some latency to the session access.
+		
+Planning web farms
+	Information:
+	- Web farms are groups of servers that share the load of handling web requests.
+	- Because SoC (Seperation of Concern) is inherent in the MVC architecture, you can locate components of the application on different servers.
+	- Some advantages of having a web farm with a load balancer:
+		* High availability: if a server goes down, the load balancer will redirect the request to working servers.
+		* Decrease contention problemens: Increased performance by reducing load on each server.
+		* Scalability ofcourse.
+	- Be carefull when trying to access the default session. The load balancer cannot ensure to match a particular server to a session (known as a "sticky session").
+	- Use the IIS setting StateServer or SQLServer for using sessions in web farms.
 	
 	
 	
@@ -133,40 +162,142 @@ Integrating web services
 	
 	
 	
+1.3 Design and implement the Windows Azure role life cycle
+==============================================================================================================================
+
+Understanding Windows Azure and roles
+	Information: 
+	- Windows Azure provides both platform as a service (PaaS) and infrastructure as a service (IaaS) services, and is classified as the "public cloud" in Microsoft's cloud computing strategy.
+	- With PaaS, cloud providers deliver a computing platform, typically including an operating system, a programming language environment, a database, and a web server.
+	- IaaS offers virtual machines.
+	- Azure provides three different types of solutions:
+		* Virtual Machines: Basically online VM's. 
+		* Web Sites: Web hosting for your applications that are scalable.
+		* Cloud Services: A PaaS approach.
+		
+Identifying startup tasks
+	Information:
+	- Windows Azure startup tasks are used to perform actions before a role starts. There are three types of roles:
+		* Web: Used to run IIS in Azure.
+		* Worker: Used for a middle-tier application without IIS.
+		* VM: Beyond the scope of Web and Worker. This role cannot manage startup tasks.
+	- Startup tasks are for example registering COM components, installing a component or set registry keys.
+	- Startup tasks run each time a role recycles in addition to when a server reboots.
+	- Startup tasks can for example be used when you need to assure that a secondary application is running while your application is running.
+	- The procedure followed by Windows Azure when a role starts is the following:
+		* The instance is marked as Starting. It will no longer receive traffic.
+		* Startup tasks are executed according to their taskType attribute:
+			+ Simple tasks are executed synchronously.
+			+ Background and foreground tasks are started asynchronously. This is in parallel with the startup task.
+		* The role host process is started and the site is created in IIS.
+		* The task calls the Microsoft.WindowsAzure.ServiceRuntime.RoleEntryPoint.OnStart method.
+		* The instance is marked as Ready and traffic is routed to the instance.
+		* The task calls the Microsoft.WindowsAzure.ServiceRuntime.RoleEntryPoint.Run method.
+	- The AppCmd.exe command-line tool is used to manage IIS settings at startup. The tool enables you to add, modify or remove settings from both web applications and websites.
+	- Misconfiguring AppCmd.exe can result in runtime errors, what can stop the task from starting up.
+	- Setting a task in the background prevents Azure from waiting until the task completes before it puts the role into a Ready state and creates the website.
+	- The names of websites are typically named "rolename_roleinstance number" while the application pools are usually named with a GUID.
+	- Objects within AppCmd are as followed:
+		* Site: Virtual site administration
+		* App: Application administration
+		* VDir: Virtual directories administration
+		* Apppool: Application pools administration
+		* Config: General configuration sections administration
+		* Backup: Management of server configuration backups
+		* WP: Worker process administration
+		* Request: Active HTTP request display
+		* Module: Server module administration
+		* Trace: Server trace log management
+	- You can add configuration information in the Windows registery instead of configuration files. This keeps the information secure. 
+	- It's possible to manage the registery by a small application or script that can be ran by a startup task. 
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	Code:
+	-	<Startup>
+			<Task commandLine="Startup\ExecWithRetries.exe
+			&quot;/c:Startup\AzureEnableWarmup.cmd&quot;
+			/d:5000 /r:20 /rd:5000 &gt;&gt; c:\enablewarmup.cmd.log
+			2&gt;&gt;&amp;1"          
+			executionContext="elevated" taskType="background" />
+		</Startup>
+		* Sets a specific task as a background task.
+	- %windir%\system32\inetsrv\appcmd list sites "/name:$=MyWebRoleName*" /xml | %windir%\system32\inetsrv\appcmd set site /in /serverAutoStart:true
+		* Use the search functionality to search for web role name and then use it as a prefix for the name of the site. You can pipe this output to AppCmd.exe to manage the configuration.
+		
+Identifying and implementing Start, Run and Stop events
+	Information:
+	- There are many conceptual similarities between the OnStart method and a startup task:
+		* They both have the same time-out. If you are not out of either function, the execution of role startup continues.
+		* They both are executed again if the role is recycled.
+		* You can configure both to process ahead of the role.
+	- Differences are:
+		* Startup tasks are ran in a different process, which enables it to be at a different level of privilege than the primary point of entry.
+		* State can be shared between the OnStart method and the Run method because they both are in the same application domain (AppDomain).
+		* A startup task can be configured to be either a background or foreground task that runs parallel with the role.
+	- When the configured startup tasks are completed, Azure role begins the process of running. You can override the following functions:
+		* OnStart: Can be used to manage initialization needed to support your role. Will set Azure rol to Busy. If "true" is returned, Azure continues.
+		* Run: Equivalent to the Main method in an actual application. When returning within this method, the application will be stopped and the OnStop method will be called for cleanup.
+		* OnStop: Called when the role instance is stopped. You will have 5 minutes before Azure will terminate the code.
+		
+	Code:
+	- public class WorkerRole : RoleEntryPoint
+		* When inheriting this class, you can override OnStart, Run and OnStop methods.
+
+
+
+
+
+
+
+1.4 Configure state management
+==============================================================================================================================
+
+Choosing a state management mechanism
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
