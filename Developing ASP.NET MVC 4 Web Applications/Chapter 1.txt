@@ -142,7 +142,7 @@ Planning for session management in a distributed environment
 	- While ASP.NET MVC lies on top of ASP.NET, you can access session information and use it. However, ASP.NET MVC is designed to run in a stateless manner.
 	- If working sessionless in a distributed environment (because session management can be difficult), you can use one of the three modes in IIS:
 		* InProc (default): Web sessions are stored in the web server's local memory. Best for performance but is not clusterable.
-		* StateServer: Session information stored in memory on seperate server. You'll need to have a connection string for that.
+		* StateServer/OutProc: Session information stored in memory on seperate server. You'll need to have a connection string for that.
 		* SQLServer: Same advantage as StateServer, but will add some latency to the session access.
 		
 Planning web farms
@@ -252,12 +252,37 @@ Identifying and implementing Start, Run and Stop events
 ==============================================================================================================================
 
 Choosing a state management mechanism
+	Information:
+	- The first decision when regarding state should by if you would like to use it.
+	- Web Forms uses ViewState, an ability to carry its state around the web applicaiton with it, storing information as needed.
+	- State information can be stored at the following locations:
+		* Cache: Memory pool stored on the server and shared across users.
+		* Session: Stored on server and unique for each user.
+		* Cookies: Stored on the client and passed with each HTTP request to the server.
+		* QueryString: Passed as part of the complete URL string.
+		* Context.Items: Is part of the HttpContext and lasts only the lifetime of that request.
+		* Profile: Stored in database and maintains information across multiple sessions.
+	- The cache is a key-value pair that should be accessible by any user or page in the application.
+	- Every server in a webfarm should have its own copy of the cache.
+	- Inheriting the SessionStateStoreProviderBase enables you to create your own session provider. If you run for example on an Oracle database, there is no built-in support for managing state that is shared by multiple servers.
+	- When you want to use your own session state provider, enable this in IIS by selecting Custom.
+	- Cookies are individualized by domain or subdomain, so with careful planning you can use cookies across a web farm.
+	- Within MVC you can find them under HttpContext.Request.Cookies and return them under HttpContext.Response.Cookies.
+	- The query string is not part of the route data and thus is ignored by the routing engine.
+	- Within MVC you can access the data in the HttpContext.Request.QueryString["attributeName"] and parse it within javascript with window.location.href.
+	- Context.Items is used to add information to the request through the use of an HTTP module in wich you can add some information to the request that will be available to the other modules and to the handler.
+	- For example, you can store the result of an authentication module to use in other parts of the application.
+	- Profile information is stored in the database by user name and can be accessed through HttpContext.Profile["miscellaneousData"].
+	- The profile is part of the Membership and Roles provider, and you need to configure a provider in the Web.config file.
+	- Just a friendly remainder that you can also use the state on the clients machine (like Local Storage) to prevent sending requests over and over.
 
+Planning for scalability
+	Information:
+	- If all servers of a webfarm use the same state server or SQL Server, using OutProc session to access state information stored in a session should get consistent responses, regardless of the server calling the information and serving the page.
+	- You can use a profile if the user is logged in to the system. Then you can use the HTTP Authorization header to get the information needed for state management.
+	- When using web farms, make sure the identifier you send back and forward is identified on every server.
 
-
-
-
-
+Using cookies or local storage to maintain state
 
 
 
