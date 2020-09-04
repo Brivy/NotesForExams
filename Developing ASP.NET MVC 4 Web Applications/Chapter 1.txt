@@ -467,12 +467,21 @@ Deciding when to use WebSockets
 
 
 
-1.7 Design HTTP modules and handlers
+1.7 Design HTTP modules and handlers (not needed in exams, learn the filter and middleware variant in dotnet core)
 ==============================================================================================================================
 
+F.Y.I. This chapter is probably outdated because of ASP.NET Core. There you will use middleware to fix this stuff.
 
-
-
+Implementing synchronous and asynchronous modules and handlers
+	Information:
+	- Modules are called before and after the handler executes. They are intended to enable a developer to interact, participate or modify each request.
+	- While implementing IHttpModule, you'll need to implement the two methods "void Init(HttpApplication)" and "void Dispose()".
+	- You'll need to configure the <httpModule> section in the Web.config file to use a module
+	
+Choosing between modules and handlers in IIS
+	Information:
+	- Http handlers help you inject preprocessing logic based on the extension of the file name requested.
+	- Http modules are event-based and inject preprocessing logic before a resource is requested.
 
 
 
