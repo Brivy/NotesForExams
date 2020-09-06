@@ -12,6 +12,7 @@ Planning data access
 		* Database first: Create a datbase and tables
 	- The repository pattern is intended to create an abstraction layer between the data access layer and the business logic layer.
 	
+	
 Planning for separation of concert (SoC)
 	Information:
 	- SoC is a software development concept that sparates a computer program into different sections, or concerns, in which each concern has a different purpose (for example N-tier development)
@@ -19,6 +20,7 @@ Planning for separation of concert (SoC)
 		* The part of the UI rendered on the server
 		* The part of the javascript code on the client side.
 	- Loose coupling is an architectural approach in which the disigner seeks to limit the amount of interdependencies between various parts of a system.
+
 
 Using models, views, and controllers appropriately
 	Information:
@@ -80,9 +82,11 @@ Using models, views, and controllers appropriately
 		* Both engines are derived from the BuildManagerViewEngine, which is derived from the VirtualPathProviderViewEngine (again, to implement your own engine, you can override them).
 		* You can create HTML helper classes to create HTML programmatically. 
 
+
 Choosing between client-side and server-side processing
 	Information:
 	- When considering remember that there is always latency when connecting over the internet.
+	
 	
 Designing for scalability
 	Information:
@@ -128,6 +132,7 @@ Integrating web services
 	- XDocument xml = _httpService.Get(host, path, parameters, credentials);
 		* Get a xml document from the httpservice.
 	
+	
 Designing a hybrid application
 	Information:
 	- A hybrid application is an application hosted in multiple places.
@@ -138,6 +143,7 @@ Designing a hybrid application
 		* Authorization and access are complicated because of multiple domains
 		* Consistency and concurrency are complicated because of multiple domains
 	
+	
 Planning for session management in a distributed environment
 	Information:
 	- A session is stored on the server and is unique for a user's set of transactions. The browser needs to pass back a unique identifier, called SessionId, which can be sent as part of a small cookie or added onto the query string where it can be accessed by the default handler.
@@ -146,6 +152,7 @@ Planning for session management in a distributed environment
 		* InProc (default): Web sessions are stored in the web server's local memory. Best for performance but is not clusterable.
 		* StateServer/OutProc: Session information stored in memory on seperate server. You'll need to have a connection string for that.
 		* SQLServer: Same advantage as StateServer, but will add some latency to the session access.
+		
 		
 Planning web farms
 	Information:
@@ -178,6 +185,7 @@ Understanding Windows Azure and roles
 		* Virtual Machines: Basically online VM's. 
 		* Web Sites: Web hosting for your applications that are scalable.
 		* Cloud Services: A PaaS approach.
+		
 		
 Identifying startup tasks
 	Information:
@@ -226,6 +234,7 @@ Identifying startup tasks
 		* Sets a specific task as a background task.
 	- %windir%\system32\inetsrv\appcmd list sites "/name:$=MyWebRoleName*" /xml | %windir%\system32\inetsrv\appcmd set site /in /serverAutoStart:true
 		* Use the search functionality to search for web role name and then use it as a prefix for the name of the site. You can pipe this output to AppCmd.exe to manage the configuration.
+		
 		
 Identifying and implementing Start, Run and Stop events
 	Information:
@@ -282,11 +291,13 @@ Choosing a state management mechanism
 	- The profile is part of the Membership and Roles provider, and you need to configure a provider in the Web.config file.
 	- Just a friendly remainder that you can also use the state on the clients machine (like Local Storage) to prevent sending requests over and over.
 
+
 Planning for scalability
 	Information:
 	- If all servers of a webfarm use the same state server or SQL Server, using OutProc session to access state information stored in a session should get consistent responses, regardless of the server calling the information and serving the page.
 	- You can use a profile if the user is logged in to the system. Then you can use the HTTP Authorization header to get the information needed for state management.
 	- When using web farms, make sure the identifier you send back and forward is identified on every server.
+
 
 Using cookies or local storage to maintain state
 	Information:
@@ -299,6 +310,7 @@ Using cookies or local storage to maintain state
 		* Check if the browser can use the localStorage.
 	- window.AddEventListener('storage', displayStorageEvent, true);
 		* Set a listener on the storages (local and session).
+
 
 Applying configuration settings in the Web.config file
 	Information:
@@ -319,6 +331,7 @@ Applying configuration settings in the Web.config file
 	- 	<profile defaultprovider="DefaultProfileProvider"     
 			inherit="MyApplication.Models.CustomProfile"/>
 		* An example on how to use the ASP.NET Membership provider.
+
 
 Implementing sessionless state
 	Information:
@@ -366,10 +379,12 @@ Implement page output caching
 	- [ChildActionOnly][OutputCache(Duration=60)]
 		* Attributes to add donut hole caching to an action. Call this action method with @Html.Action("ProductsChildAction") in the razor parent view.
 
+
 Implementing data caching
 	Information:
 	- .NET 4 has a new Caching Framework. It uses ObjectCache and MemoryCache objects within the System.Runtime.Caching assembly.
 	- It is recommended to create a CacheProvider class that implements the ICacheProvider interface and is placed between the business and the data access layer.
+
 
 Implementing application caching
 	Information:
@@ -391,6 +406,7 @@ Implementing application caching
 		* Bare-bones of a cache manifest.
 	- <html manifest="site.manifest">
 		* Reference the manifest.
+
 
 Implement HTTP caching
 	Information:
@@ -445,10 +461,12 @@ Reading and writing string and binary data
 		}
 			* Using a websocket in ASP.NET.
 
+
 Choosing a connection loss strategy
 	Information:
 	- This chapter comes done to explaining that you should handle errors when you lose a connection. 
 	- Most of the the time, an onclose or an onerror event is thrown, but you should keep in mind that this doesn't have to be the case.
+
 
 Deciding when to use WebSockets
 	Information:
@@ -477,6 +495,7 @@ Implementing synchronous and asynchronous modules and handlers
 	- Modules are called before and after the handler executes. They are intended to enable a developer to interact, participate or modify each request.
 	- While implementing IHttpModule, you'll need to implement the two methods "void Init(HttpApplication)" and "void Dispose()".
 	- You'll need to configure the <httpModule> section in the Web.config file to use a module
+	
 	
 Choosing between modules and handlers in IIS
 	Information:

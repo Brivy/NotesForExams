@@ -1,0 +1,305 @@
+2.1 Apply the user interface design for a web application
+==============================================================================================================================
+
+Creating and applying styles using CSS
+	Information:
+	- The file "_Layout.cshtml" is the base template for a Razor application. This is found at "Views\Shared\_Layout.cshtml".
+	
+	Code:
+	- @Styles.Render("~/Content/css")
+		Add this line to the <head> element of HTML and it will parse to "<link href="/Content/site.css" rel="stylesheet" />
+	- @Scripts.Render("~/bundles/modernizr")
+		Add this line to the <head> element of HTML and it will parse to "<link href="/bundles/modernizr.js" rel="text/javascript" />
+
+
+Using HTML to structure and lay out the user interface
+	Information:
+	- The main difference between a <div> and a <span> is that the div has a line break before and after it while a span doens't have those.
+	- Main takeaway: Add the stuff you want to use in every page in the _Layout.cshtml page.
+
+
+Implementing dynamic page content based on design
+	Information:
+	- HTML helpers are code snippets put in the view that render HTML elements.
+	- Common HTML helpers:
+		* BeginForm: 	Creates a starting <form> tag.
+		* EndForm: 		Creates an ending <form> tag.
+		* TextArea: 	Creates an HTML <textarea> input.
+		* TextBox: 		Creates an HTML input box with a type of text.
+		* CheckBox: 	Creates an HTML check box.
+		* RadioButton: 	Creates an HTML radio button.
+		* ListBox: 		Creates an HTML list box.
+	- Common extensions for HTML helpers:
+		* CheckBoxFor: 			Creates a HTML check box and relates it to a property in the model.
+		* EditorFor: 			Creates a HTML input box and relates it to a property in the model.
+		* ListBoxFor: 			Creates a HTML list box and relates it to a property in the model.
+		* RadioButtonFor: 		Creates a HTML radio button and relates it to a property in the model.
+		* TextAreaFor: 			Creates a HTML <textarea> input and relates it to a property in the model.
+		* ValidationMessage: 	Defines the area where validation message will be displayed.
+		* ValidationSummary: 	Defines an area that will display all the validation messages for a view.
+	- Razor helpers not only create HTML validation but they also tie back to the model so that if the browser-based validation is skipped or interprets the data incorrectly, the corresponding model objects can display proper warnings in the UI.
+
+	Code:
+	- @Html.TextBox("zip", Request["zip"], new { size = 5 })
+		Creates a HTML textbox with the value of the "zip" object in the request with a HTML attribute "max-size: 5".
+	- @Html.TextBoxFor(m => m.FirstName, new { @placeHolder = "First name"}
+		Uses the value from the model and applies a place holder object.
+
+
+
+
+
+
+
+
+
+2.2 Design and implement UI behavior
+==============================================================================================================================
+
+Implementing client validation
+	Information:
+	- Using data annotations, you can validate models. Common used ones are:
+		* [Required]
+		* [StringLength(50, MinimumLength = 5)]
+		* [RegularExpression[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}")]
+		* [DataType(DataType.Date)]
+		* [Range(300, 3000)]
+	- In the view you can use the following:
+		* @Html.EditorFor(m => m.Title):			This relates validation information in the model to the text box that displays in the editor 
+		* @Html.ValidationMessageFor(m => m.Title):	This displays validation information for the related model/input item.
+	- Accessing the "ModelState" property in a controller so you can view if the model is valid according to your model.
+
+	Code:
+	-	@using (Html.BeginForm()) {
+			@Html.ValidationSummary(true)
+			<fieldset>
+				<legend>Articles</legend>
+				<div> @Html.LabelFor(m => m.Title) </div>
+				<div>
+					@Html.EditorFor(m => m.Title)
+					@Html.ValidationMessageFor(m => m.Title)
+				</div>
+			</fieldset>
+		}
+		* This will create a form that has validation messages when the title isn't filled in correctly.
+	- if (ModelState.IsValid) { ... }
+		* Checks if the passed model is valid.
+	
+	
+Using remote validation
+	Information:
+	- To ensure the UI can call the validation action, you must add the "System.Web.Mvc.Remote.Attribute to the validation configured on the model.
+	- Also ensure that you have configured it the right way (under <appSettings> in the web.config) to make remote validation work (THEY ARE ALREADY ENABLED BY DEFAULT):
+		* <add key="ClientValidationEnabled" value="true" />:		Enables client side validation using JQuery.
+		* <add key="UnobtrusiveJavaScriptEnabled" value="true" />: 	Turned off, the microsoft javascript libraries will be used. Turned on and the Jquery ones will be used.
+	
+	Code:
+	- 	public JsonResult IsUserAvailable(string username) {
+			return Json (true, JsonRequestBehavior.AllowGet);
+	}
+		* Return JSON from an action method.
+	- [Remote("IsUserAvailable", "Validation")]
+		* Add a attribute on a property that will call the "IsUserAvailable" method in the "ValidationController" whenever the value gets changed.
+
+
+Using Javascript and the DOM to control application behavior
+	Code:
+	- document.getElementById('controlled').innerHTML = 'This is modified text';
+		* The javascript way of changing an elements its innerHTML.
+
+
+Extending objects by using prototypal inheritance
+	Information:
+	- When you use the new on an Object, the prototypal approach creates a copy of an empty object rather than using a constructor that "builds" an object from scratch.
+	- I don't think any questions will be asked about this.
+	
+	
+Using AJAX to make partial page updates
+	Information:
+	- Use the "System.Web.MVC.Ajax" namespace for using AJAX calls in your view.
+	- While AJAX is dynamic (and pretty cool), it has some major downsides:
+		* Web crawlers for search machines rarely process Javascript.
+		* Bookmarking the page is not handled very well.
+		* Screen readers will not like this feature.
+
+	Code:
+	-	@using (Ajax.BeginForm("PerformAction", new AjaxOptions { OnSuccess = "OnSuccess", OnFailure = "OnFailure" }))
+		* Instead of using "@using (Html.BeginForm())", you can use the AJAX variant. For the options you can set the:
+			* The action method name that should be executed.
+			* The Javascript OnSuccess call (in this example it is also "OnSuccess").
+			* The Javascript OnFailure call (in this example it is also "OnFailure").
+
+
+Implementing the UI using Jquery (not needed for exam)
+	Information:
+	- You can use Jquery animations that make the page look cooler.
+
+
+
+
+
+
+
+
+
+2.3 Compose the UI layout of an application
+==============================================================================================================================
+
+Implementing partials for reuse in different areas of the application
+	Information:
+	- When using different models for the view and it's partial view, you may have to use AJAX to populate the partial view.
+	
+	Code:
+	- @Html.Partial
+		* Add a partial view model to your view.
+	- @model ApplicationName.Models.ModelName
+		* Add a viewmodel to your view.
+
+
+Designing and implementing pages by using Razor templates
+	Information:
+	- Editor templates and display templates provide ways to manage information.
+	- Editor templates are for modifying information, display templates are for showing information
+	- When creating custom editorTemplates, you need to store them in well-known directories:
+		* ~/Views/ControllerName/EditorTemplates/TemplateName.cshtml
+		* ~/Views/Shared/EditorTemplates/TemplateName.chstml
+	- When creating custom displayTemplates, you need to store them in well-known directories:
+		* ~/Views/ControllerName/DisplayTemplates/TemplateName.cshtml 
+		* ~/Views/Shared/DisplayTemplates/TemplateName.chstml
+
+	Code:
+	-	@model Test.Article
+		@if (Model != null) {
+			@Html.TextBox("", Model.Title)
+		} else {
+			@Html.TextBox("", string.Emtpy)
+		}
+		* Create a custom EditorTemplate for the Article class.
+	- EditorFor(model => model.Article)
+		* Use the custom EditorTemplate.
+	-	@model System.DateTime
+		<span>
+			@Model.ToString("yyyy-MM-dd")
+		</span>
+		* Create a custom DisplayTemplate for the DateTime object.
+	- @Html.DisplayFor(x => x.DateOfBirth)
+		* Use the custom DisplayTemplate.
+
+
+Designing layouts to provide visual structure
+	Information:
+	- No information is giving within this chapter.
+	
+	
+Implementing master/application pages
+	Information:
+	- Using "@RenderBody()", you will load in the various views within the body <div> tag.
+	
+	Code:
+	-	@if (ViewBag.Switch == "Layout1")
+	{
+		Layout = "Layout = "~/Views/Shared/_plainLayout.cshtml";
+	} else {
+		Layout = "~/Views/Shared/_Layout.cshtml";
+	}
+		* Switch layouts based on an item in the viewbag.
+
+
+
+
+
+
+
+
+
+2.4 Enhance applicaiton behavior and style based on browser feature detection (not in the exam)
+==============================================================================================================================
+
+Detecting browser features and capabilities
+	Code:
+	- if (navigator.userAgent.indexOf("MSIE") > 0) { ... }
+		* Check if the browser is using version 7 of IE.
+	- if (window.addEventListener) { ... }
+		* Check if the browser supports event listeners 
+
+
+Creating a web application that runs across multiple browsers and mobile devices
+	Information:
+	- To differentiate between different devices, you can use different views or different CSS3 media queries.
+	- You can add a mobile version of for example the index.cshtml page with index.Mobile.cshtml.
+
+
+Enhancing applicaiton behavior by style by using vendor-specific extensions
+	Information:
+	- Use vendor specific extensions (or so called prefixes) for stuff that is only for a specific browser.
+	- The format is as follows:
+		* - vender identifier - meaningful name
+		* _ vender identifier - meaningful name
+	- Some examples of vendors:
+		* -ms-, -mso-: 	microsoft
+		* -moz-: 		Mozilla
+		* -webkit-:		Google, Apple
+
+
+
+
+
+
+
+
+
+2.5 Plan an adaptive UI layout
+==============================================================================================================================
+
+Planning for applicaitons that run in browsers on multiple devices
+	Information:
+	- Use @media queries with specific layouts for various resolutions.
+	- To create a mobile-friendly layout, copy the master layout file (_Layout.cshtml) and rename it as _Layout.Mobile.cshtml. To create a mobile-specific view, add the .Mobile views.
+	- Install-Package jQuery.Mobile.MVC will create mobile-specific layouts for an MVC application if the layouts did not exist before.
+
+	Code:
+	- <meta name="viewport" content="width=device-width">
+		* Set a meta tag so that you can work with different device screen heights and widths.
+	- @media ((only) screen and) (max-width: 600px) { ... }
+		* Set one of the media queries that will trigger between 1px and 600px. 
+			+ using "screen and" will override the default "print" option. This shouldn't make a difference.
+			+ using "only screen and" will hide style sheets from older user agents.
+
+
+Planning for mobile web applications
+	Information:
+	- No information is giving within this chapter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
