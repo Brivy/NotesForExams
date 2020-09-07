@@ -1,0 +1,221 @@
+3.1 Plan for search engine optimization and accessibility
+==============================================================================================================================
+
+Using analytical tools to parse HTML
+	Information:
+	- You can use the SEO Toolkit to examine HTML and fix issues that it returns and do more:
+		* Create sitemaps
+		* Create robot exclusion rules
+		* Create a robot.txt file which tells the search engines not to index a certain page.
+	- Other tools are:
+		* Bing Webmaster Tools to evaluate the <head> tag.
+		* Google Webmaster Tools to evaluate everything but you need access to the server.
+		* World Wide Web Consortium (W3C) offers some tools for HTML, CSS, feed formats and mobility.
+		* Page Inspector in Microsoft Visual Studio for evaluating HTML and looking for potential issues.
+
+
+Viewing and evaluating conceptual structure by using plugs-in for browsers
+	Information:
+	- The three major components of rendered HTML pages are:
+		* Content: text, images, videos and similar information.
+		* Presentation: styles and other information related to the look and feel of the site.
+		* Functionality: Client-side scripts such as Javascript.
+	- It is easier to parse a page when the script sections are moved to a different file.
+
+
+Writing semantic markup for accessibility
+	Information:
+	- WAI-ARIA:
+		* Web Accessibility Initiative: 			Trying to make web more accessible, enabling people with disabilities to participate equally.
+		* Accessible Rich Internet Applications):	Provinding additional context to HTML elements and thus to the content they contain.
+	- Only use ARIA when payload is not critical.
+	- ARIA tries to do four major things:
+		* Keyboard focus and navigation.
+		* Relationships.
+		* Managing dynamics changes.
+		* Role of presentation.
+	- The ARIA "role="button" attribute markes an element as a button for screen readers.
+	- You can also change a role attribute to make it something else for screen readers like "role="heading".
+	- Because MVC is limited in ARIA support, you can extend HTML helpers to make them work.D
+	
+	Code:
+	- public static IHtmlString ARIATextBoxFor<TModel, TProperty>(this HtmlHelper<TModel> helper, Expression<Func<TModel, TProperty>> exp) { ... }
+		* Extending the @Html.TextBoxFor method.
+		
+
+
+
+
+
+
+
+3.2 Plan and implement globalization and localization
+==============================================================================================================================
+
+Planning a localization strategy
+	Information:
+	- Language (Tries to match this one secondly) -> Locale (Tries to match this one first) => English -> UK/Using
+	- Using the header "Accept-Language" will determine which language is requested.
+	- The easiest way for globalization is using resource files. For this to work you will need to call the ResourceManager helper class.
+	- Resource files can also be used to localize views. To use this, you can create an override of the "Controller.OnActionExecuted" and change the path:
+		* /Views/Globalization/en-US/Home/Index.cshtml
+		* /Views/Globalization/en-MX/Home/Index.cshtml
+	
+	Code:
+	- <globalization culture="auto" uiculture="auto" enableclientbasedculture="true"/>
+		* A setting in the Web.Config to get the specific culture out of the "Accept-Language" header.
+
+
+Creating and applying resources to the UI
+	Information:
+	- Two approaches of managing resource files:
+		* Single resource file for each language.
+		* Multiple resource files.
+	- Use the "globalize.js" and the "globalize.cultures.js" of jQuery for globalization in javascript.
+	
+	Code:
+	- 	var language = "@Request.UserLanguages[0]";
+		<script>jQuery.preferCulture(language);</script>
+			* Determine and set the language in javascript for the globalization (JS can't detect language automatically).
+	- $.global.preferCulture(language) 
+		Set the global culture.
+
+
+Setting cultures
+	Code:
+	- Thread.CurrentThread.CurrentUICulture = new CultureInfo("es-MX");
+		* Change the culture of someone manually.
+
+
+Creating satellite resource assemblies
+	Information:
+	- Two primary approaches for culturally aware applications:
+		* Put everything in one assembly. Only do this when you don't have to many or large resource files
+		* Create satellite assemblies.
+	- Satellite assemblies have the following naming conventions: <resource_name>.<culture_identifier>.resource
+
+	Code:
+	- al.exe /t:lib /embed:strings.de-DE.resources /culture:de-DE /out:MyApp.de-DE.resources.dll
+		* Creates an satellite assembly.
+	- static ResourceManager rm = new ResourceManager("strings", Assembly.GetExecutingAssembly());
+		* Load the assembly in MVC.
+
+
+
+
+
+
+
+
+
+3.3 Design and implement MVC controllers and actions
+==============================================================================================================================
+
+Applying authorization attributes and global filters
+	Information:
+	- Some attributes that can help in the MVC flow:
+		* RequireHttpsAttribute:				All controllers/methods that have been decorated with these filters can only be accessed with HTTPS.
+		* ValidateAntiForegeryTokenAttribute:	Protects against cross-site forgery with a token. That ensures that it's the same browser section and matches an expected value on the server.
+		* ValidateInputAttribute:				Decorating a models property with "[ValidateInput(true, Exclude = "ArbitraryField")]" will let a client stop posting potentially dangerous content.
+		* AuthorizeAttribute:					An user should be authenticated before moving on and must have the correct role. The ones within a controller that can be accessed by everyone are marked with "[AllowAnonymous]".
+		* ChildActionOnlyAttribute:				You can't access an action with traditional mapping when this is applied. Only can be called from "Action" or "RenderAction" HTML extension methods.
+		* HandleErrorAttribute:					Handles thrown errors by showing the "~/Views/Shared/Error" views. You can set different properties like ExceptionType, View and Master to show different views.
+		* ActionFilterAttribute:				Is an abstract class that can be inherited to create your own filters:
+			+ OnActionExecuting:					Called before the action is called. Gives you an opportunity to look at the HttpContext.
+			+ OnActionExecuted:						Called after the results of the action are known. 
+			+ OnResultExecuting:					Called before the action result from the action is processed.
+			+ OnResultExecuted:						Called after the action result is processed but before the output is loaded into the response stream.
+		* InitializeSimpleMembershipAttribute:	Initializes the database to ensure that the applicaiton can reacht the database and that the database schema is correct.
+	- You can mark a custom filter to be run only once through the "AllowMultiple" parameter in the "AttributeUsage" attribute on the filter class: "AllowMultiple = false".
+	- Apply the filters at the following places:
+		* Controllers
+		* Methods
+		* Globally by adding it to the "App_Start/FilterConfig.cs" RegisterGlobalFilters method (filters.Add(new RequireHttpsAttribute());).
+		
+Implementing action behaviors
+	Information:
+	- Order of filters is good to keep in mind. Apply first the one that is most likely to fail (Authentication) and continue from there.
+
+
+Implementing action results
+	Information:
+	- The "ActionResult" class performs the last set of conversions on information before it's returned to the client.
+	- But there are more:
+		* ContentResult		-> 		Content 	-> 	Returns a user-defined content type.
+		* EmptyResult		->		(None)		-> 	Represents a return value to be used if the action method must return a null result.
+		* FileResult		->		File		-> 	Returns binary output that is written to the result.
+		* JavaScriptResult	->		Javascript	->	Returns Javascript that is executable on the client.
+		* JsonResult		->		JSON		->	Returns a serialized Javascript Object Notation (JSON) object.
+		* PartialViewResult	->		PartialView	->	Renders a partial view.
+		* RedirectResult	->		Redirect	->	Redirects to another action method by using its URL and passing through the routing process.
+		* RedirectToRouteResult	->	RedirectToAction/Route	->	Redirects to another action method.
+		* ViewResult		->		View		-> 	Renders a view as an HTML document.
+	- ViewResultBase is used for ViewResult and PartialViewResult.
+	- When ContentResult is completed into FileResult, it has two properties:
+		* ContentType: 		The type of content that we are sending.
+		* FileDownloadName: The name of the downloaded file.
+	
+	Code:
+	- ViewData["UserName"] = "Brain";
+		* Work with viewdata.
+
+Implementing model binding
+	Information:
+	- There are different approaches you can take with model binding:
+		* Strongly-typed binding.
+			+ This binding has an advantage because MVC knows what model it should bind.
+			+ It uses model attributes to render HTML from the HTML helper. 
+			+ Using strongly-typed helper tags, makes sure the UI is completly validated.
+		* Weakly-typed binding.
+		* Value provider.
+	- There are other ways to bind a browser request to an object:
+		* DefaultModelBinder ->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
