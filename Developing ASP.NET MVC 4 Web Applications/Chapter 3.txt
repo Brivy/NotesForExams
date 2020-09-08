@@ -345,18 +345,41 @@ Controlling application behavior by using route handlers
 
 
 
+3.6 Reduce network bandwidth
+==============================================================================================================================
+
+Bundling and minifying scripts
+	Information:
+	- Main purpose of bundling is to minimize the bandwidth and connections needed to download files to the client.
+	- With minification you will clean out white spaces, comments, line returns and other extraneous content in exchange for smaller file size. But this also obfuscates the files.
+	- The advantage of bundling only works the first time; after that, the browser will cache it.
+	- Problem with bundles is that it takes more time to find functions within the bundles. This is not only on the first time visiting.
+	- Because bundeling a bunch of scripts generates a hashtag, the browser will keep the files longer in cache until they are expired (1 year) or changed.
+	- Alternative way of enabeling minification is to add "BundleTable.EnableOptimizations = true;" at the bottom of the RegisterBundles method in your "App_Start/BundleConfig.cs" file.
+
+	Code:
+	- bundles.Add(new ScriptBundle("~/bundles/myBundle").Include("~/Scripts/myScript1.js, "~/Scripts/myScript2.js, "~/Scripts/myScript3.js"));
+		* Bundle scripts together.
+	- @BundleTable.Bundles.ResolveBundleUrl(("~/bundles/myBundle")
+		* Apply the bundle in your view.
+	- <compilation debug="false" />
+		* Enable minification of your files.
 
 
+Compressing and decompressing data
+	Information:
+	- The "Accept-Encoding" header gives information on alternative encoding types that the browser can understand like "gzip" or "deflate".
+	- You can change the way compression works in IIS where you can for example set if you want to compress static or also dynamic content.
+	- There are two ways of using ASP.NET MVC to zip files on the fly:
+		* Create local temporary files and return it as a FileResult.
+		* Using "System.IO.Compression.GZipStream" to compress your file. 
 
 
-
-
-
-
-
-
-
-
+Planning a content delivery network (CDN) strategy
+	Information:
+	- CDNs provide a way to distribute your content from sources other than your server.
+	- Purpose of CDNs are to get the content closer to the client.
+	- You can get many minified Javascript to load in your application by their CDNs.
 
 
 
