@@ -159,6 +159,7 @@ Implementing action results
 	- ViewData["UserName"] = "Brain";
 		* Work with viewdata.
 
+
 Implementing model binding
 	Information:
 	- There are different approaches you can take with model binding:
@@ -167,9 +168,32 @@ Implementing model binding
 			+ It uses model attributes to render HTML from the HTML helper. 
 			+ Using strongly-typed helper tags, makes sure the UI is completly validated.
 		* Weakly-typed binding.
+			+ Has a performance hit because it has to find the property you are requesting.
+			+ Can be usefull when working in parallel on the front- and backend.
+			+ Can make use of the Bind attribute.
 		* Value provider.
 	- There are other ways to bind a browser request to an object:
-		* DefaultModelBinder ->
+		* DefaultModelBinder:	 	Maps a browser request to a standard data object.
+		* LinqBinaryModelBinder: 	Maps a browser request to a language-Integrated Query (LINQ) object.
+		* ModelBinderAttribute:		An attribute that associates a model type to a model-builder type.
+		* ModelBinderDictionary:	Represents a class that contains all model binders for the application, listed by binder type.
+	- Using the "ValueProvider" object enables you to take advantage of model binding.
+		* FormsValueProvider:				Enables you to work with the data returned as form values.
+		* QueryStringProvider: 				Enables you to work with items in the query string.
+		* HttpFileCollectionValueProvider:	Enables you to work with any attachments that might be included with the request.
+		* RouteDataValueProvider: 			Enables you to work with the routing data, or URL.
+
+	Code:
+	- @Html.TextBox("model.UserName")
+		* Weakly-typed property in a razor page.
+	- Public ActionResult Login([Bind(Prefix="login")]LoginUser user)
+		* When an incoming value references "login", there is an explicit map to the user object that it already understands.
+	- Public ActionResult Save([Bind(Exclude="Salary")]Employee emp)
+		* Exclude a property when using weakly-typed binding.
+	- 	if (TryUpdateModel(emp, formColl.ToValueProvider())	{        
+			UpdateModel(emp, formColl.ToValueProvider());    
+		}
+		* Update a model based on the form data with the default value provider.
 
 
 
@@ -179,9 +203,139 @@ Implementing model binding
 
 
 
+3.4 Design and implement routes (MVC 5 can also use attribute routing, just saying)
+==============================================================================================================================
+
+Defining a route to handle a URL pattern
+	Information:
+	- You'll need to add routes to the RouteCollection object. The default handler of this is called RegisterRoutes and can be found can in "App_Start/RouteConfig.cs".
+	- Using the extension method MapRoute with the required parameters name and URL pattern, you can manage this process.
+	- The default pattern is as follows: {controller}/{action}/{id}.
+	
+	Code:
+	- routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+		* Ignores a specific route.
+	-	routes.MapRoute(
+			name: "Default",
+			url: "{controller}/{action}/{id}",
+			defaults: new { controller = "Home",
+				action = "Index", id = UrlParameter.Optional },
+			constraints: new { id = @"\d+" }
+		);
+		* A default map route.
+
+Applying route constraints
+	Information:
+	- Using regex, you can add constraints to the .MapRoute method.
+	
+	Code:
+	-	constraints: new {id = @"[a-zA-Z]+"});
+		constraints: new {id = @"\d+"});
+		* Two constraints used by two different MapRoute functions that will handle the ID differently.
+		
+		
+Ignoring URL patterns
+	Information:
+	- Add the routes.Ignore always before the other routes.
+	- For example, restrict the route to a folder containing PDF files and let an action return FileContentResult handle it.
+	
+	Code:
+	- routes.Ignore("{*allhtml}", new {allhtml=@".*\.htm(/.*)?});
+		* Ignores .htm or .html files.
+
+
+Adding custom route parameters
+	Information:
+	- The URL "Article/List/1-1-2013" matches the route List(DateTime date) while the URL "Article/List/1-1-2013/" matches List(DateTime date, DateTime? enddate).
+
+
+Defining areas
+	Information:
+	- Areas enbables the designer to separate a normal set of controllers, views and models into separate functional groups in the project and local file structure.
+	- An area automatically contains it's own route file (for example: "AreaName"AreaRegistration.cs) that will route requests to this.
+	
 
 
 
+
+
+
+
+
+3.5 Control application behavior by using MVC extensibility points
+==============================================================================================================================
+
+Implementing MVC filters and controller factories
+	Information:
+	- There are four major filter types:
+		* Authorization: 	Makes a security-based evaluation about whether an action method should be executed.
+		* Action: 			Enables the developer to wrap the execution of the action method.
+		* Result: 			Enables the developer to do extra processing of the results from an action method.
+		* Exception: 		Runs when there is an unhandled exception thrown in the processing of an action method.
+	- Add a custom attribute to the "RegisterGlobalFilters" method in the "App_Start/FilterConfig" to ensure that they will run on every action method.
+	- You can create a custom "ControllerFactory" class that implements the "System.Web.Mvc.IControllerFactory". This has three methods:
+		* CreateController: 			Handles the actual control creation.
+		* ReleaseController: 			Cleans the controller up.
+		* GetControllerSessionBehavior: Defines and control how the controller works with session.
+	
+	Code:
+	- [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+		* Defines some special properties and restrictions when creating attributes.
+	- ControllerBuilder.Current.SetControllerFactory(typeof(MyCustomControllerFactory());
+		* Register a custom controller factory in the "Global.asax" file (under the Application_Start() method).
+
+
+Controlling application behavior by using action results
+	Information:
+	- To create a new custom action result, you need to inherit "System.Web.Mvc.ActionResult" and override the ExecuteResult method.
+	
+	Code:
+	- context.HttpContext.Response.Write("Test");
+		* Overwrite a result with your own.
+
+
+Controlling application behavior by using view engines
+	Information:
+	- Inherit the class "System.Web.Mvc.VirtualPathProviderViewEngine" when you want to overwrite the current view engine.
+	- For a complete overhaul, you can implement the IViewEngine interface with the following methods:
+		* FindView
+		* FindPartialView
+		* ReleaseView
+	- When you only add new stuff or simply change the path from which the views are pulled, there is no need to create custom views. But when heavily changing the engine, you will need to create custom views.
+	- Implement the "System.Web.Mvc.IView" interface with the following method for a custom view:
+		* Render: Takes a "System.IO.TextWriter" and a "System.Web.Mvc.ViewContext" object as parameter.
+			+ TextWriter is used to get the parsed and rendered information into the HttpResponse object.
+			+ ViewContext contains information about the HttpContext, ViewBag and FormData objects.
+	
+	Code:
+	- ViewEngines.Engines.Add(new CustomViewEngine());
+		* Register a new "CustomViewEngine" in the Application_Start file.
+
+
+Controlling application behavior by using model binders
+	Information:
+	- Inherit the class "System.Web.Mvc.DefaultModelBinder" when you want to overwrite the current model binder.
+	- Implement the "System.Web.Mvc.IModelBinder" interface if you want to create a new model binder, but not overwrite the default one.
+	
+	Code:
+	- ModelBinders.Binders.DefaultBinder = new DropDownDateTimeBinder();
+		* Register the new modelbinder as your default one.
+	- ModelBinders.Binders.Add(typeof(MyNewModelBinder), new MyNewModelBinder ());
+		* Add a modelbinder to the modelbinders group instead of overwriting the default one.
+
+
+Controlling application behavior by using route handlers
+	Information:
+	- Inherit from the "System.Web.Mvc.MvcRouteHandler" class to overwrite the current route handler.
+	- The most important method to overwrite is GetHttpHandler which enables you to examine the values and change them.
+	- Implement the "System.Web.Routing.IRouteHanlder" if you want to create a new route handler.
+	
+	Code:
+	- routes.MapRoute( ... ).RouteHandler = new MyCustomRouteHandler();
+		* Add a custom route handler to your route.
+	- 	Route watermarkRoute = new Route("images/{name}", new WaterMarkRouteHandler("CodeClimber - 2011")); 
+		routes.Add("image", watermarkRoute);
+		* Add a new route handler to your route.
 
 
 
