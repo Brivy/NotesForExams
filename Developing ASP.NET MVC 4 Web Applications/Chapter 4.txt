@@ -1,0 +1,198 @@
+4.1 Prevent and troubleshoot runtime issues
+==============================================================================================================================
+
+Troubleshooting performance, security and errors
+	Information:
+	- Profiling is the process of analyzing a running computer program.
+	- The Performance Wizard provides several different profiling methods:
+		* CPU sampling:				Happens a few CPU cycles. Is more like an initial check.
+		* Instumentation:			Adds code to the assembly to check for example the timing of every method.
+		* .NET memory allocation:	Gives you insight into the memory management of your application by analyzing every object from creation to GB.
+		* Resource contention data:	Provides information on how threads interact with each other and with the system, CPU utilization, overlapped input/output and more.
+	- The Visual Studio Profiler performs a complete trace of the calls that occur in an application.
+	- The Performance Monitor has a few monitors that are either system performance counters or application performance counters.
+
+
+Troubleshooting security issues
+	Information:
+	- Check which part of the users is problemenatic and start there.
+	
+
+Implementing tracing, logging and debugging
+	Information:
+	- The process of saving the information is called logging.
+	- Tracing is a technique that enables you to analyze your application while it's running.
+	- Debugging is the process of analyzing results from various tools.
+	- For tracing, you will first need to create one or more "System.Diagnostics.TraceListeners" which receive the tracing information and perform action on them.
+	- Be consistent with logging.
+	- For error logging, do one of the following things:
+		* Use the HandleErrorAttribute
+		* Override the controllers OnException method
+		* Use a custom error filter.
+	
+	Code:
+	- 	<configuration>
+			<system.diagnostics>
+				<trace autoflush="false" indentsize="4">
+					<listeners>
+						<add name="myListener" type="System.Diagnostics.TextWriterTraceListener" initializeData="TracingInfo.log" />               
+						<remove name="Default" />
+					</listeners>
+				</trace>
+			</system.diagnostics>
+		</configuration>
+			* Adds a TraceListener to the Web.Config file.
+	- 	Trace.WriteLine("Message")
+			* Using trace messages.
+	- 	[HandleError(ExceptionType=typeof(System.IOException), View="FileError")]
+			* All IOExceptions are send to the FileError view.
+
+
+Enforcing conditions by using code contracts (needs to be installed before use)
+	Information:
+	- Code contracts enable a developer to publish various conditions that are necessary within an application:
+		* Preconditions:	Conditions that have to be fulfilled before a method can execute.
+		* Invariants:		Conditions that do not change during the execution of a method.
+		* Postconditions:	Conditions that are verified upon completion of the method.
+	
+
+	Code:
+	-	System.Diagnostics.Contracts.Contract.Requires(id > 0);
+			* Using a precondition contract.
+	-	System.Diagnostics.Contracts.Contract.Ensures(Contract.Results<Article>() != null);
+			* Using a postcondition contract.
+	-	[ContractInvariantMethod]
+			* Attribute for using invariant checks on a class.
+
+
+Enabling and configuring health monitoring
+	Information:
+	- Health monitoring is a subsystem built into ASP.NET that is specifically designed to handle logging of various web events such as:
+		* Application lifetime events:	Raised when an application starts and stops, at process start and end times, for heartbeats and during regularly scheduled checks.
+		* Security events:				Raised when a login attempt fails or an unauthorized attempt is made to access a secured URL.
+		* Application errors:			Raised on errors and unhandled exceptions.
+	- The benefits of health monitoring are:
+		* It is part of the .NET framework so it can access a lot of events.
+		* It follows the Microsoft provider framework, so it can be added through configuration. This enables you to change it easily when switching environments.
+		* Ships with multiple log sources.
+	- Ships with a Web.config template for easy implementation (see page 230 and 231 for the complete package).
+	
+	Code:
+	-	<bufferModes>
+			<add name="Logging" maxBufferSize="1000" maxFlushSize="200" urgentFlushThreshold="800" 
+			regularFlushInterval="00:30:00" urgentFlushInterval="00:05:00" maxBufferThreads="1" />    
+		</bufferModes>
+			* Defines how long events are buffered before they are written to the provider.
+	- 	<providers>
+			<add name="EventLogProvider" type="System.Web.Management.EventLogWebEventProvider, System.Web" />
+		</providers>
+			* Indicates the prover to be used to write the event.
+	- 	<profiles>
+			<add name="Default" minInstances="1" maxLimit="Infinite" minInterval="00:01:00" custom="" />
+		</profiles>
+			* Set of profiles to use when configuring events.
+	- 	<rules>
+			<add name="All Errors Default" eventName="All Events" provider="EventLogProvider" 
+			profile="Default" minInstances="1" maxLimit="Infinite" minInterval="00:01:00" custom="" />
+		</rules>
+			* Sets the relationship between the provider and the event so that the appropriate provider is called for an event.
+	- 	<eventMappings>
+			<add name="All Events" type="System.Web.Management.WebBaseEvent,System.Web" startEventCode="0" endEventCode="2147483647" />
+		</eventMappings>
+			* Shows that the application is mapped to log all events, heartbeats and application lifetime events.
+	
+
+
+
+
+
+
+
+
+4.2 Design an exception handling strategy
+==============================================================================================================================
+
+Handling exceptions across multiple layers
+	Information:
+	- Moral of the story: don't let errors get out of your layer.
+
+
+Displaying custom error pages, creating your own HTTPHandler and setting Web.config attributes
+	Information:
+	- The "Global.asax" file contains some methods that can be used for exception handling:
+		* Application_Start:	The startup method for applications.
+		* Application_Error:	A global error handler (see page 237 for an example).
+	- You can also use the Web.config file to add the <customErrors> section for handling exceptions.
+	
+	Code:
+	- 	<customErrors mode="RemoteOnly" defaultRedirect="ErrorManager/ServerError">
+			<error statusCode="400" redirect="ErrorManager/Status400" />
+			<error statusCode="404" redirect="ErrorManager/Status404" />
+		</customErrors>
+			* Custom error section in the Web.config file. This has two important attributes:
+				+ mode: Has the values "On" and "Of" for specifying if the custom errors should be used. The value "RemoteOnly" shows custom errors to remote users and not to local ones.
+				+ defaultRedirect: Is the default redirect when the error is none of the specified ones.
+	- 	<system.webServer>
+			<httpErrors errorMode=”Detailed” />
+		</system.webServer>
+			* To make use of the custom errors, this has to be specified.
+
+
+Handling first chance exceptions
+	Information:
+	- First chance exceptions are exceptions beofre they have been handled by an error handler. 
+	- Enable "Common Language Runtime Exceptions" when searching for first chance exceptions.
+
+	Code:
+	- 	protected void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e){    
+			if (e.Exception is NotImplementedException) {        
+				// do something special when the functionality is not implemented    
+			}
+		}
+			* Create an event method to catch first chance exceptions and log them.
+	-	AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+			* Adds an event to the Global.asax file.
+
+
+
+
+
+
+
+
+
+4.3 Test a web application
+==============================================================================================================================
+
+Creating and running unit tests
+	Information:
+	- Integration tests are designed to test dependencies to ensure that integration points are working properly.
+	- Shims are...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
