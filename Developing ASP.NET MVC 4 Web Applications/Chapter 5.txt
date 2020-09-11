@@ -1,0 +1,67 @@
+5.1 Configure authentication
+==============================================================================================================================
+
+Authenticating users
+	Information:
+	- Authenticating a user is the process of ensuring his of her identity.
+	- You can authenticate users by:
+		* Microsoft Internet Information Services (IIS)
+		* .NET application framework
+	- The following methods can be used for authentication:
+		* Challenge-based authentication occurs when the client must respond to the server's demand for credentials. Examples of this are:
+			+ Basic
+			+ Digest
+			+ Windows
+			+ Client Certificate Mapping
+			+ IIS Client Certificate Mapping
+		* Login redirection-based occurs when the client sends login credentials to the application without being required by the server. Examples of this are:
+			+ Forms authentication
+		* Anonymous authentication does not require any credentials from the user.
+	- During the IIS request process, the HttpModule verifies the user information, adds this to the HttpContext and the "System.Threading.Thread.CurrentPrincipal".
+	- Within the .NET authentication, you have two interfaces:
+		* System.Security.Principal.IPrincipal:	Contains information about the user, including the user's roles.
+		* System.Security.Principal.IIdentity:	Contains information about the users, such as whether they are authenticated and by their name.
+	- The IPrincipal and IIdentity interfaces have multiple implementations:
+		* WindowsIdentity and WindowsPrincipal: The implementations that works with Active Directory and other Windows user storages.
+		* FormsIdentity and GenericPrincipal:	The implementations that support forms authentication.
+		* GenericIdentity and GenericPrincipal:	Implementations that support the more flexible custom user.
+	
+	Code:
+	-	System.Threading.Thread.CurrentPrincipal = System.Web.HttpContext.Current.User;
+			* Set the current user on the thread so you can access it from outside of the immediate web application.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

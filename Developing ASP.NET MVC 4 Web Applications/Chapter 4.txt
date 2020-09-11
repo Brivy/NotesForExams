@@ -167,8 +167,117 @@ Handling first chance exceptions
 Creating and running unit tests
 	Information:
 	- Integration tests are designed to test dependencies to ensure that integration points are working properly.
-	- Shims are...
+	- Shims are small pieces of code that intercepts a call to an assembly and has it return an object you created or mocked.
+	- Stubs are code that replaces working classses with a limited subset of a class you mocked up.
+	- Shims are used for mocking assemblies outside your solution and stubs are used for creating mocks of classes within your solution.
+	- In visual studio, you can select "Add Fakes Assembly" to create one.
+	- Add *.Fakes.Shim* for shimming objects and *.Fakes.Stub* for stubbing objects.
 
+	Code:
+	- 	using (ShimsContext.Create())
+		{
+			// insert the delegate that returns call for DateTime.Now    
+			System.Fakes.ShimDateTime.NowGet = () => new DateTime(2010, 1, 1);    
+			MethodThatUsesDateTimeNow();
+		}
+			* Using shims. If you do not use the "using" statement, then every DateTime.Now will return the 1/1/2010 date.
+	-	ICalculator calculator = new Calculator.Fakes.StubICalculator()     
+		{       
+			// Define each method:       
+			Add = (a,b) => { return 25; }    
+		};
+			* Using stubs. 
+
+
+Creating and running web tests
+	Information:
+	- There are three different approaches you can take when running load tests:
+		* Constant:		Apply a constant load of users to your application.
+		* Step:			Consider the following four values when using this approache:
+							+ Initial user count:	The number of users that start as soon as the testing process starts.
+							+ Maximum user count: 	The maximum number of users to be used in the process.
+							+ Step duration:		The value, in seconds, of the time between the start of each new group of users.
+							+ Step user count:		The number of users to be added after the expiration of each duration.
+		* Goal-based:	Instead of specifying the total amount of users, you set how much percent of cpu (75%) the application should use.
+	- Four primary types of test approaches:
+		* Smoke:				Generally puts a light load on the application over a shorter period of time.
+		* Stress:				Runs the application under a heavy load for several hours.
+		* Performance:			Test responsiveness of your application. Keeps careful records of when requests started, when the first piece of data is returned to the client and the length of time and amount of data that was transferred.
+		* Capactity planning:	Uses a testing process to support the correctness of the application and to help plan for deployment. Most of the time is this a combined Step and Goal based approach.
+
+
+
+
+
+
+
+
+
+4.4 Debug a Windows Azure application
+==============================================================================================================================
+
+Collecting diagnostic information
+	Information:
+	- Because Windows Azure roles are destroyed when te application stops and re-created during the startup process, your logs will be gone. You should use the customized diagnostic feature for saving logs outside of the environment.
+	- Using the "Microsoft.WindowsAzure.Diagnostics" namespace (contains the Windows Azure Software Development Kit (SDK)), you can add code to the ServiceDefinition.csdef file to allow diagnostics to be run.
+	- You also need to add configuration code to the ServiceConfiguration(.Cloud or .Local depending on the environment).cscfg file.
+	- The following diagnostics are captured by default:
+		* Windows Azure logs
+		* IIS logs
+		* Windows Azure diagnostics infrastructure logs
+	- The following diagnostics can be configured to use:
+		* IIS Failed Request logs
+		* Windows event logs
+		* Performance counters
+		* Crash dumps
+		* Custom error logs
+	- Each custom diagnostic tool needs it's own entry in the Diagnostics.wadcfg file (see page 258).
+	- There are two ways to transfer logging information:
+		* On-demand:	You saying when to transfer by coding in the application, within your role or an external application request.
+		* Scheduled:	Set up during the configuration of the log directory.
+
+	Code:
+	-	<ServiceDefinition name="WindowsAzure1" xmlns=http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition schemaVersion="2013-03.2.0">    
+			<WebRole name="WebRole1">        
+				<!-- Other configuration information here ->        
+				<Imports>          
+					<Import moduleName="Diagnostics" />        
+				</Imports>    
+			</WebRole>
+		</ServiceDefinition>
+			* A small example of adding diagnostics to the ServiceDefinition.csdef file.
+	- 	<ServiceConfiguration serviceName="WindowsAzure2 xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="3" osVersion="*" schemaVersion="2013-03.2.0">    
+			<Role name="WebRolePrimary">       
+				<Instances count="1" />       
+				<ConfigurationSettings>         
+					<Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />         
+					<!—- this version is for deployment on the azure server             
+					<Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=demoapp;AccountKey=[your key]" /> -->     
+				</ConfigurationSettings>    
+			</Role>
+		</ServiceConfiguration>
+			* Another small example of configuration code in the ServiceConfiguration.cscfg.
+
+
+Choosing log types
+	Information:
+	- Don't log all, just capture what you think you'll need.
+
+
+Debugging a Windows Azure application
+	Information:
+	- There are emulators available to test run the application on the exact same settings as Windows Azure.
+	- Two ways to fix issues when deployed:
+		* IntelliTrace:	
+			+ If enabled, you can view the debugging information for an ASP.NET MVC application that's running through Windows Azure. 
+			+ This can also be ran through the local environment.
+			+ Enabling this feature is checking a checkbox just before deployment.
+			+ Capturing only events has minimal impact on application performance, but capturing the call information along with events can affect the performance of your application.
+			+ Transfer the logs by opening the "Windows Azure Compute" node that is available in Sever Explorer within Visual Studio.
+		* (Remote Desktop Protocol) RDP:
+			+ Need to authorize this when first using it.
+			+ Access the server by opening the "Windows Azure Compute" node and select the "Connect Using Remote Desktop". 
+			+ There  you can review IIS logs, Windows event logs and perform other tasks as needed.
 
 
 
