@@ -25,11 +25,175 @@ Authenticating users
 		* WindowsIdentity and WindowsPrincipal: The implementations that works with Active Directory and other Windows user storages.
 		* FormsIdentity and GenericPrincipal:	The implementations that support forms authentication.
 		* GenericIdentity and GenericPrincipal:	Implementations that support the more flexible custom user.
+	- If the authentication failed, the server will return an Unauthorized token.
+	- Anonymous authentication is by default the only form of authentication that is installed and enabled in IIS 7 and above.
+	- Basic authentication is a simple way to transmit a user name and password between a client and server. They are Base64 encoded but not encrypted.
+	- Digest authentication uses a challenge-response mechanism to ensure that the user credentials required for authentication are not sent in clear text (without encryption):
+		1. The server sends a challenge to the client in response to a request of a secured page.
+		2. The client generates a unique challenge value.
+		3. The client creates a hash of both the challenge and the challenge value.
+		4. The client returns a challenge value and hash to the server.
+		5. The server creates its own version of the hash to ensure that it matches the one from the client.
+		6. The server creates a new hash of the challenge and challenge values.
+		7. The server sends the new hash to the client.
+		8. THe client calculates its own version of the hash to ensure that it matches the one from the server.
+	- Forms authentication is a way to allow authentication and authorization without having to use the built-in Windows security system:
+		1. Login screen with username and password.
+		2. Send to the server that will try to match them to some form of data store.
+		3. The Membership provider is called to ensure that the user's authentication token is set and that the user can remain logged in through the rest of the session.
+		4. Using the "FormsAuthentication.SetAuthCookie" method makes the authentication token available for the rest of the session.
+	- You can use Windows Authentication when your server runs on a corporate network using Active Directory domain identities or Windows accounts to identify users. Windows Authentication is best suited to intranet environments where users, client apps, and web servers belong to the same Windows domain.
+	- There are two windows authentication protocols:
+		* NTLM: Authentication protocol that runs on top of HTTP and is used for SSO (single sign on). 
+		* Kerberos: Also an authentication protocol but better. If for any reason Kerberos fails, NTLM will be used instead.
+	- Impersonation authentication is an add-in to Windows authentication that allows your ASP.NET MVC application to use the Windows identity provided by Windows authentication.
+	- By enabling Impersonation authentication, you can access more data of an user like the network or file resources. This will be defined in the "System.Security.Principal" "WindowsIdentity" object.
+	- For Client Certificate-based authentication, you'll need a SSL certificate installed on your server and every client also neds to have a certificate installed.
+	- There are two versions of Client Certificate authentication:
+		* Client Certificate-based: 					Both the IIS server and the client computer are members of an Active Directory domain. The users are also stored within this.
+		* IIS Client Certificate-based authentication:	Maps a client certificate to an Active Directory domain or local server user store and is more flexible. 
+	- Only use custom authentication when you can anwser the following questions:
+		* Do standard universal providers fulfill my application's requirements?
+		* Does the ability of Forms authentication to customize the login process provide needed flexibility?
+		* Can I support all the requirements of implementing IIdentity and IPrincipal?
+		* Do I have to re-create the entire process from the base up to satisfy the requirements.
 	
 	Code:
 	-	System.Threading.Thread.CurrentPrincipal = System.Web.HttpContext.Current.User;
 			* Set the current user on the thread so you can access it from outside of the immediate web application.
+	-	appcmd set config -section:anonymousAuthentication -enabled:true
+			* Enable anonymous authentication.
+	-	appcmd set config -section:basicAuthentication -enabled:true
+			* Enable basic authentication.
+	-	FormsAuthentication.SetAuthCookie(uname, false);
+			* Set a forms auth cookie.
+	- 	FormsAuthentication.ClearAuthCookie();
+			* Clear the forms auth cookie.
+	- 	<configuration>  
+			<system.web>    
+				<identity impersonate="true" />  
+			</system.web>
+		</configuration>
+			* Enable Impersonation authentication in the Web.Config.
+
+
+Enforcing authentication settings
+	Information:
+	- The easiest way to apply authentication settings is by using the [Authorize] and [AllowAnonymous] attributes on actions and controllers.
+	- Using a blocked list, you can specify what actions are allowed and all other actions are not allowed.
+	- Using a blocked list, you can specify what actions are not allowed and all other actions are allowed.
+	- To keep the generated token of the Forms authentication secure, use HTTPS.
+
+	Code:
+	-	Thread.CurrentPrincipal.Identity.IsAuthenticated
+			* Checks the current user on the thread if it is authenticated.
+	- 	HttpContext.Current.User.Identity.IsAuthenticated
+			* Checks the current user in the HttpContext if it is authenticated.
+	-	public static void RegisterGlobalFilters(GlobalFilterCollection filters) {    
+			filters.Add(new AuthorizeAttribute());
+			filters.Add(new RequireHttpsAttribute()); 
+		}
+			* Apply global authentication to the application and HTTPS.
+
+
+Choosing between Windows, Forms and custom authentication
+	Information:
+	- Windows authentication is the default one and has six types of authentication methods (see above).
+	- Forms is flexible but requires somewhat more work. 
+	- Custom is more flexible than forms but also requires a lot more work.
+
+
+Managing user session by using cookies
+	Information:
+	- To retain user login state, Forms authentication uses a cookie to manage the Forms authentication ticket, which is an encrypted version of the authenticated user name stored in the Forms authentication cookie.
+	- The Forms cookie is passed which each and every request.
+	- While casting the "UserIdentity" property from the principal (stored in the "HttpContext" or the thread) to a "FormIdentity", you can access the "Ticket" property containg the user information.
+	- Alternatively, you can store the session state, which contains user information on the server to maintain authentication state rather that storing user information in a ticket.
+	- The "FormsAuthenticationToken" is a great place to store authentication data, but the information is always passed as part ot the request/response process what can impact performance.
+	- Consider the above tradeoffs between storing in a cookie and maintaining it on a server.
+
+	Code:
+	- 	FormsAuthenticationTicket authTicket = new FormsAuthenticationTicket(
+			1, 
+			userName, 
+			DateTime.Now, 
+			DateTime.Now.AddDays(90),                
+			createPersistentCookie, // a Boolean indicating whether a cookie should be created on the user's machine                
+			String.Join(";",rolesArr) //user's roles 
+		);
+			* The creation of a Forms authentication cookie.
+	- 	string encTicket = FormsAuthentication.Encrypt(authTicket); 
+			* Encrypt the Forms cookie.
+
+
+Configuring membership providers
+	Information:
+	- The classic provider model is based on information in the configuration files.
+	- With newer versions like OAuth and OpenID, the user doesn't have a password.
+	- The term "SimpleMembership" is an umbrella term for both "SimpleMembership" and "SimpleRoles":
+		* SimpleMembership: 	Has methods are implemented as providers that implement core ASP.NET APIs.
+		* SimpleRoleProvider:	Impelemnts "RoleProvider" abstract base class.
+	- The default membership providers provide the ability to store key-value pair information in a special database table. 
+	- For this to work, you must initialize the "WebSecurity" class in a startup routine by running the InitializeDatabaseConnection method.
+	- WebSecurity is a wrapper for SimpleMembership and contains the Login, ResetPassword, CreateAccount and ChangePassword methods.
+	- There is only one "SimpleMembershipProvider" but you can write your own if necessary.
+	- In the membership configuration, you can add multiple providers.
 	
+	Code:
+	- 	<system.web>    
+			<membership>        
+				<providers>            
+					<clear/>            
+					<add ... />       
+				</providers>    
+			</membership>
+		</system.web>
+			* Configuring an ASP.NET membership provider to use the SqlMembershipProvider.
+	-	WebSecurity.InitializeDatabaseConnection(string connectionString, string providerName,string userTableName, string userIdColumn, string userNameColumn, bool autoCreateTables)
+			* Initializes a database connection for the WebSecurity class.
+	-	<connectionStrings>    
+			<add name="DefaultConnection" connectionString="ConnectionStringHere" providerName="System.Data.SqlClient" />
+		</connectionStrings>
+		<appSettings>    
+			<add key="TableName" value="CustomLoginTable"/>    
+			<add key="IdColumn" value="Id"/>    
+			<add key="UsernameColumn" value="Username"/>
+		</appSettings>
+			* Using membership provision.
+
+
+Creating custom membership providers
+	Information:
+	- If you need a different way to manage membership, change the underlying ASP.NET membership providers to better suit your requirements:
+		* ActiveDirectoryProvider:	The default for Windows authenctication.
+		* SqlMembershipProvider: 	Designed with flexibility in mind (mostly used for Forms).
+	- When you want to override the "FormsAuthentication" class, consider three aspects:
+		* The FormsAuthentication class does the work for setting the Forms ticket (cookie) for the first time.
+		* The FormsAuthenticationModule does the ticket work on every subsequent request. It verifies if the cookie and ticket can be decrypted and added to the HttpContext for that request.
+	- To implement a custom membership provider, you'll need to inherit the "MembershipProvider" abstract class from the "System.Web.Security" namespace.
+	- The MembershipProvider inherits from the "ProviderBase" abstract class, so you must implement those also.
+	- To use "WebSecurity" helpers with this provider, you'll need to inherit from the "ExtendedMembershipProvider".
+	- With this solution, you must ensure that your queries include the "ApplicationName" value to get the appropriate user's information.
+
+
+
+
+
+
+
+
+
+5.2 Configure and apply authorization
+==============================================================================================================================
+
+
+
+
+
+
+
+
+
 
 
 
