@@ -186,6 +186,74 @@ Creating custom membership providers
 5.2 Configure and apply authorization
 ==============================================================================================================================
 
+Creating roles
+	Information:
+	- MVC got default membership providers based on their related roles provider like SqlRoleProvider and ActiveDirectoryRoleProvider
+	- Roles offer a way to arbitrarily group of users and most commonly this grouping is used for a more convenient way to apply authorization rules.
+
+
+Authorizing roles by using configuration
+	Information:
+	- Instead of redeploying the application, you can adjust role settings in the Web.Config.
+	- If you need the flexibility of defining roles in configuration, you must create that functionality.
+	
+	Code:
+	-	<system.web>    
+			<roleManager defaultProvider="AdminRoleProvider" enabled="true" cacheRolesInCookie="true">				
+				<providers>            
+					<clear/>            
+					<add ... />       
+				</providers>    
+			</roleManager>
+		</system.web>
+			* Configuring an ASP.NET role provider.
+	- 	public static void InitializeDatabaseConnection(string connectionStringName, string userTableName, string userIdColumn, string userNameColumn, bool autoCreateTables)
+			* Only use this when using SimpleMembershipProvider with a SimpleRole.
+
+
+Authorizing roles programmatically
+	Information:
+	- While the [Authorize] attribute returns you to the login screen, the WebSecurity.RequireRole will cause a 401.
+
+	Code:
+	-	[Authorize(Roles="Admin, User, ...")]
+			* You can use this attribute to authorize roles programmatically.
+	-	HttpContext.User.IsUserInRole("Admin");
+			* Check if the user has a certain role.
+	- 	Roles.GetRolesForUser();
+			* Get all the roles of a user.
+	-	RoleProvider.IsUserInRole("Admin");
+			* Again, another way to validate the role.
+	- 	WebSecurity.RequireRoles("Admin", "OtherRole");
+			* You'll need all these roles otherwise a 401 is returned.
+
+
+Creating custom role providers
+	Information:
+	- To create custom roles, you must inherit from the "RoleProvider" abstract class ("System.Web.Security"). This also inherits from the "ProviderBase" class ("System.Configuration.Provider").
+	- The custom role provider will have multiple calls running concurrently, so you must write a thread-safe provider.
+	- The roles must be secured in a cookie and typically you want to do that by using the <machineKey> configuration element of the server's Machine.config file.
+
+
+Implementing WCF service authorization
+	Information:
+	- You manage WCF authenctication by passing user credentials to the WCF. They can be passed through from the user or they are a specific set just for your application.
+	- The WCF service has the same options for authenctication as your MVC application, but because you're the client you'll need to take a different approach.
+	- If you use application-level credentials, you must create a proxy to the WCF service by using the Add Service Reference command in Visual Studio.
+	
+	Code:
+	- 	WCFServiceCient client = new WCFServiceCient();
+		client.ClientCredentials.UserName.UserName = "Apps User Name";
+		client.ClientCredentials.UserName.Password = "Apps Password";
+			* Sending application-level credentials to a WCF service.
+	- 	NetworkCredential credentials = new NetworkCredential();
+		credentials.Domain = "windows domain";
+		credentials.UserName = " Apps User Name";
+		credentials.Password = " Apps Password";
+		
+		WCFServiceCient client = new WCFServiceCient();
+		client.ClientCredentials.Windows.ClientCredential = credentials
+			* Sending credentials to a WCF service using Windows authenctication.
 
 
 
@@ -195,6 +263,54 @@ Creating custom membership providers
 
 
 
+5.3 Design and implement claims-based authenctication across federated identity stores
+==============================================================================================================================
+
+Implementing federated authenctication by using Windows Azure Access Control Service
+	Information:
+	- It's retired.
+	
+	
+Creating a custom security token by using Windows Identity Foundation
+	Information:
+	- Windows Identity Foundation (WIF) is a framework for building identity-aware applications.
+	- WIF is critical when trying to support single sign-on scenarios or to pass the burden and responsibility of authenctication to another application.
+	- WS-Trust is a WS-* specification and OASIS standard that provides extensions to WS-Security; specifically dealing with the issuance, renewal and validation of security tokens.
+	- WS-Federation is an extension to WS-Trust and it provides an architecture for ensuring the seperation between the formats of the tokens, the protocol for getting these tokens and the trust mechanisms that manage them all.
+	- WIF can do the following things:
+		* Build claims-aware applications (relying party applications).
+		* Builds identity delegation support into claims-aware application. 
+		* New identity and access tool for Microsoft Visual Studio 2012 that enables you to secure your application with claims-based identity and accept users from multiple identity providers. 
+	- A security token service (STS) is the service component that builds, signs and issues security tokens according to the WS-Trust and WS-Federation protocols.
+	- With WIF, you can create custom tokens (see page 308 for a good example of this).
+	- When creating a custom token, you'll also need to create a custom token handler. This can be done by deriving from "SecurityTokenHandler". This has two main purposes:
+		* CanReadToken(XmlReader): 		Reads and checks if the token is xml.
+		* ValidateToken(SecurityToken):	Validates the token and checks it's signature (see page 309 for an example).
+
+	Code:
+	- 	public class MyCustomToken : SecurityToken {     
+			public List<Claim> Claims {get; set;}      
+			public XmlElemnt Signature {get; set;}     
+			public bool ValidateThisSignature()     
+			{         
+				// code to validate the signature     
+			}
+		}
+			* Managing a custom token in code.
+	- 	<microsoft.identityModel>    
+			<service>      
+				<securityTokenHandlers>        
+					<remove type="Microsoft.IdentityModel.Tokens.WindowsUserNameSecurityTokenHandler, Microsoft.IdentityModel" />        
+					<add type="MyCustomToken.CustomUserNamePasswordValidatorSecurityTokenHandler, MyCustomToken" />      
+				</securityTokenHandlers>    
+			</service>  
+		</microsoft.identityModel>
+			* Add your custom token to the Web.Config.
+
+
+Handling token formats for SAML and SWT tokens
+	Information:
+	- While it's cool and all, the exam document says that this is not needed.
 
 
 
@@ -203,6 +319,206 @@ Creating custom membership providers
 
 
 
+
+5.4 Manage data integrity
+==============================================================================================================================
+
+Understanding encryption terminology
+	Information:
+	- Encryption refers to the transformation of readable or understandable text into an illegible format that can be decoded only when the appropriate key is provided to the system. 
+	- Hashing is the process of applying a formula to a string of text, which produces a return value of fixed length that cannot be decrypted back into the original value.
+	- Saltingis a process that strengthens file encryption and hashes. It adds a random string to the beginning or end of the input text prior to hashing or encrypting the value
+	- MD5 had a flaw where you could enter a fake password that was hashed the same way as the original one. Nowadays, we use SHA.
+	- Data Encryption Standard (DES) is a symmetric-key algorithm but insecure. Use the successor to DES for better encryption: Advanced Encryption Standard (AES).
+	- SSL uses Rivest, Shamir and Adleman (RSA) asymmetric encryption. 
+
+
+Applying encryption to application data
+	Information:
+	- There are two main base classes that come from the "System.Security.Cryptography" namespace: "AsymmetricAlgorithm" and "SymmetricAlgorithm".
+	- Symmetric algorithms namespaces in a nutshell (apply "Managed" behind them for managed classes):
+		* System.Security.Cryptography.Aes
+		* System.Security.Cryptography.DES
+		* System.Security.Cryptography.RC2
+		* System.Security.Cryptography.Rijndael
+		* System.Security.Cryptography.TripleDES
+	- Asymmetric algorithms namespaces in a nutshell (apply "Managed" behind them for managed classes):
+		* System.Security.Cryptography.DSA
+		* System.Security.Cryptography.ECDiffieHellman
+		* System.Security.Cryptography.ECDsa
+		* System.Security.Cryptography.RSA
+	- When using symmetric cryptography classes, you will also use a special stream class called CryptoStream that encrypts or decrypts a stream of information.
+	- Some rules that should be followed for both encryption standards:
+		* Use unique keys for different business functions.
+		* Protect your keys.
+		* Ensure that your keys are not with your data.
+		* Configure keys to expire.
+
+	Code:
+	-	using (RijndaelManaged rijndaelManaged = new RijndaelManaged()) {     
+			// assumes that the key and initialization vectors are already configured     
+			CryptoStream crypoStream = new CryptoStream(myManagedStream, rijndaelManaged.CreateEncryptor(), CryptoStreamMode.Write); 
+		};
+		* Encrypt data symmetric.
+	- 	using (RijndaelManaged rijndaelManaged = new RijndaelManaged()) {     
+			// assumes that the key and initialization vectors are already configured    
+			CryptoStream crypoStream = new CryptoStream(myManagedStream, rijndaelManaged.CreateDecryptor(), CryptoStreamMode.Read); 
+		};
+		* Decrypt data symmetric.
+	-	using (RSACryptoServiceProvider RSA = new RSACryptoServiceProvider()) {        
+			RSA.ImportParameters(RSAKeyInfo);         
+			encryptedData = RSA.Encrypt(DataToEncrypt, DoOAEPPadding);         
+			decryptedData = RSA.Decrypt(encrypyedData, DoOAEPPadding);    
+		};
+		* Encrypt and decrypt data asymmetric. The DoOAEPPadding stands for a boolean value to perform direct RSA encryption using Optimal Asymmetric Encryption Padding (OAEP).
+
+
+Applying encryption to configuration sections of an application
+	Information:
+	- There are two configuration providers that manage encryption and decryption of the Web.Config file:
+		* DPAPIProtectedConfigurationProvider: 	Uses the Windows Data Protection API (DPAPI).
+		* RsaProtectedConfigurationProvider:	Uses the RSA encryption algorithm.
+	- Use the RsaProtectedConfigurationProvider when you want identical encrypted configuration files on multiple servers because you can export and import the encryption keys.
+	- Specify which provider you want to use in the Web.Config or the Machine.Config with the ProtectedConfigurationProvider.
+
+	Code:
+	- 	aspnet_regiis -pe "ConnectionStrings" -app "/MachineDPAPI" -prov "RsaProtectedConfigurationProvider"
+			* Using the aspnet_regiis.exe tool with the provider encryption (-pe) command to encrypt sections of the Web.Config file.
+	-	<machineKey validationKey="2B746511891C1BAF47F8D25C07F6C39A104696DB51F17C529AD3CABE" decryptionKey="FBF50941F22D6A3B229EA593F24C41203DA6837F1122EF17" />
+			* Add the machine key, because otherwise it is unable to decrypt the configuration information.
+	-	aspnet_regiis -pd "ConnectionStrings" -app "/MachineDPAPI" -prov "RsaProtectedConfigurationProvider"
+			* Decrypt the data with the provider decryption (-pd) command.
+
+
+Signing application data to prevent tampering
+	Information:
+	- With a digital signature, you achieve authenctication, authorization and nonrepudiation:
+		* Nonrepudiation is the ability to prove that an authenticated party is the same party that took a particular action.
+	- The .NET framework combines both encryption and digital signature in the AsymmetricAlgorithm class. 
+
+	Code:
+	-	// create the hash code of the text to sign
+		SHA1 sha = SHA1.Create(); 
+		byte[] hashcode = sha.ComputeHash(TextToConvert); 
+		
+		// use the CreateSignature method to sign the data
+		DSA dsa = DSA.Create();         
+		byte[] signature = dsa.CreateSignature(hashcode);
+			* Creates a hash and and signature using the System.Security.Cryptography.DSA class.
+	-	// create the hash code of the text to verify
+		SHA1 sha = SHA1.Create(); 
+		byte[] hashcode = sha.ComputeHash(TextToVerify); 
+		
+		// use the VerifySignature method to verify the DSA signature
+		DSA dsa = DSA.Create();
+		bool isSignatureValid = dsa.VerifySignature(hashcode, signature);
+			* Verify the hash and signature using the System.Security.Cryptography.DSA class.
+
+
+
+
+
+
+
+
+
+5.5 Implement a secure site with ASP.NET
+==============================================================================================================================
+
+Securing communication by applying SSL certificates
+	Information:
+	- To create an SSL connection, a web server requires an SSL certificate, which is a "public key certificate" but can also be named as "digital certificate" or "identity certificate".
+	- A certificate is a document that uses a signature to stronly link an identity to a public key. The identity information contains details including the name and address of the organization/person and more.
+	- In a public key infrastructure (PKI), the signed signature is from a third-party source, which is the certificate authority (CA). 	
+	- A signature can be issued by another web user, called an endorsement or from the originating user, called a self-signed certificate.
+	- You can request a certificate from IIS and you'll need two keys: a private and a public key.
+
+
+Salting and hashing passwords for storages
+	Information:
+	- Common password attacks are:
+		* Dictionary attack: 	Contains a list of words, common passwords and other stuff that will be hashed and compared to a file.
+		* Brute-force attack:	Applies hashed values of random characters to the list of hacked passwords to attempt to find a match.
+		* Rainbow table:		Rather than using randomly defined values as in a brute-force attack, a rainbow table attack uses a dictionary of values and hashes them on the fly.
+	- Salts can be added in a password every time (stored in the db with the passwords) or they can be appended to the front of back of the password.
+	- The salt should be at least as long as the output of the hashing function (SHA265 => 32 bytes => salt of 32 bytes).
+	- Use the RNGCryptoServiceProvider.GetBytes() for a high level of randomness.
+	- Password-Based Key Derivation Function 2 (PBKDF2) uses a function such as Hash-based Message Authentication Code (HMAC), cipher, or another pseudo-random func-tion and applies it to the value being hashed, along with a salt.
+	- The PBKDF2 iterative hashed salt is then repeated multiple times, generally a minimum of 1,000 times, to get a value. This value is then used as the cryptographic key in subsequent operations.
+	- Working with the key-stretched hashed values, users can't see there old passwords anymore. When resetting, use a email validation or some kind of one-use token.
+
+	Code:
+	- See page 330 for a really great example of key-stretched hashed values.
+
+
+Using HTML encoding to prevent cross-site scripting attacks (AntiXSS Library)
+	Information:
+	- Javascript injection finds place by abusing the address bar or finding a cross-site scripting (XSS).
+	- AntiXSS (end of life because of alternatives) is a library that could be used for encoding stuff.
+	
+	Code:
+	- 	<% Html.Encode(review.Title) %>
+			* Make sure that malicious code is rendered as text.
+	-	public ActionResult Create(string message) {      
+			var newEntry = new Entry();     
+			newEntry.Message = Server.HtmlEncode(message);
+		}
+			* C# equilevant of html encoding text.
+
+
+Implement deferred validation and handle unvalidated requests
+	Information:
+	- Deferred validation (also known as "lazy request validation" will only validate the object when needed.
+
+	Code:
+	-	<httpRuntime requestValidationMode="4.5" ... />
+			* Enable deferred validation mode.
+	- 	var s = context.Request.Unvalidated.Form["some_value"];
+			* Access unvalidated objects in the request.
+
+
+Preventing SQL injection attacks by parameterizing queries
+	Information:
+	- To counter SQL injection attacks, you need to do the following:
+		* Always inspect the data.
+		* Use type-safe SQL parameters when accessing your database.
+		* Use restriced accounts when accessing the database.
+		* Don't show database errors to the public.
+	- While it's possible to do query composition with Linq, this composition is through the object model, so there are no facilities to insert input text as anything other than a string value.
+	
+	Code:
+	- 	SqlDataAdapter adapter = new SqlDataAdapter("AuthorLogin", conn); 
+		adapter.SelectCommand.CommandType = CommandType.StoredProcedure; 
+		SqlParameter param = adapter.SelectCommand.Parameters.Add("@id", SqlDbType.VarChar, 11); 
+		param.Value = submittedId;
+			* Using the Parameters collection in SQL Server.
+	-	SqlDataAdapter adapter = new SqlDataAdapter("SELECT username, email FROM user WHERE id = @id", conn); 
+		SQLParameter param = adapter.SelectCommand.Parameters.Add("@id", SqlDbType.VarChar, 11); 
+		paarm.Value = submittedId;
+			* Using parameters with dynamic SQL.
+
+
+Preventing cross-site request forgeries (XSRFs)
+	Information:
+	- Cross-site request forgery (XSRF), or cross-site reference forgery (CSRF), works by exploiting the trust that a site has for the user.
+	- Request forgery can be done by injecting JavaScript or HTML into the site, email, or some other form that when clicked or viewed causes the unanticipated action
+	- Calling the AntiForgeryToken method from a form and adding the ValidateAntiForgeryTokenAttribute attribute to the action method, you can protect yourself from CSRF.
+	- Must have cookies enabled for this to work.
+
+	Code:
+	-	[ValidateAntiForgeryToken] 
+			* Apply this attribute to the action you want to call.
+	- 	@using (Html.BeginForm("Login", "Authorize"))
+		{   
+			@Html.AntiForgeryToken();
+		}
+			* Apply the @Html.AntiForgeryToken to send the forgery token. This results in:
+				+ 	<form action="..." method="post">  
+						<input name="__RequestVerificationToken" type="hidden" value="J58uHtyhGtyHgf8kkjgFDeRgjjKKk6khgCvb/ywruFIUUYYVHHHgfft87/gGsQUf/YuP" />    
+						<!-- your form fields. -->    
+						<input type="submit" value="Submit"/>
+					</form>
+					
 
 
 
