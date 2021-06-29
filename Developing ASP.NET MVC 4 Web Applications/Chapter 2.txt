@@ -212,7 +212,7 @@ Implementing master/application pages
 
 
 
-2.4 Enhance applicaiton behavior and style based on browser feature detection (not in the exam)
+2.4 Enhance application behavior and style based on browser feature detection (not in the exam)
 ==============================================================================================================================
 
 Detecting browser features and capabilities

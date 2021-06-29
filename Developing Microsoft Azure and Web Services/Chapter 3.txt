@@ -1,0 +1,846 @@
+3.1 Create a WCF (Windows Communication Foundation) service
+==============================================================================================================================
+
+Defining SOA concepts
+	Information:
+	- Ah, yes the concepts:
+		* Service:  			A component that is capable of performing one or more tasks.
+		* Service definition: 	Precise term defining a feature of the service. The service definition takes the form of a contract. Use of contracts is a defining characteristic of SOA
+		* Binding:				Item used to specify the transport, encoding, and protocol details required for a client and server to communicate with each other
+	- And some tenets that are generally regarded as its basis:
+		* Boundaries are explicit:						To communicate across processes, you need to know something about them:
+			+ Where is the service entry point?
+			+ What operations does it support?
+			+ What communication mechanisms does it support?
+		* Services are autonomous:						The service and any items it contains must be independently deployed, versioned, and managed.
+		* Services share shema and contract, not class:	To communicate with a service, a client needs to know:
+			+ The uniform resource identifier (URI).
+			+ The protocol the communication will happen with.
+			+ Which operations are supported.
+		* Service compatiblity is based on policy:		Although Web Service Definition Language (WSDL) can provide a tremendous amount of information, it cannot communicate every possible requirement a service might have.
+
+
+Creating contracts
+	Information:
+	- The following types of contracts can be used inside a WCF Service:
+		* ServiceContract attribute:	Without a ServiceContract, you don’t have a WCF Service unless other contract elements are defined; it does nothing more than identify something as a service.
+		* OperationContract attribute:	Marks a function as an operation that is part of a given service.
+		* DataContract attribute:		Informs the runtime that the contained type will be serializable.
+		* FaultContract attribute:		Provides information on exceptions in a platform-agnostic manner.
+	- WCF Services are simply assemblies at their core so you can build a WCF Service and consume it just like any other class in .NET.
+	- WCF has the capability to be self-hosted.
+
+	- There are multiple options to create a WCF Service:
+		* By creating a new WCF Service through the "New Web Site" option.
+		* By creating a whole lot of WCF stuff through the WCF-specific templates.
+
+	- When creating a WCF service library, there are a few differences between a normal one and a WCF one:
+		* An assembly reference is automatically added to the System.ServiceModel and the System.Runtime.Serialization assemblies.
+		* An Application Configuration file is added to the project.
+		* The Output Type is specified as a class library (again, this reinforces the statement that WCF Service libraries are just like any other class library with minor differences).
+		* The Startup Object is not set because there is no specific startup object needed here.
+
+	- Because each service must include a contract, Microsoft decided to use interfaces because e, they're a natural and intuitive way to implement the requirement.
+	- To simplify the concept of a WCF service; its basically any .NET class that implements a corresponding interface and that either the class or the interface was decorated with teh ServiceContract attribute.
+	- Oh yes and each method of the service class should have the OperationContract attribute.
+	- When using custom types, you'll need to have them serializable. This is (within the exam) done by using the DataContract attribute.
+	- When using custom exceptions, you'll need to use the FaultContract attribute.
+	
+	- The "ABC" in WCF literature is about endpoints and stands for the following:
+		* "A" stands for “address”Corresponds to the “where” component of the equation and typically takes the form of a URI.
+		* "B" stands for “binding”Equates to the “how” of the transport proces. The bindings are defined at the service level, and one service can expose itself through several different bindings at one time:
+			+ BasicHttpBinding:		An HTTP protocol binding suitable for connecting to Web services that conforms to the WS-I Basic Profile specification.
+			+ WSHttpBinding: 		An interoperable binding suitable for connecting to endpoints that conform to the WS-* protocols.
+			+ NetNamedPipeBinding: 	Uses the .NET Framework to connect to other WCF endpoints on the same machine.
+			+ NetMsmqBinding: 		Uses the .NET Framework to create queued message connections with other WCF endpoints.
+			+ NetTcpBinding: 		This binding offers higher performance than HTTP bindings and is ideal for use in a local network.
+		* "C" stands for “contract”  The interface that is defined on the service.
+	
+	- Short summery of the processing pipeline:
+		* A proxy class is created for the client and the class enables the client application to interact with the service's methods.
+		* The request is serialized and transferred through the protocol specified in the binding. 
+		* It's transported to a dispatcher and then handed off to the service. Any information sent from and to the client needs to be deserialized for the service to be able to consume it.
+		* When received, the deserialization takes place and the logic runs. When finished, it will serialize the data and send it back to the client.
+
+	- The custom types are decorated with a DataContract attribute. This is done because you'll need to specifically opt-in with the serializations with [DataMember] or [EnumMember].
+	- There are some points to note though about serialization with the DataContract:
+		* If the item being sent is derived from the expected data contract (as opposed to being of the data contract type), it might not be known.
+		* If the type of the information being transmitted is an interface versus a class, structure, or enumeration, the actual type might not be known.
+		* If the declared type being transmitted is typed as an Object, it might not be known in advance.
+		* If a .NET Framework type contains members that meet any of the previous three criteria, there will likely be a problem when attempting to deserialize the type.
+	
+	- The DataMember attribute has some important properties:
+		* EmitDefaultValue:	If you don’t explicitly state it, the default value is true, so it’s something you would use only when you want to minimize the amount of data that’s serialized.
+		* Name:				Just like its counterpart everywhere else, you can use the Name property to differentiate a name for the clients to consume that’s different from what you’re defining internally.
+		* IsRequired:		IsRequired does just what the name implies. If it’s set to true, the property must have a value, or else a SerializationException is thrown when an attempt is made to serialize it.
+		* Order:			Specifies the order of serialization and deserialization of the member type.
+		* TypeId:			If defined in a derived class, it will return a unique identifier for the attribute.
+	
+	- The EnumMember attribute is used to decorate an enumerated value that you want serialized:
+		* Name:				Returns the name of this enumeration member.
+		* Value:			Returns the value of this enumeration member.
+		* BuiltInTypeKind:	Returns the kind of this type.
+		* Documentation:	Gets or sets the documentation object if one is specified (for example, if there is documentation associated with conceptual model constructs).
+	
+	- While .NET exceptions are .NET exclusive, there is something called a FaultContract that enables services to communicate failures to the client in a safe, intentional and mutually acceptable fashion.
+	- Using the FaultContract, you can define when information can be sent and what information is sent.
+	- When you throw a FaultContract exception, you'll have to tell the client specifically that you threw it with the attribute.
+	- Set the Reason property if you want to include additional information abou the failure.
+	- FaultCode enables you to specify additional information in a machine-readable manner about the fault, including whether the fault is a SOAP 1.1 or SOAP 1.2 fault type, for example.
+	- Using the MessageFault class which gives an in-memory representation of the fault, you can tailor the details of the fault as specifically as you want.
+	- Instantiating the FaultException:
+		* FaultException():										Creates a new instance of the FaultException class.
+		* FaultException(FaultReason):							Creates a new instance but specifies a specific reason
+		* FaultException(MessageFault):							Creates a new instance of the FaultException class specifying message fault values.
+		* FaultException(String):								Creates a new instance of the FaultException class using the String parameter to create the FaultReason for it.
+		* FaultException(FaultReason, FaultCode):				Creates a new instance specifying both the FaultReason and Fault Code.
+		* FaultException(MessageFault, String):					Creates a new instance using specified message fault values and providing an action String value.
+		* FaultException(SerializationInfo, StreamingContext):	Creates a new instance specifying serialization information and a corresponding context that the FaultException will be deserialized to.
+		* FaultException(String, FaultCode):					Creates a new instance of the class and sets both the FaultReason and a specific SOAP fault code.
+		* FaultException(FaultReason, FaultCode, String):		Creates a new instance of the class setting the specified FaultReason, FaultCode, and Action property value.
+		* FaultException(String, FaultCode, String): 			Creates a new instance of the class setting the FaultReason, FaultCode, and Action property value. It differs from the previous version only in that the String passed in as the first parameter is automatically turned into a FaultReason.
+	
+	Code:
+	- [DataContract, KnownType(typeof(Bar))]
+	class Foo {}
+		* If Bar is a type that inherits from the Foo object, this will work. Otherwise it will fail.
+	- throw new FaultException<IndexOutOfRangeException>(InvalidQuestionId, OutOfRangeMessage);
+		* Throw a new FaultException.
+	- [FaultContract(typeof(IndexOutOfRangeException))]
+		* Declare in the client that a FaultContract exception can be thrown.
+
+
+Implementing inspectors
+	Information:
+	- You can extend the WCF processing pipline on three places:
+		* Parameter inspection.
+		* Message formatting.
+		* Message inspecting.
+	- To perform parameter inspection, you must use the IParameterInspector. This contains two methods:
+		* BeforeCall:	Called right before the parameters are serialized into the Message object.
+		* AfterCall:	Called after the call has been processed.
+	- To make it work you must have a reference to the class that implements the IParameterInspector interface and then add it to the Behaviors collection of the Operations property of the proxy class:
+	- To implement the inspector, create an attribute that inherits from the Attribute class and implements the IParameterInspector interface.
+	
+	Code:
+	- ProxyInstance.Endpoint.Contract.Operations[0].Behaviors.Add(new UserNameInspector());
+		* Add the UserNameInspector to the Behaviors collection of the OperationContract.
+	- public class UserNameInspectorAttribute: Attribute, IOperationBehavior { ... }
+		* Create an attribute which that can be applied on a method for validation.
+	- public object BeforeCall(string operationName, object[] inputs){
+		* Example of the BeforeCall method.
+	
+	
+Implementing message inspectors
+	Information:
+	- To perform the message inspection functionality server-side, you must create a class that implements the IDispatchMessageInspector interface:
+		* AfterReceiveRequest:	Called after an inbound message has been received but before the message is forwarded to the target operation.
+		* BeforeSendReply:		Called after the operation has returned but before the reply is actually relayed.
+	
+	- To perform the message inspection functionality client-side, you must create a class that implements the IClientMessageInspector interface:
+		* AfterReceiveReply:	Fires after a reply message is received prior to it being passed back to the calling method.
+		* BeforeSendRequest:	Fires before a request message is sent to a service.
+	
+	Code:
+	- <extensions> 
+		<behaviorExtensions>  
+			<add name="serverSample" type="Samples.WCF.Services.ServerInspector, ClientHost, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/> 
+		</behaviorExtensions>
+	</extensions>
+		* Enable the server-side message inspector (in this example called ServerInspector).
+		
+	- <extensions> 
+		<behaviorExtensions>  
+			<add name="clientSample" type="Samples.WCF.Services.ClientInspector, ClientHost, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/> 
+		</behaviorExtensions>
+	</extensions>
+		* Enable the client-side message inspector (in this example called ClientInspector).
+
+
+
+
+
+
+
+
+
+3.2 Configure WCF services by using configuration settings
+==============================================================================================================================
+
+Configuring service behaviors
+	Information:
+	- There is a tool called the WCF Service Configuration Editor which enables you to visually manipulate all the XML elements inside the configuration file.
+	
+	
+Creating a new service
+	Information:
+	- Choose the "Create a New Service option" in the WCF Service Configuration Editor to create a new service.
+	- When you already have one added, select your existing service instead.
+	
+	
+Specifying a new service element (service)
+	Information:
+	- In the first steps it will the <system.ServiceModel> element containing a <services> in the configuration file.
+
+
+Specifying a new service element (contract)
+	Information:
+	- After you specify the service(s), you need to specify the corresponding contract(s). Unless you keep the interfaces in a separate assembly, the same assembly will contain both items.
+
+
+Specifying a new service element (communication mode)
+	Information:
+	- There are only 5 options when it comes down to the communication mode. However there are at least 12 out-of-the-box options available and you can create your own ones.
+
+
+Specifying a new service element (interoperability mode)
+	Information:
+	- There are three interoperability modes:
+		* Basic Web Services Interoperability
+		* Simplex communication
+		* Duplex communication
+
+
+Resulting configuration file
+	Information:
+	- When doing all the steps I described in the previous paragraphs, you are now at the following point:
+		* Configured a service
+		* Configured an endpoint
+		* Configured a binding
+		* Specified a service
+		* Specified a service contract
+		
+	Code:
+	- <?xml version="1.0" encoding="utf-8" ?>
+	<configuration>
+		<system.serviceModel>
+			<services>
+				<service name="Samples.WCF.Services.TestService">
+					<endpoint address=http://www.williamgryan.mobi/samples/487 
+							  binding="wsDualHttpBinding" bindingConfiguration="" name="DualHttp"
+							  contract="Samples.WCF.Services.ITestService" />
+				</service>
+			</services>
+		</system.serviceModel>
+	</configuration>
+		* Congratulations, you have a configuration file with the ABC defined into the endpoints element.
+
+
+Exposing service metadata
+	Information:
+	- Metadata endpoints all begin with the prefix “mex,” which is an abbreviation for “metadata exchange. There are four out-of-the-box endpoints:
+		* mexHttpBinding
+		* mexHttpsBinding
+		* mexNamedPipeBinding
+		* mexMsmqBinding
+	- This makes metadata exchange possible, and if you hit the endpoint you’ll see the wsdl of the service, which clients can use to gather whatever information you made available about the service
+	
+	- In the WCF service you can the following two behaviors that you'll almost certainly must use when you have high volume or require sophisticated security:
+		* EndpointBehaviors:	Enables you to specify information about endpoints. This information includes clientCredentials, transaction batching, the DataContract serializer, and much more.
+		* ServiceBehaviors:		Enables you to control several aspects of the service at a granular leve.
+	- When adding the behaviors, they are added to the <behaviors> element and the specifics are included in the <serviceBehaviors> element.
+	
+	- ProtocolMappings specify releationships between transport protocol schemes (http, net.pipe and https) and the corresponding WCF bindings.
+	- When configuring ProtocolMappings, you can do that globally in the machine.config or locally in the web/app.config.
+	
+	Code:
+	- <service>
+		...
+		<endpoint binding="mexHttpBinding" bindingConfiguration="" name="Mex" contract="IMetadataExchange" />
+	</service>
+		* Add a new endpoint conaining the mexHttpBinding metadata.
+
+	- <behaviors>
+		<serviceBehaviors>
+			<behavior name="Debug">
+				<serviceDebug />
+			</behavior>
+		</serviceBehaviors>
+	</behaviors>
+	<service behaviorConfiguration="Debug" name="Samples.WCF.Services.TestService>
+		...
+	</service>
+		* Adding the ServiceDebug behavior to the service configuration file. The name must match the one of the behaviorConfiguration.
+
+	- <behaviors>            
+			<endpointBehaviors>                
+			<behavior name="wsHttpBehaviorSample">                    
+				<clientCredentials />                
+			</behavior>            
+		</endpointBehaviors>
+	</behaviors>
+	<service ...>
+		<endpoint address=http://www.williamgryan.mobi/samples/487 behaviorConfiguration="wsHttpBehaviorSample" 
+		binding="wsHttpBinding" bindingConfiguration="" name="WsHttpcontract="Samples.WCF.Services.ITestService" />
+	</service>	
+		* Adding the clientCredentials behavior to the service configuration file. The name must match the one of the behaviorConfiguration.
+
+	- <protocolMapping>
+		<add scheme="http" binding="basicHttpBinding"/> 
+	</protocolMapping>
+		* Adding a protocol mapping.
+	- <protocolMapping>
+		<remove scheme="http" />
+		<add scheme="http" binding="wsHttpBinding" bindingConfiguration="wsHttpBindingConfigSample" />
+	</protocolMapping>
+		* A new protocol mapping.
+
+
+
+
+
+
+
+
+
+3.3 Configure WCF services by using the API
+==============================================================================================================================
+
+Configuring service endpoints
+	Information:
+	- You can create the ABC programmatically.
+	
+
+Configuring service behaviors
+	Information:
+	- You can create service behaviors programmatically as well by using:
+		* ServiceBehaviorAttribute:		Apply this attribute to the service definition to use it for the entire service.
+		* OperationBehaviorAttribute:	Apply this attribute to a method.
+	- One of the things to look out for is that both the [ServiceContract] and the [ServiceBehavior] attributes can define names and namespaces. 
+
+
+Configuring bindings
+	Information:
+	- While you can use the BasicHttpBinding, you can also just use the wsHttpBinding. It has some benefits:
+		* It uses the SOAP 1.2 standard instead of SOAP 1.1.
+		* It has extensive support for the WS-* standards (hence the name).
+		* Because of the WS-* support, features such as reliable messaging, transactional support, duplex communication, and much more powerful and granular security support are all readily available.
+	- While you can use the wsHttpBinding, you can also just use the NetMsmqBinding. It has one more benefits:
+		* It uses the new MsmqSecurityMode enumeration to implement the security-enabled overload, and there’s no overload to support reliable messaging.
+	- While you can use one of the other bindings, if you are working with communications on the same machine, you should use NetNamedPipeBinding:
+		* Having the highest level of performance. 
+		* But, communication needs to happen entirely on the same machine.
+	
+	- When you have decided that you want to use custom binding, you can go two ways:
+		* The first entails using one or more of the system-provided bindings and adding to it. 
+		* The next is to use user-defined custom binding elements exclusively.
+	
+	Code:
+	- BasicHttpBinding BasicHttp = new BasicHttpBinding();
+	// SecurityMode values include None, Transport, Message, TransportCredentialOnly and TransportWithMessageCredential
+	BasicHttpBinding BasicHttpSecurity = new BasicHttpBinding(BasicHttpSecurityMode.None);
+	// Using Binding configured in .config file
+	BasicHttpBinding BasicHttpConfig = new BasicHttpBinding("BasicHttpBindingConfigSample");
+		* Setting up BasicHttpBinding by code.
+
+	- WSHttpBinding WsHttp = new WSHttpBinding();
+	// SecurityMode values include None, Transport, Message and TransportWithMessageCredential
+	WSHttpBinding WsHttpSecurity = new WSHttpBinding(SecurityMode.None);
+	// Uses Binding configured in .config file
+	WSHttpBinding WsHttpConfig = new WSHttpBinding("wsHttpBindingConfigSample");
+	// Sets the Security mode and indicates whether ReliableSessionEnabled should be Enabled or Not
+	WSHttpBinding WsHttpReliable = new WSHttpBinding(SecurityMode.None, true);
+		* Setting up WSHttpBinding by code.
+
+	- NetMsmqBinding MsmqDefault = new NetMsmqBinding();
+	// NetMsmqSecurityMode includes Transport, Message, Both and None
+	NetMsmqBinding MsmqSecurity = new NetMsmqBinding(NetMsmqSecurityMode.None);
+	// Using Binding configured in .config file
+	NetMsmqBinding MsmgConfig = new NetMsmqBinding("MsmqBindingConfigSample");
+		* Setting up NetMsmqBinding by code.
+		
+	- NetNamedPipeBinding NamedPipeDefault = new NetNamedPipeBinding();
+	// NetNamedPipeSecurityMode includes None and Transport 
+	NetNamedPipeBinding NamedPipeSecurity = new NetNamedPipeBinding(NetNamedPipeSecurity Mode.None);
+	// Using Binding Configured in .config file
+	NetNamedPipeBinding NamedPipeConfig = new NetNamedPipeBinding("NetNamedPipeConfigSample");
+		* Setting up NetNamedPipeBinding by code.
+
+
+Specifying a service contract
+	Information:
+	- To be a WCF Service, an item must inherently meet the following criteria:
+		* Implement a service contract using the ServiceContract attribute. 
+		* Define the supported operations using the OperationContract attribute. 
+		* If any data types are defined, they must specify a serialization format (the most common being the DataContract attribute on the class, with the DataMember attribute decorating each of the supported members).
+
+	- You can't use the [ServiceContract] on both the interface and on the implementing class. This results in an error. Same goes for [OperationContract].
+	- This is done to prevent specifying multiple names and namespaces.
+	
+	- By using the MetadataExchangeBindings class, you can call one of the Create methods thtat correspond to the mex bindings:
+		* CreateMexHttpBinding
+		* CreateMexHttpsBinding
+		* CreateMexNamedPipeBinding
+		* CreateMexTcpBinding
+	
+	Code:
+	- <endpoint address="" binding="basicHttpBinding" contract="Samples.WCF.Services.ITestService" />
+	<endpoint address="mex" binding="mexHttpBinding" contract="IMetadataExchange" />
+		* Specifying metadata endpoints.
+
+	- Hoster.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexHttpBinding(), "mexBindingHttp");
+		* Using the CreateMexHttpBinding method while adding a service endpoint by code.
+
+
+
+
+
+
+
+
+
+3.4 Secure a WCF service
+==============================================================================================================================
+
+Implementing message level security
+	Information:
+	- It runs transparently without any intervention by the developer for most of the bindings and is enabled by default.
+	- It helps by providing CIA:
+		* Confidentiality means that only the people or parties are supposed to see the message are the ones see it. 
+		* Integritymeans that the message cannot be tampered with without being detected.
+		* Authenticationensures the identity of a party viewing the message.
+	- For basicHttpBinding, the mode property is of type BasicHttpSecurityMode and this convention is done also for the other bindings.
+	
+	Code:
+	- WSHttpBinding WsHttpSecurity = new WSHttpBinding(SecurityMode.Message);
+		* Set Security Mode to Message in Constructor    
+	- WSHttpBinding wsHttpSecurity2 = new WSHttpBinding(); 
+	wsHttpSecurity2.Security.Mode = SecurityMode.Message;	
+		* Use default constructor to set the Security property manually
+
+	- <wsHttpBinding>
+		<binding name="wsHttpBindingConfigSample" >
+			<security mode="Message"/>
+		</binding>
+	</wsHttpBinding>
+		* Setting the security mode by configuration.
+
+
+Implementing transport level security
+	Information:
+	- Instead of using the SecurityMode.Message, you should now use SecurityMode.Transport.
+	- Same goes for the configuration section (using "Transport" instead of "Message").
+
+
+Implementing certificates
+	Information:
+	- If you have a certificate, you must make a reference to the System.Security.dll first.
+	- To use it, you must change the <security> and <message> bindings to "TransportWithMessageCredential" and change the ClientCredentialType property to a certificate.
+
+	Code:
+	- MyFactory.Credentials.ClientCredentials.Certificate = X509.CurrentUser.My.SubjectDistinguishedName.Find("CN=CLIENT").FirstOrDefault();
+		* Setting the ClientCredentials.Certificate property.
+		
+
+
+
+
+
+
+
+
+3.5 Consume WCF services
+==============================================================================================================================
+
+Generating proxies using Svcutil.exe
+	Information:
+	- Svcutil.exe is a command-line tool that is used for generating proxy classes, among other things.
+	- It can do the following:
+		* Generates proxy classes based on existing services or metadata documents.
+		* Exports metadata documents from compiled service code.
+		* Validates service code.
+		* Downloads metadata documents from existing services.
+		* Generates serialization code
+		
+	- Command-line options for Svcutil.exe:
+		* /directory:<directory>		=>	Specifies the output directory in which the generated files will be placed. If no value is specified, it uses the current directory for the output.
+		* /help							=>	Shows the available command-line options.
+		* /noLogo						=> 	Suppresses the “Logo” information (copyright and banner message).
+		* /svcutilConfig:<configFile>	=>	Puts the configuration information in a file other than the default App.config file.
+		* /target:<output type>			=>	Instructs the tool to create a specific output. You can use one of three options: "code", "metadata", "xmlSerialize".
+		* /asnyc						=>	Creates the proxy class with both standard and asynchro-nous method signatures.
+		* /internal						=> 	Generates the methods using the internal access modifier instead of generating them as public.
+		* /serializer					=> 	Generates data types using a specific serializer. Available options are these: "Auto", "DataContractSerializer", "XmlSerializer". Typically, you’ll want to use DataContractSerializer unless you have a specific need to use XmlSerializer.
+		* /out							=> 	Specifies a file name for the generated code.
+		* /language						=>	Causes the output to be generated in a specific language. Available options are the following: "c#", "cs", "csharp", "vb", "visualbasic", "c++", "cpp".
+
+	Code:
+	- svcutil.exe /language:cs /out:TestServiceProxy.cs /config:app.confighttp://www.williamgryan.mobi/487/TestService
+		* An example of using the tool.
+
+Generating proxies by creating a service reference
+	Information:
+	- Click on the "Add Service Reference" option in Visual studio.
+	- There are two ways of finding specific Service References:
+		* By using the address (if the service is hosted).
+		* By using the discover button (if the service is local).
+	- You can set your own namespace in the menu.
+
+
+Creating and implementing channel factories
+	Information:
+	- The ChannelFactory class “Creates and manages the channels that are used by clients to send messages to service endpoints."
+	- The only requirement is for now that you'll need to have access to the service's contract.
+	- When using the ChannelFactory, you'll only need to use the interface to communicate.
+	
+	Code:
+	- ChannelFactory<ITestService> Proxy = new ChannelFactory<ITestService>();
+		* Using the default constructor.
+	- String endpointConfigName = "wsHttp_BindingConfig";
+	ChannelFactory<ITestService> proxy = new ChannelFactory<ITestService>(endpointConfigName);
+		* Using the endpoint configuration name (must match name in configuration file).
+	- String endpointConfigName = "wsHttp_BindingConfig";
+	WSHttpBinding wSBinding = new WSHttpBinding(EndpointConfigName);
+	ChannelFactory<ITestService> Proxy = new ChannelFactory<ITestService>(wSBinding);
+		* Accepts a binding.
+	
+	- String endpointUri = "http://www.williamgryan.mobi/487/TestService.svc";
+	String endpointConfigName = "wsHttp_BindingConfig";
+	WSHttpBinding wSBinding = new WSHttpBinding(EndpointConfigName); 
+	ChannelFactory<ITestService> proxy = new ChannelFactory<ITestService>(wSBinding, newEndpointAddress(endpointUri));
+		* Creating the proxy with a binding and a endpoint address.
+	- ITestService serviceInstance = proxy.CreateChannel();
+		* Creating an instance of the proxy to use.
+	- proxy.Close(new TimeSpan(0,0,1,0,0));
+		* Closing the proxy.
+
+
+
+
+
+
+
+
+
+3.6 Version a WCF service
+==============================================================================================================================
+
+Versioning different types of contracts
+	Information:
+	- There are four types of service changes you will probably encounter:
+		* Changes to a contract 
+		* Changes to an address
+		* Bindings are added or removed
+		* Implementations change
+	- You can also categorize changes in the following way:
+		* Breaking changes
+		* Nonbreaking changes
+	
+	- Changes to a contract can include the following:
+		* Addition or removal of an operation
+		* Modification of an operation
+		* Behaviors of the contract changing
+		* Components of the contract changing
+		* Elements in the message changing
+		
+	- To prevent damage done by versioning, instead of updating the contract, create a new one.
+	- Lax versioning means that minor changes can often be made without breaking the existing contract.
+	
+
+Configuring address, binding and routing service versioning
+	Information:
+	- Basically, everything can change.
+	
+
+
+
+
+
+
+
+
+3.7 Create and configure a WCF service on Windows Azure
+==============================================================================================================================
+
+Creating and configuring bindings for WCF services
+	Information:
+	- When deploying a regular WCF service to Azure you don’t have to make any changes and you can just deploy your service to a Web Role or Web Site.
+	
+	Code:
+	- ServiceHost sh = new ServiceHost(typeof(SecretService));
+		* Creating a ServiceHost.
+	- sh.AddServiceEndpoint(typeof(ISecretService), new NetTcpBinding(), "net.tcp://localhost:9358/secretservice");
+		* Creating a service endpoint (no relay or servicebus involved just yet).
+	- sh.AddServiceEndpoint(typeof(ISecretService), new NetTcpRelayBinding(), ServiceBusEnvironment.CreateServiceUri("sb", "wcfonazure", "secretservice"))
+	.Behaviors.Add(new TransportClientEndpointBehavior{TokenProvider = TokenProvider.CreateSharedSecretTokenProvider( 
+		"owner", 
+		"D1Kmb83CCLrAtz4du9vb3xn99DaM2dH4jQqSec98if4=")
+	});
+		* Creating a service endpoint with a relay service and servicebus.
+
+	- <services>  
+		<service name="Service.SecretService">
+			<endpoint contract="Service.ISecretService"
+			binding="netTcpRelayBinding"
+			address="sb://wcfonazure.servicebus.windows.net/secretservice"
+			behaviorConfiguration="sbTokenProvider"/>  
+		</service>
+	</services>
+		* Setting up the service endpoint with a relay and servicebus by the App.config.
+	- <behaviors>
+		<endpointBehaviors>
+			<behavior name="sbTokenProvider">
+				<transportClientEndpointBehavior>
+					<tokenProvider>
+						<sharedSecret issuerName="owner" issuerSecret="D1Kmb83CCLrAtz4du9vb3xn99DaM2dH4jQqSec98if4=" />
+					</tokenProvider>
+				</transportClientEndpointBehavior>
+			</behavior>
+		</endpointBehaviors>
+	</behaviors>
+		* Adding the behavior to the service within the App.config.
+
+
+Relaying bindings to Azure using service bus endpoints
+	Information:
+	- When creating the service bus in Azure, you'll get a connection string with a default key that should be used in the previous configuration.
+	
+	Code:
+	- Endpoint=sb://wcfonazure.servicebus.windows.net/;SharedSecretIssuer=owner;SharedSecretValue=D1Kmb83CCLrAtz4du9vb3xn99DaM2dH4jQqSec98if4=
+		* Connection string with the namespace "wcfonazure".
+	
+
+Integrating with the Azure service bus relay
+	Information:
+	- Your client needs to have the name of your namespace, the owners name (default: "owner") and the Default Key.
+	
+	Code:
+	- var cf = new ChannelFactory<ISecretServiceChannel>(
+		new NetTcpRelayBinding(),
+		new EndpointAddress(ServiceBusEnvironment.CreateServiceUri("sb", "wcfonazure", "secretservice")));
+		* Creating a new ChannelFactory to connect to the Azure relay.
+	- cf.Endpoint.Behaviors.Add(new TransportClientEndpointBehavior { 
+		TokenProvider = TokenProvider.CreateSharedSecretTokenProvider("owner", "D1Kmb83CCLrAtz4du9vb3xn99DaM2dH4jQqSec98if4=") 
+	});
+		* Provide the credentials needed to connect to the relay.
+	- using (var ch = cf.CreateChannel()){ Console.WriteLine(ch.GetSecretData(42)); }
+		* Use the ChannelFactory.
+
+
+
+
+
+
+
+
+
+3.8 Implement messaging patterns
+==============================================================================================================================
+
+Implementing one-way, request/reply, streaming and duplex communication
+	Information:
+	- Fire-and-forget functionality is implemented in WCF by using the OneWay attribute.
+	- While the idea of a Fire-and-forget pattern is to get back the 202 status code, you'll still need to wait for that to be received. So keep in mind that it is blocking.
+	
+	- While implementing streaming within the WCF, you can have two modes:
+		* Buffered (default)	=>	Data must be completely assembled and received before the receiver can start reading or using it.
+		* Streaming				=> 	The receiver can begin to read the information as soon as it begins transmission and before it’s been completely delivered. 
+	- If you want to use this, you'll need to update the configuration to use one of the following values:
+		* Buffered:			The request and response messages are both buffered.
+		* Streamed:			Both the request and response are streamed.
+		* StreamedRequest:	The request message is streamed, and the response message is buffered
+		* StreamedResponse:	The request message is buffered, and the response message is streamed
+	- Streaming can have a performance IF you for example send large objects (BLOBs) that can span several buffers.
+	- Not all bindings support TransferMode but the following do:
+		* BasicHttpBinding.
+		* NetTcpBinding.
+		* NetNamedPipeBinding.
+	- Some notes on streaming stuff:
+		* Operations that use a streamed transport can have a contract with only one input and one output parameter.
+		* SOAP headers are always buffered, even if you enable streaming. The headers for the message must not exceed the size of the MaxBufferSize setting.
+		* Reliable messaging and SOAP message-level security implementations rely on buffering messages for transmission. The overhead you incur by securing the channel can easily offset any benefit you received from streaming.
+	
+	- Request/reply is basically that the client initiates a request, and the server receives it and processes it, and then commences with a reply.
+	
+	- Duplex communication occurs when a client connects to a service and provides the service with a channel on which the service can send messages back to the client. 
+	- When using Duplex, you'll need to have an additional contract (interface) for callbacks and this contract must be specified in the service contract by way of the CallbackContract property.
+	
+	Code:
+	- [OperationContract(IsOneWay = true)]
+		* Tell that the operation is a Fire-and-forget operation. These methods can't have a return type other than void.
+
+	- <basicHttpBinding>  
+		<binding name="HttpStreaming" maxReceivedMessageSize="67108864" transferMode="Streamed"/>
+	</basicHttpBinding>
+	<customBinding>
+		<binding name="487CustomBinding">
+			<textMessageEncoding messageVersion="Soap12WSAddressing10" />
+			<httpTransport transferMode="Streamed" maxReceivedMessageSize="67108864"/>
+		</binding>
+	</customBinding>
+		* Setting a binding that will use the TransferMode streaming.
+	
+
+Implementing Windows Azure service bus and Windows Azure queues
+	Information:
+	- A service bus is a component that helps you to connect applications. This could be a connection between on-premise and the cloud or between multiple applications running in the cloud.
+	- Azure offers different communication styles:
+		* Queues allow one-direction communication. The queue stores the messages until another client reads them.
+		* Topics extends a queue by adding subscriptions. Each client can specify criteria that are used to filter the messages that it sees.
+		* Relays are already covered. They offer bi-directional communication. They don’t store messages. This means that both parties should be online to communicate.
+	
+	- When using a queue, you send a message to the service bus. This message has two parts: a set of key/value properties and a binary message body. 
+	- The message is stored by the service bus and delivered to a receiver at a later time. 
+	- Using the Queue decouples your application, increasing availability and scalability.
+	- To further increase those characteristics, a receiver can choose to remove a message from the queue on read or it can take a lock on the message, process it, and then remove it.
+
+
+
+
+
+
+
+
+
+3.9 Host and manage services
+==============================================================================================================================
+
+Managing services concurrency
+	Information:
+	- You can define a ConcurrencyMode as part of the ServiceBehavior:
+		* Single:		Only a single request has access to the WCF Service object.
+		* Multiple:		Multiple requests can be processed by the WCF Service object.
+		* Reentrant:	A single request is processed on one thread, but the thread can leave the service to call another service, and it can also communicate backward to a client through a callback without deadlocking.
+	
+	Code:
+	- [ServiceBehavior(ConcurrencyMode=ConcurrencyMode.Single)]
+		* Using the Single concurrency mode.
+	- [ServiceBehavior(ConcurrencyMode=ConcurrencyMode.Multiple)]
+		* Using the Multiple concurrency mode.
+	- [ServiceBehavior(ConcurrencyMode=ConcurrencyMode.Reentrant)]
+		* Using the Reentrant concurrency mode.
+
+
+Choosing an instancing mode
+	Information:
+	- You can define a InstanceContextMode that specifies the number of service instances that are available for handling calls to the service:
+		* Single:		Only a single instance of the WCF Service is used for all client requests. Benefit of not having to constantly create and destroy instances, but has it's downsides with large client request volumes.
+		* PerSession:	The default setting (remember this!) and creates one or more instance per client.
+		* PerCall:		Creates one instance (or more) for each client request.
+		
+	Code:
+	- [ServiceBehavior(InstanceContextMode=InstanceContextMode.Single)]
+		* Using the Single instancing mode.
+	- [ServiceBehavior(InstanceContextMode=InstanceContextMode.PerSession)]
+		* Using the PerSession instancing mode.
+	- [ServiceBehavior(InstanceContextMode=InstanceContextMode.PerCall)]
+		* Using the PerCall instancing mode.
+
+
+Creating service hosts
+	Information:
+	- WCF can be self-hosted:
+		* It's simple to use and you can swap out hosts when the application isn't performing as expected.
+		* The downsides are basically all the stuff that comes with hosting in IIS.
+	- Managed Windows Services:
+		* It has more power that self-hosted solutions. You can write logic when the service starts, stops and also some pause functionality.
+		* There is a catch tho, you can't easily scale up or down and you are responsible for the start/stop/pause code.
+	- Internet Information Services (IIS)
+		* Includes all the good stuff like isolation of application pools, process recycling, idle shutdown and process health monitoring. Basically the choice for high availability and scalability.
+		* No actual downsides at the moment.
+	- Windows Activation Service (WAS)
+		* Basically IIS, but it can run without it. Most of the IIS features are also available here.
+		* Lack of support and probably not used anymore.
+	- Windows Azure-based hosting
+		* The major benefit is that you put all your stuff somewhere else and that they have to manage it for you.
+		* But that's also the downside of this.
+	
+	- Some ServiceHost information:
+		* A ServiceHost basically provides you everything you need to host a WCF service in a non-IIS or WAS setting. 
+		* A common place for a ServiceHost would be in a console app or Windows service. 
+		* If there’s an unhandled fault when using the ServiceHost, the channel is considered faulted and cannot be used for further operations. 
+		* You can now use the ServiceHostingEnvironment class, which enables you to virtually reference the .svc file, but do this by configuration plz.
+
+	Code:
+	- using (ServiceHost HostInstance = new ServiceHost(typeof(TestServiceType)))
+	{     
+		HostInstance.Open();     
+		//Put in a Wait Condition so Host stays open     
+		HostInstance.Close();
+	}
+		* Create, open and close a ServiceHost.
+	- <serviceHostingEnvironment>
+		<serviceActivations>
+			<add relativeAddress="ServiceOrInterfaceName.svc" service="FullyQualifiedService Name"/>
+		</serviceActivations>
+	</serviceHostingEnvironment>
+		* Adding the reference to the virtual .svc file.
+
+
+Choosing a hosting mechanisms
+	Information:
+	- There are some things to consider when choosing the service host.
+
+
+Creating transactional services
+	Information:
+	- You can mark operation with the TransactionFlow attribute to specify if they can participate in a transaction:
+		* NotAllowed (default):	Any operation marked with this setting cannot participate in a transaction.
+		* Allowed:				The operation participates in a transaction if the client initiates one.
+		* Mandatory:			For this operation to be invoked, the client must create a transaction.
+	
+	- You can also add the TransactionScopeRequired property to the OperationBehavior attribute to tell that the method must be part of a TransactionScope.
+	- Also, you can add the TransactionAutoComplete property to the OperationBehavior attribute to tell to the runtime to automatically complete the transaction if no unhandled exceptions occur.
+	
+	Code:
+	- [OperationContract]
+	  [TransactionFlow(TransactionFlowOption.NotAllowed)]
+	  String GetTestSummary(String examId);
+		* One basic example of using the TransactionFlow attribute.
+
+	- [OperationBehavior(TransactionAutoComplete=true, TransactionScopeRequired=true)]
+		* The other cool properties.
+
+
+Hosting services in a Windows Azure worker role
+	Information:
+	- Normally, you host a WCF service in a Web role, but you can also do this in a Worker role. This way you avoid IIS and you have more control over service configuration.
+	- It comes all down to the following:
+		* Initializing your own ServiceHost.
+		* Configuring endpoints.
+		* Opening the application.
+		
+	- Store the endpoint configuraiton in the roles configuration file (the .csdef). 
+	
+	Code:
+	- IPEndPoint ip = RoleEnvironment.CurrentRoleInstance.InstanceEndpoints["WCFService"].IPEndpoint
+		* Get the IP.
+	- host = new ServiceHost(typeof(<yourservice>), baseAddress);
+		* Create a new host.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

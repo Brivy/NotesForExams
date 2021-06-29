@@ -141,15 +141,15 @@ Implementing action results
 	Information:
 	- The "ActionResult" class performs the last set of conversions on information before it's returned to the client.
 	- But there are more:
-		* ContentResult		-> 		Content 	-> 	Returns a user-defined content type.
-		* EmptyResult		->		(None)		-> 	Represents a return value to be used if the action method must return a null result.
-		* FileResult		->		File		-> 	Returns binary output that is written to the result.
-		* JavaScriptResult	->		Javascript	->	Returns Javascript that is executable on the client.
-		* JsonResult		->		JSON		->	Returns a serialized Javascript Object Notation (JSON) object.
-		* PartialViewResult	->		PartialView	->	Renders a partial view.
-		* RedirectResult	->		Redirect	->	Redirects to another action method by using its URL and passing through the routing process.
-		* RedirectToRouteResult	->	RedirectToAction/Route	->	Redirects to another action method.
-		* ViewResult		->		View		-> 	Renders a view as an HTML document.
+		* ContentResult			-> 		Content 				-> 	Returns a user-defined content type.
+		* EmptyResult			->		(None)					-> 	Represents a return value to be used if the action method must return a null result.
+		* FileResult			->		File					-> 	Returns binary output that is written to the result.
+		* JavaScriptResult		->		Javascript				->	Returns Javascript that is executable on the client.
+		* JsonResult			->		JSON					->	Returns a serialized Javascript Object Notation (JSON) object.
+		* PartialViewResult		->		PartialView				->	Renders a partial view.
+		* RedirectResult		->		Redirect				->	Redirects to another action method by using its URL and passing through the routing process.
+		* RedirectToRouteResult	->		RedirectToAction/Route	->	Redirects to another action method.
+		* ViewResult			->		View					-> 	Renders a view as an HTML document.
 	- ViewResultBase is used for ViewResult and PartialViewResult.
 	- When ContentResult is completed into FileResult, it has two properties:
 		* ContentType: 		The type of content that we are sending.
@@ -359,7 +359,7 @@ Bundling and minifying scripts
 
 	Code:
 	- bundles.Add(new ScriptBundle("~/bundles/myBundle").Include("~/Scripts/myScript1.js, "~/Scripts/myScript2.js, "~/Scripts/myScript3.js"));
-		* Bundle scripts together.
+		* Bundle scripts together in the BundleConfig.cs.
 	- @BundleTable.Bundles.ResolveBundleUrl(("~/bundles/myBundle")
 		* Apply the bundle in your view.
 	- <compilation debug="false" />

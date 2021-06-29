@@ -1,0 +1,708 @@
+1.1 Choose data access technologies
+==============================================================================================================================
+
+Choosing a technology (ADO.NET, Entity Framework, WCF Data Services) based on application requirements
+	Information:
+	- There are three major data access technologies:
+		* ADO.NET
+		* Entity Framework
+		* WCF Data Services
+	
+Choosing ADO.NET as the data access technology
+	Information:
+	- The performance is mostly reached by using a disconnected model (closing connecting after a query has excecuted).
+	- Keeping connections closed is good because:
+		* It is expensive for a relational database to keep those connections alive.
+		* Connections can lock data what can cause concurrency problems.
+	- It also uses connection pooling to prevent new connections to be made with every request.
+	- Because of the connection pooling, you can also manage the number of active connections.
+	- The ADO.NET has cross-platform compatibility, what means that it can be used with more that only SQL Server.
+	- Data providers are described as components that have been explicitly designed for data manipulation and fast, forward-only, read-only access to data:
+		* DbConnection: 	Necessary for any database interaction. Care should be taken to close connections as soon as possible after using them. 
+		* DbCommand:		Necessary for all database interactions in addition to Connection. Parameterization should be done only through the Parameters collection. Concatenated strings should never be used for the body of the query or as alternatives to parameters.
+		* DbDataReader:		Ideally suited to scenarios in which speed is the most critical aspect because of its forward-only nature, similar to a Stream. This provides read-only access to the data.
+		* DbDataAdapter:	Used in conjunction with a Connection and Command object to populate a DataSet or an individual DataTable, and can also be used to make modifications back to the database. Changes can be batched so that updates avoid unnecessary roundtrips to the database.
+		* DataSet:			In-memory copy of the RDBMS or portion of RDBMS relevant to the application. This is a collection of DataTable objects, their relationships to one another, and other metadata about the database and commands to interact with it.
+		* DataTable:		Corresponds to a specific view of data, hether from a SELECT query or generated from .NET code. This is often analogous to a table in the RDBMS, although only partially populated. It tracks the state of data stored in it so, when data is modified, you can tell which records need to be saved back into the database.
+	- Keep in mind: "Underneath the abstractions, a DataAdapter uses a DataReader to populate the returned DataSet or DataTable.
+	- The following points are between the DataAdapter versus a DataReader:
+		* Take as a general rule that using a DataReader results in faster access times than a DataAdapter does.
+		* DataReader has asynchronous methods while DataAdapter doesn't have those.
+		* DataAdapter can only populate DataSets and DataTables. This has to be converted to you business object collection what costs some performance.
+		* Only DataSet lets you closely mimic the behavior of a relational database (like adding relationships between tables using the Relations property.
+		* DataAdapters Fill method only completes when all data is retrieved and so it's possible to count the results. The DataReader can indicate whether data was returned, but has to iterate through to count the rows.
+		* You can iterate through a DataReader only once and can iterate through it only in a forward-only fashion. You can iterate through a DataTable any number of times in any manner you see fit.
+		* DataSets can be loaded directly from XML documents and can be persisted to XML natively. They are consequently inherently serializable, which affords many features not natively available to DataReaders.
+		* After a DataSet or DataTable is populated and returned to the consuming code, no other interaction with the database is necessary unless or until you decide to send the localized changes back to the database.
+	- There are numerous benefits for choosing this technology:
+		* Consistency: 	It's old and used throughout most applications (not anymore I suppose).
+		* Stability:	Not likely to change except for adding new features.
+		* Easy:			A lot of pre-build providers and when getting the concept, you'll get it all.
+		* Azure:		It's compatibel with Azure database.
+		
+
+Choosing EF as the data access technology
+	Information:
+	- LINQ-to-SQL was one of the first major Microsoft initiatives to build an ORM (object-relational mapping) tool.
+	- EF enables developers to manipulate data as domain-specific objects without regard to the underlying structure of the data store.
+	- EF enables developers to work with entities; this is known as the conceptual model.
+	- The EF model has three parts and you'll need to understand what role they play:
+		* The conceptual model: 				Called the "conceptual schema definition (CSDL)".
+		* The data storage aspect:				Called the "store scheme definition language (SSDL)".
+		* The mapping between CSDL and SSDL:	Called the "mapping specification language (MSL)".
+	- No need to change as much code when switching databases if you compare this to ADO.NET>
+	- There are three basic ways you can use the set of Entity Data Model (EDM) tools to create your conceptual model:
+		* Database First: 	Build the database and create a conceptual model from it. 
+		* Model First:		Build your conceptual model and create a database from it.
+		* Code First:		Build classes that represent entities to create a simple data tier that just works.
+	- The current EF toolset includes four primary items:
+		* The Entity Model Designer: 	Creates the .dmx file and enables you to manipulate almost every aspect of the model and relationships.
+		* The Entity Data Model Wizard:	The true starting point of building your conceptual model. It enables you to use an existing data store instance.
+		* The Create Database Wizard:	Does the exact opposite of the previous item. Instead of starting with a database, it enables you to fully build and manipulate your conceptual model, and it takes care of building the actual database based on the conceptual model.
+		* The Update Model Wizard:		After your model is built, it enables you to fully modify every aspect of the conceptual model. It can let you do the same for both the storage model and the mappings that are defined between them. 
+	- You can add an EF Model in the following way:
+		* Right-click on your Project in Solution Explorer and add a New Item.
+		* Select ADO.NET Entity Data Model.
+		* Generate the model.
+		* Connect to your database.
+		* Select the models you want to use.
+		* Done.
+	- While this is slower than ADO.NET (in the book it's like 1-2ms), it just works.
+	- T4 is the templating and code generation engine that EF uses to generate code so you don't have to manage it yourself (identified by the .tt extension).
+	- The code generation handles relations of entities as follows (Customer.cs):
+		* If the class can have multiple of the same object, it uses a ICollection<> for that object.
+		* This collection is initialized with a HashSet<> within the constructor.
+	- The code generation also creates one class that implements the DbContext class (MyModel.Context.cs) that does all the EF magic:
+		* This class contains DbSet<> collections. These collections are what enable us to easily work with each table in the database as if it were simply a .NET collection.
+	- There are numerous mapping strategies when in need of inheritance that can be used within the EDM designer:
+		* Table per Hierarch (TPH): 		It creates a single table for all objects in an inheritance hierarchy, and it simply has nullable columns for fields that aren’t common across all types. It also adds a Discriminator column so EF can keep track of the type of each individual record.
+			- Advantage:	Best performace.
+			- Disadvantage:	Data is slightly denormalized.
+		* Table per Type (TPT):				It creates a table for your base type that has all common fields in it, a table for each child type that stores the additional fields, as well as an ID to the base type’s record that stores the common fields. The multiple inheriting types’ tables are linked to one another via a foreign key that has a shared primary key value. In this case, to get all the data for a single entity, EF must perform a join across multiple tables.
+			- Advantage: 	Your data is prperly normalized.
+			- Disadvantage:	Your performace SUFFERS.
+		* Table per Concrete Type (TPC):	In Table per Concrete type (aka Table per Concrete class) we use exactly one table for each (nonabstract) class. Vehicle is an abstract class, while car and sportscar and nonabstract classes and so the anwser is two.
+		* Mixed Inheritance:				Not supported by EF.
+	- A Complex Type is a logical designation for a common group of fields on multiple entities. For example, identifying a StartDate and StopDate field as a Complex Type called DateRange.
+	- There are some concepts that need more explaination:
+		* Scalar Property: 		Mapped to a column (int, string, ...).
+		* Navigation Property:	Mapped to a relation. e.g Order.OrderDetails brings you to all ORderDetails of a specific order.
+		* Complex Property: 	Mapped to a Complex Type.
+		* Association:			Create associations between entities.
+		* Inheritance:			Apply an inheritance strategy.
+		* Function import:		Also known as creating Stored Procedures.
+	- And there are the following menu options:
+		* Table Mapping: 				Enables to change the relationship to the underlying table.
+		* Stored Procedure Mapping:		Enables to specify an Insert, Update, and Delete function.
+		* Update Model from Database:	Update the model from the database.
+		* Generate Database from Model:	Generate the database from a model.
+		* Validate:						Validates the .edmx file.
+	- Older versions of EF worked with the ObjectContext instead of the DbContext. This class can still be used when:
+		* Creating the .dmx file in Visual Studion 2008 or 2010.
+		* Downgrading your entities.
+		* Work with the DbContext and teh ObjectContext together.
+	
+	- While working with the ObjectContext, there are five primary properties to manipulate:
+		* LazyLoadingEnabled: 					Load entities on-demand without thought by the developer.
+			+ Can have performance issues.
+			+ Triggered when using the navigation property.
+			+ Explicit loading is defined as : when objects are returned by a query, related objects are not loaded at the same time. By default, they are not loaded until explicitly requested using the Load method on a navigation property.
+			+ Eager loading is the opposite of Lazy loading which is : The process of loading a specific set of related objects along with the objects that were explicitly requested in the query.
+		* ProxyCreationEnabled: 				Determines whether proxy objects should be created for custom data classes that are persistence-ignorant, such as plain old common object (POCO) entities.
+		* UseConsistentNullReferenceBehavior: 	Basically, you can't set the navigation property to null when it's not loaded by lazy or eager loading. 
+		* UseCSharpNullComparisonBehavior:		Also applies "IS NULL" in the "WHERE" statement of a SQL query when enabled.
+		* UseLegacyPreserveChangesBehavior:		If the local values of unmodified properties against those already loaded in the context are different, the state of the property is set to Modified. The legacy option changes this behavior. When the entity is attached, the values of unmodified properties are not cop-ied over; instead, the context’s version of those properties is kep
+	- Entities could be generated in a few different ways:
+		* Using the base class "EntityObject".
+		* Using POCO entities.
+		* Using Self-Tracking entities (STEs).
+	
+	- While working on EnitityObject classes, there are the following things to note about the attributes on a generated class:
+		* EdmEntityTypeAttribute:	Contains the item's namespace and the Name.
+		* SerializableAttribute:	The entity has to be serializable to be able to pass the object locally, between tier or do anything else with it.
+		* DataContractAttribute:	It has to work with WCF and WCF Data Services, you must decorate the class with this attribute.
+	- The properties of this class have also some attributes:
+		* DataMember:			Also needed for the same reasons as the DataContractAttribute.
+		* EdmScalarProperty:	Contains properties that specify if it is an EntityKey or not (EntityKeyProperty) and if it allows Nulls (IsNullable).
+	- While updating an entity, it always first checks if it's changed because otherwise it's useless.
+	
+	- At last but not least, the following benefits are true:
+		* Ability to build and maintain the data access elements of your application in a much shorter time than ADO.NET
+		* You can focus on dealing with business objects of your application and don’t have to spend your time overly concerned about the underlying data store.
+		* It allows for a clear separation of concerns between the conceptual model and the underlying data store
+		* The data store can be changed (quite dramatically) without having to rewrite core application logic. Microsoft has made a tremendous investment into the EF, and all indications point to the fact it has made a firm commitment to the success of the EF.
+		* The EF is built to fit right in with WCF, which makes them very complementary technologies
+		
+		
+Choosing WCF Data Services as the data access technology
+	Information:
+	- WCF Data Services are particularly well-suited to applications that are exposed via Service-Oriented Architecture (SOA) and enable you to build applications that outsiders (and insiders for that matter) can easily consume and work with.		
+	- Note the following technologies:
+		* OData:	OData is being used to expose and access information from a variety of sources in-cluding, but not limited to, relational database, file systems, content manage-ment systems and traditional websites
+		* JSON: 	JSON (JavaScript Object Notation) is a lightweight data-interchange format. It is easy for humans to read and write. It is easy for machines to parse and generate... These properties make JSON an ideal data-interchange language.
+	- When using WCF, it has some out-of-the-box benefits:
+		* Using OData, resources are addressable via URL so everyone can access them.
+		* WCF Data Services are accessed over HTTP.
+		* OData feeds can take several different forms, including Atom, JSON or XML.
+		* Very powerful queries can be constructed with very simple semantic.
+	- While EF is meant to be used with WCF, it can be swapped out.
+	- WCF Data Services provide a feature known as Interceptors. Interceptors enable you to build in quite sophisticated business logic, as you’ll see when you build a WCF Data Service.
+
+
+
+
+
+
+
+
+
+1.2 Implement caching (! .NET Core has other caching !)
+==============================================================================================================================
+
+Understanding caching options
+	Information:
+	- Know that the following technologies are important: ObjectCache and HttpContext.Cache.
+	
+Using the ObjectCache
+	Information:
+	- Note to myself: There is no such thing anymore as a Azure Shared or Co-Located Caching and Dedicated Caching. Only use Azure Redis now <3.
+	- To instantiate the ObjectCache class, you'll need to use the MemoryCache.Default property to get an instance.
+	- For policies, there are two kinds of expiration dates:
+		* AbsoluteExpiration:	The CacheItem is purged after a specified amount of time.
+		* SlidingExpriation:	The CacheItem is purged only if it has not been accessed after a specified amount of time.
+	- You can set the CacheItemPriority to determine the order of item removal in the cache:
+		* Default:			No priority among the items.
+		* Not Removable:	Specifies that this entry should never be removed from the cache.
+	- By using the base class ChangeMonitor, you can implement the following methods:
+		* CacheEntryChangeMonitor:	Serves as a base class to build derived classes from that simply monitor the CacheItems for changes
+		* FileChangeMonitor:		Monitors a specific file to see whether any changes are made to it, and, if so, the changes will be reflected in the cache, provided the CacheItemPolicy dictates i
+		* HostFileChangeMonitor:	Monitors directories and file paths for changes and if so, handle accordingly.
+		* SqlChangeMonitor:			Provides change monitoring for SQL Server databases.
+	
+	Code:
+	- ObjectCache cache = MemoryCache.Default;
+		* Instantiate an ObjectCache.
+	- var policy = new CacheItemPolicy { AbsoluteExpiration = new DateTimeOffset(DateTime.Now.AddMinutes(1)) };
+		* Create a policy for storing stuff in the ObjectCache.
+	- cache.Add(key, value, policy);
+		* Add an item to the ObjectCache with a policy (without a policy is also possible).
+	- int fetchedValue = (int)cache.Get(key);
+		* Retrieve an item from the ObjectCache
+	- String encryptionPublicKey = CacheInstance["encryptionpublickey"] as String;
+		* Check safely for an item within the cache.
+
+
+Using the HttpContext.Cache
+	Information:
+	- There are multiple ways of accessing the Cache object. You can do it by HttpContext.Current, Page.Cache or Page.Context.Cache objects.
+	- The Cache class has been specifically been build for ASP.NET, if you use a Windows Forms application you should use the ObjectCache.
+	- The Cache items are stored with a name/value pair that's of type string/object.
+	- There is one main difference between Cache.Add and Cache.Insert:
+		* CacheItemUpdateCallback:	Called before an object is removed from the cache.
+		* CacheItemRemovedCallback:	Called when an object is removed from the cache.
+	- When using the System.Web.Caching namespace, you can specify a more specific level of behavioral control:
+		* Low:				If the system starts to remove items, this is the first one to go.
+		* BelowNormal: 		Only items with the value set to low are earlier removed.
+		* Normal:			The midpoint and the default value.
+		* AboveNormal:		Just more important than normal.
+		* High:				Most important items and will be the last to be removed when the system attempts to free memory.
+		* NotRemoveable:	The items can't be removed when freeing memory, BUT are not limited to the Absolute or SlidingExpriation.
+		* Default:			Sets the value to Normal.
+	- Using CacheDependency you can monitor and respond to a wide variety of changes to underlying objects. If you want to do the same with SQL connection, you can use the SqlCacheDependency.
+	- Well, the SqlCacheDependency will throw a lot of exceptions and must be handled in the right way to make use of it. Will not write down those things because it's outdated and not very usefull.
+
+	Code:
+	- Cache["FullNameKey"] = "John Q. Public
+		* Setting a value in the Cache.
+
+
+
+
+
+
+
+
+
+1.3 Implement transactions (While the information stays the same, .NET core uses some different stuff)
+==============================================================================================================================
+
+Understanding characteristics of transactions
+	Information:
+	- A database transaction should be ACID (atomic, consistent, isolated and durable) and has the following description:
+		* To provide reliable units of work that allow correct recovery from failures and keep a database consistent even in cases of system failure, when execution datastops (completely or partially) and many operations upon a database remain uncompleted, with unclear status
+		* To provide isolation between programs accessing a database concurrently. If this isolation is not provided, the program’s outcome, are possibly erroneous.
+	- Simple transactions are being referenced by one database but distributed transactions span over multiple systems.
+	
+
+Implementing distributed transactions
+	Information:
+	- The core Transactions objects exist in the System.Transactions namespace. The two other relevant ones are the System.Data.SqlClient and System.Data.EntityClient namespaces.
+	
+
+Specifying a transaction isolation level (https://docs.microsoft.com/en-us/sql/odbc/reference/develop-app/transaction-isolation-levels?view=sql-server-ver15)
+	Information:
+	- While there are two kinds of isolation enums (System.Data.IsolationLevel and System.Transaction.IsolationLevel), they both have the same values:
+		* Unspecified:		Can't determine what the isolation level is and will set it to the isolation level that is determined by the driver that is being used.
+		* Chaos:			The pending changes from more highly isolated transactions cannot be overwritten. This is not supported in SQL Server or Oracle, so it has very limited use.
+		* ReadUncommitted:	No shared locks are issued; exclusive locks are not honored. Dirty reads can happen which are undesirable.
+		* ReadCommitted:	Shared locks are held during reads and cannot have dirty reads. However, the data can be changed before the end of the transaction, resulting in nonrepeatable reads or phantom data
+		* RepeatableRead:	All data will be locked. Nonrepeatable reads are not possible anymore, but phantom data can still occur by adding new data into the set.
+		* Serializable:		Nobody can update/insert rows into the set until the transaction is completed. Must be used quickly to avoid problems.
+		* Snapshot:			An effective copy of the data is made, so one version of the application can read the data while another is modifying the same data. The size can cause some problems if overused.
+	- It's possible to change the isolation level in between excecuting the statement.
+	
+
+Managing transactions by using the API from the System.Transactions namespace
+	Information:
+	- A transaction scope will automatically upgrade itself from simple transactions to distributed ones.
+	- When opening multiple connections, the transformation to a distributed connection will begin.
+	
+	Code:
+	- using (TransactionScope mainScope = new TransactionScope()) { ... }
+		* Instantiate a TransactionScope object.
+	- mainScope.Save("savePoint");
+		* Creates a savepoint in the transaction that can be used to roll back a part of the transaction, and specifies the savepoint name.
+	- mainScope.Complete();
+		* Mark the TransactionScope as completed.
+
+
+Using the EntityTransaction
+	Information:
+	- An EntityTransaction is here to specify a transaction for an EntityCommand or to use in conjunction with an EntityConnection.
+	- Best to remember the good old dbContext.SaveChanges()
+	
+	
+Using the SqlTransaction
+	Information:
+	- As the chapter states, the previous information is good enough.
+
+
+
+
+
+
+
+
+
+1.4 Implement data storage in Windows Azure
+==============================================================================================================================
+
+Accessing data storage in Windows Azure
+	Information:
+	- To try to visualize this: Data storage with Windows Azure versus data storage in a Windows Server environment.
+	- Some significant concerns when implementing data storage in Windows Azure:
+		* Losing internet connection means you'll have problems.
+		* While local storage is amost identical, when using Table and Blob storage you will see different methods come in play.
+	- Azure provides the following data services:
+		* Azure Blobs:	A massively scalable object store for text and binary data. Also includes support for big data analytics through Data Lake Storage Gen2.
+			+ Store anything and access it from anywhere.
+			+ There are three main parts of a Blob storage: "Storage accounts" hold "Containers" that will contains "Blobs".
+			+ See Containers as sudirectories within your storage account. The only thing that you'll need to remember is that you can't store containers inside containers.
+			+ There are two kinds of Blobs namely the "Blocks" (can have 200 GB in size) and the "Pages" (can have anything up to 1 TB).
+			+ Two ways to access the blobs: By URL and by Code.
+			+ While Blobs have two versions, you can still retrieve them by using the CloudBlobContainer class and calling the GetBlockBlobReference method (see code below).
+			+ Uploading Blobs will overwrite existing ones if the data is already there!
+			+ If you want to create a public container, it can be done with the container’s SetPermissions method, in which you pass in a BlobContainerPermissions object preconfigured with PublicAccess enabled.
+		* Azure Files:	Managed file shares for cloud or on-premises deployments.
+		* Azure Queues:	A messaging store for reliable messaging between application components.
+			+ Always private.
+			+ When you get a message from the queue, it actually DOESN'T remove it! It makes him invisible for a period of time (default 1 minute) and makes sure nobody else can retrieve this.
+			+ After you say that you have finished the message, you should delete it from the queue.
+		* Azure Tables:	A NoSQL store for schemaless storage of structured data.
+			+ Always private.
+		* Azure Disks:	Block-level storage volumes for Azure VMs.
+
+	Code:
+	- http://<storage account name>.blob.core.windows.net/<container>/<blob>
+		* The structure of a blob url. 
+	
+	- StorageCredentials creds = new StorageCredentials(accountName, accountKey);
+		* Represents a set of credentials used to authenticate access to a Microsoft Azure storage account.
+	- CloudStorageAccount acct = new CloudStorageAccount(creds, true);
+		* Represents a Microsoft Azure Storage account.
+	- CloudStorageAccount acct = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnection"].ConnectionString);
+		* Alternative way of retrieving the StorageCredentials.
+	
+	- CloudBlobClient client = acct.CreateCloudBlobClient();
+		* Provides a client-side logical representation of Microsoft Azure Blob storage.
+	- CloudBlobContainer container = client.GetContainerReference(containerName);
+		* Represents a container in the Microsoft Azure Blob service.
+	- container.CreateIfNotExists();
+		* Create that container.
+	- ICloudBlob blob = container.GetBlockBlobReference(filename);
+		* This does not make a service call, it only creates a local object.
+	- blob.UploadFromFile(filename);
+		* Send it to the Azure blob thing.
+	- bool wasDeleted = blob.DeleteIfExists();
+		* Delete Blobs
+
+	- CloudTableClient client = acct.CreateCloudTableClient();
+		* Provides a client-side logical representation of the Microsoft Azure Table service. This client is used to configure and execute requests against the Table service.
+	- var table = client.GetTableReference(tableName);
+		* Gets a reference to the specified table.
+	- Record entity = new Record("1", "asdf"){FirstName = "Fred", LastName = "Flintstone"};
+		* Create a custom Record object?
+	- table.CreateIfNotExists();
+		* Create the table if not exists.
+	- TableOperation insert = TableOperation.Insert(entity);
+		* Creates a new table operation that inserts the given entity into a table.
+	- TableOperation fetch = TableOperation.Retrieve<Record>("1", "asdf");
+		* Retrieve the custom Record from the table.
+	- TableOperation del = TableOperation.Delete(result.Result as Record);
+		* Delete the custom Record object.
+
+
+Distribute data by using the Windows Azure Content Delivery Network (CDN)
+	Information:
+	- The Windows Azure Content Delivery Network (CDN) is a way to cache Windows Azure blobs and static content. 
+	- There are two benefits and those are also the two only reasons to use it:
+		* Better performance and user experience for end users who are far from a content source, and are using applications in which many Internet trips are required to load content.
+		* Large distributed scale to better handle instantaneous high load, say at the start of an event such as a product launch.
+	- To use it, enable it in your storage account.
+	- It works in the following way:
+		* Because you don't want to spread your blobs all over the world, it will wait for the first person to access it that will use the CDN.
+		* It will get a performance hit because it will cache all the blobs necessary for that person, so in the future other persons will use the cached item.
+		* But now, if that item changes frequently, it will need to be cached over and over and over.
+	- By setting the Time To Live (TTL) value, you control the cache expiration time.
+	- How to make content available on CDN:
+		* Make a public container. 
+		* Container must be available for anonymous access.
+	- Making a container public can be done through the Windows Azure Management Portal, but can also be facilitated through the API and the CloudBlobContainer class, for instance, in conjunction with the BlobContainerPermissions class.
+	- The CloubBlobContainer’s Permissions property has a PublicAccess property of type BlobContain-erPublicAccessType. The three values are Container, Off, and Blob. In this case, the container must be public, so BlobContainerPublicAccessType.Container should be used.
+
+	Code:
+	- http://<storage account name>.blob.core.windows.net/<container>/<blob>
+		* You can use the same url to access the blob.
+	- http://<storage account name>.vo.msecnd.net/<container>/<blob>
+		* Accessing the blob through the CDN.
+
+
+Manage Windows Azure Caching
+	Information:
+	- Study Azure Redis caching because this one is retired.
+	
+	
+Handling exceptions by using retries (SQL Database)
+	Information:
+	- When working with an azure database, you will have one big problem vs a local database and that is latency.
+	- A transient error, also known as a transient fault, has an underlying cause that soon resolves itself. An occasional cause of transient errors is when the Azure system quickly shifts hardware resources to better load-balance various workloads.
+	- To make sure that transient errors are being handled properly, use the transient fault handling framework.
+
+	Code:
+	- class MyRetryStrategy : ITransientErrorDetectionStrategy {    
+		public bool IsTransient(Exception ex) { ... }
+	}
+		* A class that implements the ITransientErrorDetectionStrategy interface for handling transient errors.
+	- RetryPolicy retry = new RetryPolicy<MyRetryStrategy>(5, new TimeSpan(0, 0, 5));
+		* Use the class that inherited the ITransientErrorDetectionStrategy interface.
+	- SqlDataReader reader = command.ExecuteReaderWithRetry(retry);
+		* Use the retry policy while reading the data.
+		
+		
+
+
+
+
+
+
+
+1.5 Create and implement a WCF Data Services service
+==============================================================================================================================
+
+Addressing resources
+	Information:
+	- Creating a WCF Data Service generally involves the following steps:
+		* Create an ASP.NET application (this serves as the host for the Data Service).
+		* Use the EF tools to build an EntityModel.
+		* Add a WCF Data Service to the ASP.NET application.
+		* Specify a type for the Service’s definition (which is the name of the model container created in your EF project).
+		* Enable access to the Data Service. This is accomplished by explicitly setting specific properties of the DataServiceConfiguration (SetEntitySetAccessRule, SetServiceOperationAccessRule and DataServiceBehavior)
+	- There are two thing generated in the WCF Data Service class:
+		* It inherits from DataService<FILL MODEL NAME HERE>
+		* It has the method InitializeService(DataServiceConfiguration config).
+	- SetEntityAccessRule is one of the methods that can be configured inside the InitializeService() body. It has two parameters:
+		* Important take: SetServiceOperationAccessRule can overrule this method on an conflict. 
+		* The first one is a string that names the entity set that the next parameter applies to.
+		* The second one is part of the EntitySetRights enumeration:
+			+ None:			All rights to the data are explicitly revoked.
+			+ ReadSingle:	Single data items can be read.
+			+ ReadMultiple:	Entire sets of data can be read.
+			+ WriteAppend:	New items of this type can be added to data sets.
+			+ WiteReplace:	Data can be updated or replaced.
+			+ WriteDelete:	Data can be deleted.
+			+ WriteMerge:	Data can be merged.
+			+ AllRead:		Across-the-board access to read data of this type.
+			+ AllWrite:		Across-the-board access to write data of this type.
+			+ All:			All Creation, Read, Update and Delete operations can be performed.
+	- SetServiceOperationAccessRule is also one of the methods that can be configured inside the InitializeService() body. It has two parameters:
+		* The first one is a string that the name of the operation you want to permit.
+		* The second one is part of the ServiceOperationRights enumeration:
+			+ None:						No authorization to access the operation is granted.
+			+ ReadSingle:				One single data item can be read using this operation.
+			+ ReadMultiple:				Multiple data items can be read using this operation.
+			+ AllRead:					Single and multiple data item reads are allowed.
+			+ All:						All rights are granted to the service operation.
+			+ OverrideEntitySetRights:	Overrides EntitySetRights that are explicitly defined in the Data Service.
+	- DataServiceBehavior is a value that can be configured inside the InitializeService() body. It has two parameters:
+		* This value affects the service only to the extent that it will be used with OData.
+		* It can be one of the following values:
+			* V1:	Supports version 1.0 of the OData Protocol
+			* V2: 	Supports version 2.0 of the OData Protocol
+	
+	Code:
+	- public class ExamSampleService : DataService<FILL IN MODEL NAME NERE> { ... }
+		* This looks like a WCF Data Service class definition.
+	- public static void InitializeService(DataServiceConfiguration config) { ... }
+		* Set rules to indicate which entity sets and service operations are visible, updatable, etc.
+	- config.SetEntitySetAccessRule("Courses", EntitySetRights.AllRead | EntitySetRights.WriteMerge);
+		* Set SetEntityAccessRule values to the Courses property.
+	- config.SetServiceOperationAccessRule("OperationName", ServiceOperationRights.All);
+		* Set the ServiceOperationRights values to the Operation by name.
+	- config.DataServiceBehavior.MaxProtocolVersion = DataServiceProtocolVersion.V2;
+		* Set the OData protocol.
+
+
+Creating a query
+	Information:
+	- OData is a protocol for creating queries inside the URL, but you'll need to use something like the entity model.
+	- As long as there are relationships defined in the Entity Model, you can use a few different semantics to return related entities. Each of the following is supported:
+		* Parent entity—Specific child entity
+		* Parent entity—All child entities
+		* Set of related entities
+	- If you need a range of values, if you need to restrict data based on something that isn’t a key field, or if you have multiple conditions, you need to start using the $filter value.
+	- Just a quick summary of all the query options:
+		* $orderby:		Defines a sort order to be used.
+		* $top:			The number of entities to return in the feed.
+		* $skip:		Indicates how many records should be ignored before starting to return values.
+		* $filter:		Specifies a condition or conditions to filter on.
+		* $expand:		Indicates which related entities are returned by the query. 
+		* $select:		By default, all properties of an entity are returned in the feed. This is the equiva-lent of SELECT * in SQL.
+		* $inlinecount:	Returns the number of entries returned (in the <count> element). 
+	- Using the DataServiceQuery class, you can create a OData query in your code with ease.
+	
+	Code:
+	- http://servicehost/ExamPrepService.svc/Topics('First')
+		* Instead of all Topics, just return the one named First.
+	- http://servicehost/ExamPrepService.svc/Topics('First')/Description
+		* Instead of returning the whole Topics object, only return the Description.
+	- http://servicehost/ExamPrepService.svc/Topics('First')/Description/$value
+		* Instead of returning the XML, just return plain text.
+	- http://servicehost/ExamPrepService.svc/Questions?$orderby=Id,Description
+		* Order the questions.
+	- http://servicehost/ExamPrepService.svc/Questions?$top=5
+		* Only select the first five questions.
+	- http://servicehost/ExamPrepService.svc/Questions?$skip=10&$top=5
+		* Skip the first 10 and take the top five questions.
+	- http://servicehost/ExamPrepService.svc/Questions?$filter=Id gt 5
+		* Take the questions where the ID is greater then 5.
+	- http://servicehost/ExamPrepService.svc/Questions?$expand=Answers
+		* Return related entities (Answers) in combination with the Questions.
+	- http://servicehost/ExamPrepService.svc/Questions&$select=Id, Text,Description,Author
+		* Return just the fields you want.
+	- http://servicehost/ExamPrepService.svc/Questions?$inlinecount=allpages
+		* Return a set number of objects.
+
+
+Accessing payload formats
+	Information:
+	- Using the $format=atom or $format=json, you will get back the object in these different formats.
+	- When trying to do this by WebClient or by request header, append the application/json or the application/atom+xml to your headers.
+	
+
+Working with interceptors and service operators
+	Information:
+	- Using interceptors, you can intercept a request and provide custom logic to it.
+	- There are two basic types of interceptors that you should know:
+		* ChangeInterceptors:	Used for NON-Query operations and have no return type.
+			+ Type: 			A parameter of type that corresponds to the entity type associated with the entity set.
+			+ UpdateOperations:	When the operation is invoked, this value references the request that you want to perform
+		* QueryInterceptors:	Used for Query operations.
+			+ No parameters, but if you look at the code section, you'll see that it used type parameters.
+
+	Code:
+	- [ChangeInterceptor("Topics")]
+	public void OnChangeTopics(Topic topic, UpdateOperations operations) { ... }
+		* A ChangeInterceptor in the works.
+	- [QueryInterceptor("Topics")]
+	public Expression<Func<Topic, bool>> FilterTopics() { ... }
+		* A QueryInterceptor in the works.
+
+
+
+
+
+
+
+
+
+1.6 Manipulate XML data structures
+==============================================================================================================================
+
+Reading, filtering, creating, and modifying XML structures
+	Information:
+	- Valid XML rules:
+		* There should be one and only one root element.
+		* Elements that are opened must be closed and must be closed in the order they were opened.
+		* Any element referenced in the document must also be well-formed.
+	- XML elements are structures that represent a component of data.
+	- XML attributes are elements beloning to a specific element.
+	- Using namespaces (xmlns a.k.a. xml NameSpace) to differentiate the objects from each other. 
+	
+	Code:
+	- <?xml version="1.0" encoding="utf-8" ?>
+		* XML declaration containing the XML version and encoding.
+	- <!-- Then you end it with the following:--> 
+		* An XML comment.
+	- <RootNode xmlns:Prefix="SomeValueUsuallyACompanyUrl">
+		* Defining a namespace inside a root node but you can also define them lower inside your three.
+
+
+Manipulating XML data
+	Information:
+	- 101 on writing XML with C#:
+		* Create a new instance of the XmlWriter Class.
+		* Call the WriteStartDocument method to create the initial document.
+		* Call the WriteStartElement, passing in a string name for the element name for the root element.
+		* Use the WriteStartElement again to create an instance of each child element of the root element you just created in the previous step.
+		* Use the WriteElementString method passing in the element name and value as parameters.
+		* Call the WriteEndElement method to close each element you created.
+		* Call the WriteEndElement method to close the root element.
+		* Call the WriteEndDocument method to close the document you created initially.
+	- 101 on reading XML with c#:
+		* Instantiate a new XmlReader instance passing in the file name of the XML file you want to read.
+		* Create a while loop using the Read method.
+		* While it iterates the elements, check for whatever you want to check looking at the XmlNodeType enumeration.
+	- Using the XmlDocument class, you can do the following things (but you can do more ofcourse):
+		* Instantiate a new XmlDocument class.
+		* Call the Load method pointing to a file or one of the many overloaded items.
+		* Extract the list of nodes.
+		* Iterate.
+	
+	Code:
+	- using (XmlWriter writerInstance = XmlWriter.Create(fileName)) { ... }
+		* Create a XML writer
+	- writerInstance.WriteStartElement("Customers");
+		* Write something like the root element.
+	- writerInstance.WriteElementString("FirstName", customerInstance.FirstName);
+		* Write an Element with a value.
+		
+	- XmlTextReader reader = new XmlTextReader(fileName);
+		* Create a XML reader.
+	- while (reader.Read())
+		* Read until there are no lines.
+
+	- XmlDocument documentInstance = new XmlDocument();
+		* Create a XmlDocument.
+	- documentInstance.Load(fileName);
+		* Load some XML data.
+	- XmlNodeList currentNodes = documentInstance.DocumentElement.ChildNodes;
+		* Query stuff.
+	- XmlElement customer = documentInstance.CreateElement("Customer");
+		* Create a single element.
+	- customer.AppendChild(firstNameJohn);
+		* Append another element to the customer element.
+
+
+XPath
+	Information:
+	- XPath stands for XML Path Language and you can search with it.
+	- XmlDocument implements IXPathNavigable so you can retrieve an XPathNavigator object from it.
+	
+	Code:
+	- XPathNavigator nav = doc.CreateNavigator();
+		* Create a navigator out of a XmlDocument.
+	- string query = "//People/Person[@firstName='Jane']";
+		* Create a specific query.
+	- XPathNodeIterator iterator = nav.Select(query);
+		* Create a iterator that holds the elements that match the query.
+	- while(iterator.MoveNext()) { string firstName = iterator.Current.GetAttribute("firstName",""); }
+		* Iterate through the collection and retrieve a specific attribute.
+
+
+LINQ-to-XmlDocument
+	Information:
+	- Using the XElement class, you can create elements :D
+	- Only use XDocument if you require the specific functionality provided by the XDocument class. Otherwise, just use XElement.
+	- The basic components of an XDocument are:
+		* One XDeclaration object:			The declaration enables you to specify the version of XML being used, the encoding, and whether the document contains a document type definition.
+		* One XElement object:				Because a valid document must contain one root node, there must be one XElement present.
+		* XProcessingInstruction objects:	Represents an XML processing instruction.
+		* XComment objects:					Represents an XML Comment. This won't be placed before a root element though. 
+	- You should know the difference between:
+		* docSample.Root.Descendants("Customer"):	Finds children at any level, i.e. children, grand-children, etc...
+		* docSample.Root.Elements("Customer"):		Finds only those elements that are direct descendents, i.e. immediate children.
+		
+	Code:
+	- Element customers = new XElement("Customers", new XElement("Customer", new XElement("FirstName", "John"), 
+		new XElement("MiddleInitial", "Q"), new XElement("LastName", "Public")));
+		* Creating XML with XElements.
+	- String fullName = customers.Element("Customer").Element("FirstName").ToString();
+		* Query the XElement.
+	- XDocument sampleDoc = new XDocument(new XComment("This is a comment sample"), new XElement("Customers", 
+		new XElement("Customer", new XElement("FirstName", "John"))));
+		* Creating a whole XML document with elements and comments.
+	- sampleDoc.Save("CommentFirst.xml");
+		* Save the XML document.
+	- XAttribute sampleAttribute = new XAttribute("FirstName", "John");
+		* Define a XAttribute that will attach to the FirstName element.
+	- XNamespace billCo = "http://www.billco.com/Samples";
+		* Define a XNamespace.
+	- XElement firstNameBillCo = new XElement(billCo + "FirstName", "John");
+		* Attach the namespace to the element.
+
+
+Advanced XML manipulation
+	Information:
+	- XmlConvert is a class that automatically escapes reserved items. Some of methods are:
+		* DecodeName: 			Decodes the name of an item that’s been encoded already. The samples that follow this table illustrate it.
+		* EncodeName:			Encodes a string so that it can definitely be used as an XML node name.
+		* EncodeLocalName:		Behaves virtually identically to EncodeName, but with one major difference: It actually encodes the colon character, which ensures that Name can be used as the local name element of a namespace-qualified name.
+		* EncodeNmToken:		Returns a valid name for a node according to the XML Language spec. Difference between EncodeName is that it encodes colums everywhere.
+		* IsStartNCNameChar:	Determines whether the parameter is a valid non-colon-character type.
+		* IsPublicIdChar:		If the parameter is a valid public identifier, it returns it; otherwise, it returns null. Are magic strings and mainly exist because of legacy behavior more than any necessity.
+		* ToDateTimeOffset:		Represents a specific point in time with respect to Coordinated Universal Time (UTC).
+
+	Code:
+	- String encodedFirstName = XmlConvert.EncodeName("First Name");
+		* Result: First_x0020_Name
+	- String decodedFirstName = XmlConvert.DecodeName(encodedFirstName);
+		* Result: First Name
+	- String encodedFirstNameWithColon = XmlConvert.EncodeLocalName("First:Name");
+		* Result: First_X003A_Name
+	- decodedFirstName = XmlConvert.DecodeName(encodedFirstNameWithColon);
+		* Result: First:Name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

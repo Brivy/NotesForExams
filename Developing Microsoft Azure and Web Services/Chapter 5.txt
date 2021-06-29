@@ -1,0 +1,643 @@
+5.1 Design a deployment strategy
+==============================================================================================================================
+
+Deploying a web application by using XCopy
+	Information:
+	- There are a few required files when deploying your application:
+		* Global.asax 
+		* Web.config
+		* Content files (JavaScript, CSS, images)
+		* Views
+		* Compiled assemblies
+	- You can use File Transfer Protocol (FTP) or a Remote Desktop session to connect to your server.
+	- XCopy enables you to copy multiple files at once to a target destination.
+	
+	- While updating the website, it can restart a couple of time. By adding <httpRuntime waitChangeNotification="5" />, you can limit this.
+	
+	- Visual Studio has some visual tools for using XCopy:
+		* You can copy source files to the target site.
+		* You can copy files by using any connection protocol that is supported by Visual Studio, such as a local IIS, remote IIS, FTP, and HTTP (requires FrontPage Server Extensions).
+		* You can choose which files to synchronize from your source to the target server, or vice versa. 
+		* You can automatically copy the App_offline.html file to the root of your website when it starts deploying and remove it when it finishes.
+	
+	Code:
+	- xcopy /I /S /E <source path> <destination path>
+		* XCopy command:
+			+ /I: Indicates that you are copying a folder.
+			+ /S: Indicates that you want to copy the subdirectories
+			+ /E: Indicates that you want to copy subfolders even if they are empty.
+
+
+Creating an IIS install package
+	Information:
+	- Using Web Deploy, you can push not only your website but also other configuration options such as data///;;'''''base settings, IIS settings, registry options, or assemblies that you want to put in the global assembly cache (GAC).
+	
+
+Automating a deployment from TFS or Build Server
+	Information:
+	- Some hipster terms:
+		* Agile software development:	Instead of doing a lot of design at the start of a project and delivering only when everything is ready, you start working in shorter periods.
+		* Continuous delivery:			Basically, your software should be ready to be released at any time.
+		* DevOps:				 		Everyone works collaboratively on making sure that the application is always ready for deployment.
+		* Continuous deployment: 		Every change that is made by a developer on the team gets automatically deployed to the production environment. 
+		* Continuous integration (CI):	Making sure that your codebase stays healthy while developers make changes and check them in to source control. 
+
+	- Automating the deployment process:
+		* First, always make sure that your code compiles. Do this with a build server of some kind.
+		* If you have a lot of developers working on your project, you can switch your CI build to a rolling build. This will roll several check-ins into one build to improve performance.
+		* Verify the code quality using Unit Tests.
+		* Can also use integration tests.
+		
+	- By using TFS, you can easily use the continuous deployment
+
+	Code:
+	- MSBuild /target:Publish /p:PublishDir=\\myserver\drops\
+		* Using continuous deployment with a on-premise version of TFS.
+
+
+Deploying to web farms
+	Information:
+	- Scaling up means more hardware.
+	- Scaling out means more servers.
+	- Web farms (a scaled out application) must use a load balancer. The load balancer is responsible for distributing the requests across all your servers and making sure that they are used in the most efficient way.'
+	
+	- When using web farms, you run in some issues with the session state. There are some solutions for it:
+		* InProc is the default setting that stores the session data in memory on the server.
+		* StateServer stores the session data in a separate process called the ASP.NET state service. 
+		* SQLServer mode stores session state in a SQL Server database.
+		* Off mode disables session state.
+		
+
+
+
+
+
+
+
+
+5.2 Choose a deployment strategy for a Windows Azure web application
+==============================================================================================================================
+	
+Performing an in-place upgrade and VIP Swap
+	Information:
+	- Windows Azure offers you three ways to update your application:
+		* Delete and redeploy:	There are a lot of scenario's why you must this one:
+			+ You need to use the delete and redeploy option when you want to change the number of endpoints or the ports of endpoints. 
+			+ Any effective firewall changes require a delete and redeploy strategy. 
+			+ The same is true for updating certificates and migrations to another guest operating system. 
+		* In-place update:		Windows Azure stops the instances, updates them, and then brings them back online. Windows Azure doesn’t stop all instances at once. Instead, it stops instances that are assigned to the same upgrade domain.
+		* VIP Swap:				Using slots to swap from test to production for example.
+		
+
+Configuring an upgrade domain
+	Information:
+	- Coming back to the upgrade domains of the in-place update, they are automatically created by Windows Azure when new services are deployed.
+	- It cycles through your update domains and takes them offline one by one. This way, you won’t have any downtime on your service.
+	- This has some configuration:
+		- A fault domain is automatically assigned by Windows Azure. You need at least two instances spread across two fault domains to have maximum availability guaranteed by Windows Azure.
+		- By default, only five upgrade domains are allowed. By configuration in the ServiceDefinition file, you upgrade this to 20 domains.
+		- By using Visual Studio, you also need to provide a certificate.
+
+
+Upgrading through a VIP Swap
+	Information:
+	- Azure holds two environments: production and staging. 
+	- While having the same hardware, they have different virtual IP (VIP) and service URLs.
+	- Because the staging and production environment are identical, you can perform what’s known as a VIP Swap.
+	- Swapping is easy between the two environments, but if you want to update the staging environment, you'll need to do the in-place upgrade or delete and redeploy strategy.
+	- However, in the practice it could be that existing connections persist for some time. This connection still points to the old deployment. This is something you should keep in mind when doing a VIP swap.
+	
+
+Creating and configuring input and internal endpoints
+	Information:
+	- An input endpoint is used for external connections to your role. These connections can be made over HTTP, HTTPS, or TCP.
+	- This means that you declare a unique port on which you want your role to listen.
+	- The port is than used by the load balancer to connect your role to the Internet.
+	- The web role has one input endpoint defined. This is the default endpoint that listens to port 80, the default port for HTTP traffic.
+	- When a port is not available, it will map to the the first new port (port 80 => 81).
+	
+	- Internal endpoints are used for communication between the roles in the datacenter in which they are located. These internal endpoints can use HTTP and TCP.
+	
+	- Direct ports are a range of ports on your public IP address that are mapped to your role instances.
+	
+	Code:
+	- <Endpoints>
+		<InputEndpoint name="Endpoint1" protocol="http" port="80" />
+	</Endpoints>
+		* Specify an Input endpoint. For more examples, see page 378.
+
+	- <InstanceInputEndpoint name="Endpoint2" localPort="1000" protocol="tcp">
+		<AllocatePublicPortFrom>
+			<FixedPortRange min="10016" max="10020"/>
+		</AllocatePublicPortFrom>
+	</InstanceInputEndpoint>
+		* Specify a fixed range of ports for your role.
+
+	- HttpListener listener = new HttpListener();
+	listener.Prefixes.Add("http://*:8081/");
+	listener.Start();
+		* Start a listener to port 8081 (for example in your worker role).
+	- HttpListenerContext context = listener.GetContext();
+	HttpListenerRequest request = context.Request;
+	HttpListenerResponse response = context.Response;
+		* Get the context of such a request so you can read the request and response.
+
+
+Sepcifying operating system configuration
+	Information:
+	- There are two important files:
+		* The ServiceDefinition.csdef file specifies settings that are used to configure a complete cloud service. This has been defined in the previous chapter.
+		* The ServiceConfiguration.cscfg file specifies settings that are used to configure specific roles. This will be further more defined below.
+	
+	- With the ServiceConfiguration.cscfg file you can have a local and a deployment file. They contain:
+		* How many instances you want for each role.
+		* Configuration settings for diagnostics.
+		* Certificates.
+		* Etc.
+
+	- An important thing in this file is that you can specify the OS version and all.
+	- Remember to set this to '*' for the latest version and automatic upgrades.
+	- Also remember to use the following format: "WA-GUEST-OS-M.m_YYYYMM-nn":
+		* WA-GUEST-OS is a fixed string.
+		* M.m refers to the major and minor versions.
+		* YYYY refers to the year.
+		* MM refers to the month.
+		* nn serves as a sequence number to differentiate between releases, which typically supersede previous releases.
+
+	Code:
+	- <ServiceConfiguration serviceName="WindowsAzure1" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration"
+	osFamily="3" osVersion="*" schemaVersion="2013-03.2.0">
+		...
+	</ServiceConfiguration>
+		* The default service configuration. More on this on page 381.
+	
+	
+
+
+
+
+
+
+
+5.3 Configure a web application for deployment
+==============================================================================================================================
+
+Switching from production/release mode to debug
+	Information:
+	- There are two default configuration files:
+		* Release: 	Run code as fast possible. Gotta go fast.
+		* Debug:	Code optimized for debugging because it contains extra debug instructions.
+	- You can select different debuggers in your project, but the code must compiled with debugging information.
+	
+	Code:
+	- <compilation debug="true" targetFramework="4.5" />
+		* Debug line in the web.config file.
+
+
+Transforming web.config by XSLT
+	Information:
+	- Web.config transformation syntax is a fancy word for a XML file that describes the changes that you want to apply to your web.config file.
+	- By using the xdt:Transform and xdt:Locator attributes, you configure how the element should be located and what should happen when it is found.
+	- The xdt:Locator can be used as follows:
+		* Condition specifies an XPath expression that is appended to the current element’s XPath expression.
+		* Match selects the element or elements that have a matching value for the specified attribute or attributes.
+		* XPath specifies an absolute XPath expression that is applied to the development web.config file.
+	- The xdt:Transform can be used as follows:
+		* Insert
+		* InsertBefore
+		* InsertAfter
+		* Remove
+		* RemoveAll
+		* RemoveAttributes
+		* SetAttributes
+
+	Code:
+	- <connectionStrings> 
+		<add name="MyDB" connectionString="value for the deployed Web.config file" 
+		xdt:Transform="SetAttributes" xdt:Locator="Match(name)"/>  
+	</connectionStrings>
+		* A connection string that is going to be replaced when deployed.
+		
+
+Using SetParameters to set up an IIS app pool
+	Information:
+	- Because the transformation is done at compile time, it's a great tool when you want to publish something.
+	- But this can't be changed at installation time.
+	- You can use parameterization when deploying with Web Deploy. The files that are generated are:
+		* [project name].zip is the Web Deployment package.
+		* [project name].deploy.cmd offers a convenient way of deploying your application from the command line.
+		* [project name].SetParameters.xml provides a set of values that MSDeploy.exe uses to deploy your package.
+	
+	- The [project name].SetParameters.xml is based on the settings that you specified in your project settings and other configuration settings like the web.config (like the connection string).
+	- Passing an extra Parameters.xml file will allow you to configure extra values.
+
+	- Using the tool msdeploy.exe, you can also create this stuff.
+	
+	- But the most important thing to remember is that transformations are done at compile time and parameter values are set during deployment.
+
+	Code:
+	- <client> (web.config)
+		<endpoint address="http://localhost:8080/MyService.svc" binding="basicHttpBinding" 
+		bindingConfiguration="BasicHttpBinding_MyService"
+		contract="ServiceReference.IMyService"
+		name="BasicHttpBinding_MyService"/>
+	</client>
+	
+	<?xml version="1.0" encoding="utf-8" ?> (Parameters.xml)
+	<parameter name="WCF My Endpoint Address" description="Please provide the Endpoint address for MyService that this application needs to call" 
+	defaultValue="http://localhost:8080/MyService.svc" tags="">    
+		<parameterEntry kind="XmlFile" scope="\\web.config$" match="//system.serviceModel/client/endpoint/@address" />
+	</parameter>
+		* An example of the Parameters.xml file that will add an entry to the SetParameters.xml file:
+			+ name: 		The name you specify is shown in IIS Manager when you import the package.
+			+ description:	The description you use is also shown in IIS Manager.
+			+ defaultValue:	This value is preloaded in the text box in IIS Manager so a user can just accept this value when importing your package. 
+			+ scope: 		A regular expression that shows the files to which the parameter applies.
+			+ match:		In the case of an XmlFile, an XPath expression that selects the XML node that you want to change.
+			+ kind:			Specifies the kind of resource the parameter will be applied to (such as XmlFile or TextFile).
+
+
+Configuring Windows Azure configuration settings
+	Information:
+	- A Windows Azure cloud project has two configuration files:
+		* ServiceConfiguration.Cloud.cscfg:	Will be used when deploying to Windows Azure.
+		* ServiceConfiguration.Local.cscfg: Will be used by your Windows Azure emulator.
+	- This configuration file is good for specifying the number of role instances to deploy for each role, the configuration settings values and the thumbprints for certificates belonging to a role.
+	- But also you can specify the virtual hard disk when you are working with a virtual machine. If your service is part of a virtual network, you can configure your virtual network through this file.
+
+	- The role element in the configuration is good for the following:
+		* The name of the role.
+		* The vmName that it uses as the Domain Name System (DNS) name of your Virtual Machine (VM).
+		* Configure the number of role instances.
+		* Configuration settings for configuration.
+		* Certificates.
+		* OsImage for the name of the Virtual Hard Disk (VHD) image for a VM role.
+
+	- You can also have NetworkConfiguration. This is optional and describes the following:
+		* Virtual Networks.
+		* DNS values.
+
+	Code:
+	-<Role name="MyWebApp">
+		<Instances count="1" />
+		<ConfigurationSettings>
+			<Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+		</ConfigurationSettings>
+	</Role>
+		* An example of the role element.
+	- <Certificates>
+		<Certificate name="<certificate-name>" thumbprint="<certificate-thumbprint>" thumbprintAlgorithm="<algorithm>" />
+	</Certificates>
+		* An example of the Certificate element.
+	- <OsImage href="<vhd_image_name>" />
+		* An example of the OsImage element.
+
+	- <NetworkConfiguration>
+		<Dns>
+			<DnsServers>
+				<DnsServer name="name1" IPAddress="IPAddress1" />
+			</DnsServers>
+		</Dns>
+		<VirtualNetworkSite name="name1"/>
+		<AddressAssignments>
+			<InstanceAddress roleName="roleName1">
+				<Subnets>
+					<Subnet name="name1" />
+				</Subnets>
+			</InstanceAddress>
+		</AddressAssignments>
+	</NetworkConfiguration>
+		* An example of the optional NetworkConfiguration.
+
+
+
+
+
+
+
+
+
+5.4 Manage packages by using NuGet
+==============================================================================================================================
+
+Installing and updating an existing NuGet package
+	Information:
+	- In ASP.NET MVC, a file is created called packages.config containing all the NuGet package references to create such a project.
+	- NuGet is not only about adding references to your project. A NuGet package can contain all kinds of data, such as code or script files and even configuration changes that can be added to your project.
+	- Because you don't have to manually download assemblies, reference them in your project, change some configuration settins and write code, NuGet is pretty popular.
+	- An advantage of NuGet is that it automatically detects any required dependencies and installs them together with your package.
+
+	- When you select "Enable Package Restore On Build", the project will contain a folder called .nuget which contains the NuGet.exe file.
+	- This way you can be sure that everyone has all the required packages installed without having to share the packages through source control.
+
+	Code:
+	- Install-package Ninject
+		* Using the Package Manager Console for adding Ninject.
+	- Uninstall-Package Ninject
+		* Removing Ninject by console.
+	- Update-Package
+		* Updating all the packages or specify a package to only update that one.
+	- Update-Package -Project NuGetTest
+		* Update a package for a specific project.
+
+	- <configuration>
+		<config>
+			<add key=" repositoryPath" value=" C:\myteam\teampackages" />
+		</config>
+	</configuration>
+		* Changing the NuGet folder.
+
+
+Creating and configuring a NuGet package
+	Information:
+	- Because NuGet follows a convention over configuration approach. Because of this, you must remember the following folders:
+		* \lib
+		* \content
+		* \tools
+	
+	- The lib folder is used for your assemblies.
+	- When targeting different platforms (for example, Windows Phone, Windows Store, and the full .NET Framework) you can use subfolders to separate those versions of your project, following the NuGet naming convention.
+	
+	- The content folder can contain files such as configuration files, images, JavaScript files, Cascading Style Sheets (CSS), or other files that you want to distribute with your package.
+	- An image file in \content\images\myimg.png will end up as \images\myimg.png in the target project.
+	- The files you put in the content folder can also be used to apply transformations to your configuration files. 
+	- If you create a file called app.config.transformation or web.config.transformation, NuGet will use those files during installation to apply changes to the configuration files.
+	- You create a file with a .cs.pp extension such as MyUtil.cs.pp, and add it to the content folder in your package to create transformations inside code.
+	
+	- Inside the tools folder, you can put Windows PowerShell scripts that run when your package is loaded, installed and uninstalled:
+		* Init.ps1 runs every time a solution that contains your package is loaded.
+		* Install.ps1 runs when your package is installed into a solution.
+		* Uninstall.ps1 runs when your package is uninstalled.
+	
+	Code:
+	- <?xml version="1.0" encoding="utf-8"?>
+	<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+		<metadata>
+			<id>sample</id>
+			<version>1.0.0</version>
+			<authors>Microsoft</authors>
+			<dependencies>
+				<dependency id="another-package" version="3.0.0" />
+				<dependency id="yet-another-package"/>
+			</dependencies>
+		</metadata>
+	</package>
+		* NuGet example file (called nuspec).
+
+	- nuget Update -self
+		* Update NuGet to the latest version.
+	- nuget spec MyAssembly.dll
+		* Creates a MyAssembly.nuspec file for you that contains your manifest.
+	- nuget pack MyAssembly.nuspec
+		* Create the MyAssembly.dll.1.0.0.nupkg package file.
+	- install-package MyAssembly.dll -Source "C:\<location_of_your_package>"
+		* Test your recently created NuGet package.
+
+	- nuget spec
+		* Create a NuGet package from a Visual Studio project.
+	- nuget pack MyProject.csproj
+		* Create the NuGet package.
+	- nuget pack YourPackage.nuspec
+		* Create the NuGet package on a folder containing the lib, content and tools folders.
+	- nuget SetApiKey Your-API-Key
+		* Get and copy your NuGet key (you get this from registering on NuGet).
+	- nuget Push YourPackage.nupkg
+		* publish the NuGet package.
+
+
+Setting up your own package repository
+	Information:
+	- Visual Studio allows to get your NuGet package from other sources.
+	
+	- When installing a remote feed on IIS, you'll need to install the NuGet.Server package which will add all the code necessary to expose your packages.
+	- You can add your package files to the new Packages folder, or you can use the appSettings element of the web.config file to configure a different path.
+
+	- If you want, you can also enable publishing to your custom remote feed.
+	- Add an API key to the appSettings element for this to work. If you leave the API key empty, publishing is disabled.
+	- You can now deploy your application to IIS and access the feed of available packages by navigating to http://<locationofyoursite>/nuget/.
+	- If you add this URL as a package source to the Packet Manager, you can now install packages from this server into your projects.
+
+
+
+
+
+
+
+
+
+5.5 Create, configure, and publish a web package
+==============================================================================================================================
+
+Creating an IIS InstallPackage
+	Information:
+	- When publishing with Visual Studio, you first create an publish profile. This is used for "one-click publishing".
+	- By creating multiple profiles, you can easily store your deployment settings.
+	- When you log in to your Windows Azure Management Portal, you can download a publish profile for your website.
+	- Web Deploy directly deploys your application to a remote server that has the Web Deploy service installed.
+	- You can also just create a Web Deploy package that you can deploy manually in IIS.
+	
+	- The IIS Manager supports both creating and importing Web Deployment packages. You can create a package for an application, site, or even a complete server.
+	- Basically, import stuff and export stuff.
+	
+	- MSDeploy is a command line tool that lets you do the following:
+		* Live server-to-server synchronization
+		* Package creation
+		* Package deployment
+	- You must be an administrator for MSDeploy.
+	- When you create a Web Deployment package through Visual Studio, it also generates a .cmd file that you can use to install the package from the command line.
+
+	- PowerShell is also an option but I think that's to specific to handle here.
+
+	Code:
+	- msdeploy -whatif -verb:sync -source:iisApp="Default Web Site/MyApp" 
+	-dest:iisApp="Default Web Site/MyApp", computerName=Server2
+		* Command to execute a synchronization between two servers:
+			+ verb:		Specifies the required operation (delete, dump, getDependencies, getSystemInfo, or sync).
+			+ source: 	Specifies the source of the data for the verb argument. 
+			+ dest: 	Specifies the destination of a synchronization operation.
+			+ whatif: 	Specifies that the command should run without making any actual changes
+
+	- ProjectName.deploy.cmd /y /m:https://DestinationServerName:8172/MSDeploy.axd
+		* Deploys a package to a remote server.
+
+
+Configuring the build process to output a web package
+	Information:
+	- Configure stuff inside the Build Definition for TFS. You can find this in the Build tab of the Team Explorer in Visual Studio.
+	- This file contains all the settings that TFS uses to run your build.
+	
+	Code:
+	- MSBuild "MyProjectName.csproj"
+		* Compiling the application.
+	- MSBuild "MyProjectName.csproj" /T:Package
+		* Creating a package to deploy on an environment with MSBuild.
+	- MSBuild "MyProjectName.csproj" /T:Package /P:Configuration=Release
+		* Creating a package with the release configuration.
+	- /p:DeployOnBuild=True
+		* Parameter to configure automatic deployments.
+		
+
+Applying pre- and post-condition actions
+	Code:
+	- msdeploy -verb:sync -source:contentPath="C:\Test1" -dest:contentPath="C:\Test2" -preSync:runcommand="c:\MyBatchFile.bat"
+		* Setting preSync options to run a command before your deployment.
+	- msdeploy -verb:sync -source:contentPath="C:\Test1" -dest:contentPath="C:\Test2" -postSync:runcommand="c:\MyBatchFile.bat"
+		* Setting postSync options to run a command after your deployment.
+
+
+
+
+
+
+
+
+
+5.6 Share assemblies between multiple applications and servers
+==============================================================================================================================
+
+Preparing the environment for use of assemblies across multiple servers
+	Information:
+	- Shadow copying means that the original assembly is copied to a temporary location. The copied assembly is locked, and the original assembly can be updated with a new version.
+	- This can be done to prevent using copies of the same assemblies over and over when you deploy multiple applications.
+	- Because all DLLs are already located in one location (the Temporary ASP.NET Files folder), "interning" analyzes this folder for duplicate assemblies.
+	- Those assemblies are then moved to a special location, and all the original references are replaced with what’s called a symbolic link.
+	- When a web application requests a shared DLL, the symbolic link points the application to the shared location.
+	- This way, all shared assemblies are loaded only once in memory. This decreases both memory usage and startup time of your websites.
+
+	- An assembly will be marked as shared when it’s used three times or more.
+
+	Code:
+	- aspnet_intern -mode exec -sourcedir "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files" -interndir C:\CommonAssemblies
+		* Using the tool aspnet_intern will analyze which assemblies are shared and move them to the specified location.
+		
+
+Signing assemblies by using a strong name
+	Information:
+	- The CLR supports two different types of assemblies:
+		* Strong-named assemblies: Signed assembly with a public/private key
+		* Regular assemblies: Standard generated assembly by Visual Studio
+	- The strong-named assembly has multiple advantages:
+		* Strong names guarantee uniqueness:				Your unique private key is used to generate the name for your assembly. No other assembly can have the exact same strong name. 
+		* Strong names protect your versioning lineage:		Because you control the private key, you are the only one who can distribute updates to your assemblies. 
+		* Strong names provide a strong integrity check:	The .NET Framework sees whether a strong-named assembly has changed since the moment it was signed.
+	- Basically a strong-named assembly ensures a user that they can trust the origin and content of an assembly.
+	- Strong-named assemblies can only reference strong-named assemblies.
+	- When referencing another assembly, you store only the public key token, which is preserves space in the assembly manifest.
+	- Delayed or partial signing is when you sign the assembly with your public key and delay signing it with your private key until deployment.
+	
+	Code:
+	- sn -k myKey.snk
+		* Generate a new key pair file.
+	- sn -Tp C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Data.dll  
+		* Get the public key from the System.Data.dll assembly.
+
+
+Deploying assemblies to the global assembly cache
+	Information:
+	- Assemblies that are local to an application are called private assemblies. You can find them inside the \bin folder.
+	- The GAC (Global Assembly Cache) is a machine wide specialized library for storing assemblies. But why:
+		* Assembly is shared by multiple applications.
+		* Has enhanced security (only administrators can access it).
+	
+	- The assemblies can be deployed in the GAC in two ways:
+		* Production:	Use a installation program that has access to the GAC such as Windows 
+		* Development:	Use a tool called the global assembly cache tool (Gacutil.exe).
+	
+	- When referencing a shared assembly from your project, you can add a reference to the file located in the GAC or to a local copy of it. 
+	- When Visual Studio detects that there is a GAC version of the DLL you are referencing, it adds a reference to the GAC, not to the local version.
+	
+	Code:
+	- gacutil -l
+		* Returns a list of all the assemblies that are installed in the GAC.
+	- gacutil -i [assembly name]
+		* Installs an assembly in the GAC.
+	- gacutil -u [assembly name]
+		* Removes an assembly in the GAC.
+
+
+Implementing assembly versioning
+	Information:
+	- Versioning is as follows: [Major Version].[Minor Version].[Build Number].[Revision]:
+		* Major Version: new features or breaking changes.
+		* Minor Version: small changes to existing features.
+		* Build Number: Automatically incremented for each build by the build server.
+		* Revision: Used for patches to the production environment.
+
+	- There are three configuration files that can be used to find the correct assembly:
+		* Application configuration files.
+		* Publisher policy files.
+		* Machine configuration files.
+	
+	- A codebase element can specify a loca-tion for an assembly that is outside of the application’s directory. This way, you can locate an assembly that’s on another computer on the network or somewhere on the Internet.
+	- These assemblies have to be strongly named if they are not in the current application’s folder.
+
+	Code:
+	- [assembly: AssemblyVersion("1.0.0.0")] 
+		* Should be incremented manually when deploying.
+	- [assembly: AssemblyFileVersion("1.0.0.0")]
+		* Should be incremented every build, but this is more of a job for your Build Server.
+		
+	- <configuration>
+		<runtime>
+			<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1"> 
+				<dependentAssembly>
+					<assemblyIdentity name="myAssembly" publicKeyToken="32ab4ba45e0a69a1" culture="en-us" />
+					<!-- Redirecting to version 2.0.0.0 of the assembly. -->
+					<bindingRedirect oldVersion="1.0.0.0" newVersion="2.0.0.0"/>
+				</dependentAssembly>
+			</assemblyBinding>
+		</runtime>
+	</configuration>
+		* Instruct the CLR to bind to version 2 of the assembly instead of version 1.
+
+	- <configuration>
+		<runtime>
+			<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+				<probing privatePath="MyLibraries;MyOtherLibraries\AFolder"/>
+			</assemblyBinding>
+		</runtime>
+	</configuration>
+		* Specify a different location for the assemblies.
+
+	- <configuration>
+		<runtime>
+			<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+				<dependentAssembly>
+					<assemblyIdentity name="myAssembly" publicKeyToken="32ab4ba45e0a69a1" culture="en-us" />
+					<codeBase version="1.0.0.0" href="http://www.mydomain.com/ReferencedAssembly.dll"/>      
+				</dependentAssembly>    
+			</assemblyBinding>  
+		</runtime>
+	</configuration>
+		* Get an assembly over the internet.
+
+
+Creating an assembly manifest
+	Information:
+	- An assembly not only contains the code that you want to deploy but also metadata about that code and other assemblies it depends on. This is called the assembly manifest.
+	- The assembly manifest has a couple of functions:
+		* Enumerates the files that make up the assembly
+		* Governs how references to the assembly’s types and resources map to the files that contain their declarations and implementations
+		* Enumerates other assemblies on which the assembly depends
+		* Provides a level of indirection between consumers of the assembly and the assembly’s implementation details
+		* Renders the assembly self-describing
+
+	- Ofcourse you can change the values that are used by using certain assembly-wide attributes such as AssemblyCultureAttribute, AssemblyTitleAttribute, and AssemblyDescriptionAttribute. 
+	- Normally, a manifest is contained in a Portable Executable (PE) file such as a DLL or .exe file, together with the Intermediate Language (IL) code that describes the assembly. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

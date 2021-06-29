@@ -1,0 +1,545 @@
+Question: 
+42: No clue what's up with this one
+48: It's retired, won't be in the exam.
+
+Different executables:
+==================================================================================================================================================================================================
+Aspnet_regiis.exe: 		You can also use the tool to perform other ASP.NET configuration operations (like encrypting/decrypting).
+Ngen.exe:				The Native Image Generator (Ngen.exe) is a tool that improves the performance of managed applications.
+Aspnet_merge.exe:		The ASP.NET Merge tool enables you to combine and manage the assemblies that are created by the ASP.NET compilation tool (Aspnet_compiler.exe).
+EdmGen.exe:				EDM Generator is a command-line tool used for working with Entity Framework model and mapping files.
+Mage.exe:				The Manifest Generation and Editing Tool is a command-line tool that supports the creation and editing of application and deployment manifests.
+AL.exe:					The Assembly Linker generates a file that has an assembly manifest from one or more files that are either modules or resource files.
+Ildasm.exe:				The IL Disassembler is a companion tool to the IL Assembler. Ildasm.exe takes a portable executable (PE) file that contains intermediate language (IL) code and creates a text file suitable as input to Ilasm.exe.
+Ilasm.exe:				The IL Assembler generates a portable executable (PE) file from intermediate language (IL).
+
+Outdated tools:
+Aspnet_regbrowsers.exe:	I can't figure out what this is LOL, probably outdated.
+Aspnet_setreg.exe:		The tool will use CryptProtectData to encrypt the values you put in the registry.
+Aspnet_compiler.exe:	The ASP.NET Compilation tool enables you to compile an ASP.NET Web application, either in place or for deployment to a target location such as a production server.
+
+
+New objects:
+==================================================================================================================================================================================================
+FormCollection:				Contains all the forms elements. Can be queried with: "string fname = data["fname_name"];"
+QueryStringValueProvider:	Represents a value provider for query strings that are contained in a NameValueCollection object.
+NameValueCollection:		Represents a collection of associated String keys and String values that can be accessed either with the key or with the index.
+EventSource:				Provides the ability to create events for event tracing for Windows (ETW).
+WebEventCodes:				Defines the codes associated with the ASP.NET health monitoring events. When a health-monitoring event is raised, it is associated with a major event code:
+								* Application codes:	Identify events in the lifetime of an application, such as startup and shutdown events.
+								* Request codes:		Identify non-error events that provide per-request information.
+								* Error codes:			Identify events that contain information about two kinds of errors: errors specifically related to a Web request and systemic errors.
+								* Audit codes:			Identify events that contain auditable information such as login attempts, access security violations, and authorization violations.
+								* Miscellaneous codes:	Do not identify events but are used to flag nonstandard event information.
+							#Code examples:
+								* WebEventCodes.WebExtenedBases
+									- Create your own event for ASP.NET health monitoring.
+
+
+Compiling inside a project
+==================================================================================================================================================================================================
+The process:		- The compilation of your code is a two-step process:
+						* Compiling: 	In compiling phase individual C# code files are compiled into individual compiled units. These individual compiled code files go in the OBJ directory.
+						* Linking:		In the linking phase these individual compiled code files are linked to create single unit DLL and EXE. This goes in the BIN directory.
+The folders:		- There are multiple folders that are being generated when compiling:
+						* Bin:			The bin folder holds binary files, which are the actual executable code for your application or library.
+						* Obj:			The obj folder holds object, or intermediate, files, which are compiled binary files that haven't been linked yet. They're essentially fragments that will be combined to produce the final executable. The compiler generates one object file for each source file, and those files are placed into the obj folder.
+						* Properties:	The properties folder hold two specific things in dotnet core: "launchSettings.json" and "publishProfiles".
+.pdb:				- PDB files store the information that allows you to debug an application. PDB files are used to map EXE with SOURCES. They are used for Debug and Release binaries.
+.dll:				- Assemblies form the fundamental units of deployment, version control, reuse, activation scoping, and security permissions for .NET-based applications. An assembly is a collection of types and resources that are built to work together and form a logical unit of functionality. 
+
+Secret storage (not so secret)
+==================================================================================================================================================================================================
+What is it: 		- The Secret Manager tool stores sensitive data during the development of an ASP.NET Core project. In this context, a piece of sensitive data is an app secret.
+
+dotnet user-secrets init: 								Adds a UserSecretsId element within a PropertyGroup of the .csproj file.
+dotnet user-secrets set "Movies:ServiceApiKey" "12345":	Sets a secret.
+dotnet user-secrets remove "Movies:ConnectionString":	Remove a secret.
+dotnet user-secrets list:								List all the secrets.
+
+How to use it:		- When using the Host.CreateDefaultBuilder(args), you can access it with the Configuration API. Otherwise you'll need to add it manually to the HostBuilder with:
+						* if (hostContext.HostingEnvironment.IsDevelopment())
+						{
+							builder.AddUserSecrets<Program>();
+						}
+
+
+Configuration providers
+==================================================================================================================================================================================================
+What is it:			- Configuration in ASP.NET Core is performed using one or more configuration providers. Configuration providers read configuration data from key-value pairs using a variety of configuration source.
+Order provider:		- The following order is used when dealing with multiple configurations:
+						* appsettings.json
+						* appsettings.Environment.json
+						* Secret Manager
+						* Environment variables
+						* Command-line arguments
+Custom providers:	- You can create a custom source and provider just by implementing:
+						* IConfigurationSource: 	Implement the Build method.
+						* ConfigurationProvider:	Inherit the Load method.
+					- To make more specific custom sources and providers, you'll need to inherit/implement more specific classes:
+						* FileConfigurationSource and FileConfigurationProvider
+						* StreamConfigurationSource and StreamConfigurationProvider
+						* CommandLineConfigurationSource and CommandLineConfigurationProvider
+						* ...
+
+
+OAuth stuff (using identity platform):
+==================================================================================================================================================================================================
+Flow of OAuth:		
+					- App requests authorization code and returns it when login is succesfull from the authorize endpoint.
+					- App requests token from the token endpoint and gets back an access token and a refresh token.
+					- App calls the WebAPI with the new access token int the Authorization header.
+					- Token is validated on the Web API and returns the data.
+					- Should the token expire then a new one is requested from the token endpoint.
+
+
+Cultures in MVC:
+==================================================================================================================================================================================================
+Following code makes it possible for the application to support multiple cultures:
+	<system.web>
+		<globalization enableClientBased="true" uiCulture="auto" culture="auto">
+	<system.web>
+
+
+SignalR
+==================================================================================================================================================================================================
+What is this:		- Enables real-time web functionality to apps. This enables server-side code to push content to clients instantly.
+SignalR flow:		
+					- Create a new C# project.
+					- Add the SignalR package using unpkg (Content delivery network (CDN)) in wwwroot/js/signalr
+					- Create a hub by creating a class that inherits from "Hub". This serves as a high-level pipeline that handles client-server communication.
+					- Add "services.AddSignalR();" and "endpoints.MapHub<ChatHub>("/chathub");" to the Startup.cs file.
+					- Create a javascript file containing a signalR connection and listeners for certain actions.
+Code snippets:		
+					- public class ChatHub : Hub
+					{
+						public async Task SendMessage(string user, string message)
+						{
+							await Clients.All.SendAsync("ReceiveMessage", user, message);
+						}
+					}
+						* An example hub containing the SendAsync method.
+					- var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+						* Creating the connection with SignalR in Javascript
+					- connection.on("ReceiveMessage", function (user, message) { });
+						* Add a listener for the RecieveMessage message
+					- connection.start().then(function () { ... }).catch(function (err) { ... });
+						* Do something when the connection is established and/or crashes.
+					- connection.invoke("SendMessage", user, message).catch(function (err) { ... });
+						* Send a message to the Hub.
+
+Code snippets jquery:
+						- public class ChatHub : Hub
+						{
+							public void Send(string name, string message)
+							{
+								// Call the broadcastMessage method to update clients.
+								Clients.All.broadcastMessage(name, message);
+							}
+						}
+							* An example hub containing a broadcastMessage method.
+						- var chat = $.connection.chatHub;
+							* Declare a proxy to reference the hub.
+						- chat.client.broadcastMessage = function (name, message) { ... };
+							* Create a function that the hub can call to broadcast messages.
+						- $.connection.hub.start().done(function () { });
+							* Start the connection.
+							
+						- $.hubconnection();
+							* Another way to create a connection.
+						- con.createHubProyxy('ChatHub');
+							* But you'll need this to find the hub.
+
+
+JWTTTTT (Thanks microsoft for the documentation, very helpfull)
+==================================================================================================================================================================================================
+What is it:			- A way to provide authentication
+How to set it up:	- You have to a couple of things to implement this:
+						* services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)    
+						.AddJwtBearer(options =>    
+						{    
+							options.TokenValidationParameters = new TokenValidationParameters    
+							{    
+								ValidateIssuer = true,    						// Gets or sets a boolean to control if the issuer will be validated during token validation.
+								ValidateAudience = true,    					// Gets or sets a boolean to control if the audience will be validated during token validation.
+								ValidateLifetime = true,    					// Gets or sets a boolean to control if the lifetime will be validated during token validation.
+								ValidateIssuerSigningKey = true,    			// Gets or sets a boolean that controls if validation of the SecurityKey that signed the securityToken is called.
+								ValidIssuer = Configuration["Jwt:Issuer"],    	// Gets or sets a String that represents a valid issuer that will be used to check against the token's issuer.
+								ValidAudience = Configuration["Jwt:Issuer"],    // Gets or sets a string that represents a valid audience that will be used to check against the token's audience.
+								IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))    
+							};    
+						});
+						* app.UseAuthentication();
+How to create one:	- Again, not that difficult:
+						* var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));    
+						var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);    
+						var token = new JwtSecurityToken(_config["Jwt:Issuer"], _config["Jwt:Issuer"], null, expires: DateTime.Now.AddMinutes(120), signingCredentials: credentials);
+						return new JwtSecurityTokenHandler().WriteToken(token); 
+
+
+In the name of OWIN! (Open Web Interface for .NET)
+==================================================================================================================================================================================================
+What is it:			- It's a standard for an interface between .NET Web applications and Web servers.
+Why is it here:		- Microsoft's ASP.NET technology was designed on top of IIS, and Web applications could not easily be run on another Web server.
+What does it do:	- OWIN aims to decouple the relationship between ASP.NET applications and IIS by defining a standard interface. Developers of Web servers can be sure that, if they implement OWIN correctly, ASP.NET applications will run on their server.
+
+
+Code Contracts are cool!
+==================================================================================================================================================================================================
+What is it:			- Gives runtime and compile time checking.
+Code snippets:
+					- Contract.Assume: 		Instructs code analysis tools to assume that the specified condition is true, even if it cannot be statically proven to always be true.
+					- Contract.Requires:	Specifies a precondition contract for an enclosing method or property.
+					- Contract.Ensures:		Specifies a postcondition contract for the enclosing method or property.
+					- Contract.Invariant:	Specifies an invariant contract for the enclosing method or property, and displays a message if the condition for the contract fails.
+					
+
+Compression technologies
+==================================================================================================================================================================================================
+What is it: 		- Network bandwidth is a limited resource. Reducing the size of the response usually increases the responsiveness of an app, often dramatically. One way to reduce payload sizes is to compress an app's responses.
+Middleware: 		- Only use the Response Compression Middleware when:
+						* You are not running IIS, Apache or Nginx decompression modules.
+						* When you are hosting directly on HTTP.sys or Kestrel server.
+What to use when:	- The client must send the Accept-Encoding header with the request so that the server knows what's up. When the server compressed the files it must include a Content-Encoding header for the browser.
+Encodings:			- The following encodings can be send (and some of them can be supported by the middleware):
+						* br 			->	Supported (default)	
+						* deflate 		->	No					
+						* exi 			->	No					
+						* gzip 			->	Yes					
+						* identity 		->	Yes					->	"No encoding" identifier: The response must not be encoded.
+						* pack200-gzip	->	No					
+						* *				->	Yes					->	Any available content encoding not explicitly requested.
+Headers:			- Multiple different headers come in play with compression:
+						* Accept-Encoding	->	Sent from the client to the server to indicate the content encoding schemes acceptable to the client.
+						* Content-Encoding	->	Sent from the server to the client to indicate the encoding of the content in the payload.
+						* Content-Length	->	When compression occurs, the Content-Length header is removed, since the body content changes when the response is compressed.
+						* Content-MD5		->	When compression occurs, the Content-MD5 header is removed, since the body content has changed and the hash is no longer valid.
+						* Content-Type		->	Specifies the MIME type of the content.
+						* Vary				->	When sent by the server with a value of Accept-Encoding to clients and proxies, the Vary header indicates to the client or proxy that it should cache (vary) responses based on the value of the Accept-Encoding header of the request.
+
+
+Custom formatters in ASP.NET Core Web API
+==================================================================================================================================================================================================
+What is it:			- ASP.NET Core MVC supports data exchange in Web APIs using input and output formatters. Input formatters are used by Model Binding. Output formatters are used to format responses. 
+Build-in examples:	- The framework provides built-in input and output formatters for JSON and XML. It provides a built-in output formatter for plain text, but doesn't provide an input formatter for plain text.
+How to use it:		- There are multiple things to account for:
+						* For input there is TextInputFormatter and for output is TextOutputFormatter. They derive from the base classes InputFormatter and OutputFormatter.
+						* You'll need to specify the valid media types and encodings in the constructor. 
+							+ SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/vcard"));
+							+ SupportedEncodings.Add(Encoding.UTF8);
+							+ SupportedEncodings.Add(Encoding.Unicode);
+						* Overwrite the CanReadType or the CanWriteType. 
+						* Overwrite the ReadRequestBodyAsync or the WriteReponseBodyAsync.
+
+Docker FTW
+==================================================================================================================================================================================================
+What is it: 		- With Docker, you can put your application in a container. This makes sure it can be ran everywhere.
+Default dockerfile:	- The following commands are used to  create a default docker application:
+						* FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env			-> 		Use the FROM instruction to define the base image
+						WORKDIR /app														->		Use the WORKDIR instruction to define the working directory
+
+						# Copy csproj and restore as distinct layers
+						COPY *.csproj ./													->		Use the COPY instructions to copy the source code into the image and then use the RUN instruction to restore NuGet packages.
+						RUN dotnet restore													->		Use the RUN instruction to run a specific command.
+
+						# Copy everything else and build
+						COPY . ./															->		Use the COPY instructions to copy the source code into the image and then use the RUN instruction to restore NuGet packages.
+						RUN dotnet publish -c Release -o out								->		Use the RUN instruction to run a specific command.
+
+						# Build runtime image
+						FROM mcr.microsoft.com/dotnet/core/aspnet:3.1						-> 		Use the FROM instruction to define the base image
+						WORKDIR /app														->		Use the WORKDIR instruction to define the working directory
+						COPY --from=build-env /app/out .									-> 		Use the COPY instructions to copy the source code into the image and then use the RUN instruction to restore NuGet packages.
+						EXPOSE 1234															->		Use the EXPOSE instruction to specify the listen port and build and run the application.
+						ENTRYPOINT ["dotnet", "aspnetapp.dll"]								->		Use the ENTRYPOINT instruction to use the container as an executable
+Build and run:		- Use the following commands to build and run the Docker image:
+						* docker build -t aspnetapp .
+						docker run -d -p 8080:80 --name myapp aspnetapp
+
+
+Static files
+==================================================================================================================================================================================================
+What is it: 		- Static files, such as HTML, CSS, images, and JavaScript, are assets an ASP.NET Core app serves directly to clients by default (for example by going to http://localhost:8080/images/hello.png).
+Storage:			- The default directory is {contentroot}/wwwroot, but this can be changed:
+						* app.UseStaticFiles(new StaticFileOptions { 
+							FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "MyStaticFiles")),
+							RequestPath = "/StaticFiles" });
+Authorization:		- More ways of authorization for static files:
+						* By using options when adding authorization in the pipeline:
+							+ services.AddAuthorization(options => {
+								options.FallbackPolicy = new AuthorizationPolicyBuilder()
+									.RequireAuthenticatedUser()
+									.Build(); });
+						* By serving them with an authorized action method.
+Directory browsing:	- Directory browsing allows directory listing within specified directories.
+						* app.UseDirectoryBrowser(new DirectoryBrowserOptions {
+							FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, "images")),
+							RequestPath = "/MyImages" });
+Default files:		- Setting a default page provides visitors a starting point on a site and must be configured before UseStaticFiles().
+						* default.htm(l)
+						* index.htm(l)
+FileServer:			- UseFileServer combines the functionality of UseStaticFiles, UseDefaultFiles, and optionally UseDirectoryBrowser.					
+
+
+Identity on ASP.NET Core
+==================================================================================================================================================================================================
+What is it: 		- An API that supports user interface login functionality and manages users, passwords, profile data, roles, claims, tokens, email confirmation, and more.
+How to use it:		- To use identity, add this to ConfigureServices:
+						* services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicaitonDbContext>();		
+						* services.AddIdentityCore<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicaitonDbContext>();
+Configure it:		- To set up identity, you'll need to configure identity services:
+						* services.Configure<IdentityOptions>(options => { options.Password.RequireDigit = true; });
+						* services.ConfigureApplicationCookie(options => { options.Cookie.HttpOnly = true; });
+Identity types:		- There are multiple ASP.NET Core Identity data types:
+						* Users: 				Users that registered on your website.
+						* User Claims: 			A set of statements about the user that represent the user's identity.
+						* User Logins: 			Information about the external authentication provider (like Facebook or a Microsoft account) to use when logging in a user.
+						* Roles: 				Authorization groups for your site. Includes the role Id and role name (like "Admin" or "Employee").
+						* Context class:		Encapsulates the information to connect to your persistence mechanism and execute queries.
+						* User storage:			Stores and retrieves user information (such as user name and password hash).
+						* Role storage:			Stores and retrieves role information (such as the role name).
+						* UserClaims Storage:	Stores and retrieves user claim information (such as the claim type and value).
+						* UserLogins Storage:	Stores and retrieves user login information (such as an external authentication provider).
+						* UserRole Storage:		Stores and retrieves which roles are assigned to which users.
+Custom User store:	- When implementing a storage provider, you'll need to create a class identical to the IdentityUser class and a UserStore that implements the IUserStore<TUser> interface. It can also have custom interfaces:
+						* IUserClaimStore<TUser>: 			Enable adding, removing and retrieving user claims.
+						* IUserLoginStore<TUser>:			Enable external authentication providers. Contains methods for adding, removing and retrieving user logins and a method for retrieving a user based on the login information.
+						* IUserRoleStore<TUser>:			Enables adding, removing and retrieving user's roles and a method to check if a user is assigned to a role.
+						* IUserPasswordStore<TUser>:		Enables getting and settings hashed passwords and a method to check if the user has set a password.
+						* IUserSecurityStampStore<TUser>:	Enables using a security stamp on the user's account information to see if it has been changed.
+						* IUserTwoFactorStore<TUser>:		Enables methods for getting and setting whether two factor authentication is enabled for a user.
+						* IUserPhoneNumberStore<TUser>:		Enables methods for getting and setting user phone numbers and whether the phone number is confirmed.
+						* IUserEmailStore<TUser>:			Enables methods for getting and setting user email and whether the email is confirmed.
+						* IUserLockoutStore<TUser>:			Enables methods for locking an account and tracking failed access attemtps and lockouts.
+						* IQueryableUserStore<TUser>:		Enables a queryable user store.
+
+
+
+Some route stuff in old MVC
+==================================================================================================================================================================================================
+Interfaces MVC:		- Yes, usefull for exams maybe:
+						* IRouteHandler:	Defines the contract that a class must implement in order to process a request for a matching route pattern.
+						* IHttpHandler:		Defines the contract that ASP.NET implements to synchronously process HTTP Web requests using custom HTTP handlers.
+
+
+WebPermission and SocketPermission
+==================================================================================================================================================================================================
+What is it:			- Internet security for applications using the System.Net namespace is provided by the WebPermission and SocketPermission classes.
+Give me more:		- Both WebPermission and SocketPermission have two permissions:
+						* Accept: 	Grants the application the right to answer an incoming connection from another party.
+						* Connect:	Grants the application the right to initiate a connection to another party.
+What to use:		- There are two instances that can be used:
+						* WebPermission:	Controls an application's right to request data from a URI or to serve a URI to the internet.
+						* SocketPermission:	Controls an application's right to use a Socket to accept data on a local port or to contact remote devices using a transport protocol at another address, based on the host, port number, and transport protocol of the socket.
+Examples:			- Some quick code examples: 
+						* WebPermission myWebPermission = new WebPermission(NetworkAccess.Connect,myRegex);
+						* myWebPermission.AddPermission(NetworkAccess.Connect,"http://www.adventure-works.com");
+						* SocketPermission mySocketPermission1 = new SocketPermission(PermissionState.None);
+						* mySocketPermission1.AddPermission(NetworkAccess.Accept, TransportType.Tcp, "www.contoso.com", 11000);
+		
+
+ModelBinding 
+==================================================================================================================================================================================================
+Creating a new one:		- For a custom model binder, you should implement the IModelBinder interface. This will give you the method BindModelAsync() to bind your own model.
+Providers:				- Before you can use it, you must create a IModelBinderProvider class. This implements GetBinder() and it must return your model binder.
+Adding the provider:	- Add the custom provider to the other providers with the following line of code:
+							* services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new AuthorEntityBinderProvider()); });
+Using it:				- You can use it in two ways:
+							* public IActionResult Get(Author author) { ... }									Using the custom provider.
+							* public IActionResult GetById([ModelBinder(Name = "id")] Author author) { ... }	Using the ModelBinder attribute to specify you want to use the custom provider.
+
+
+Host and deploy (oh man, keep it kinda short for now)
+==================================================================================================================================================================================================
+Web servers:			- An ASP.NET Core app runs with an in-process HTTP server implementation. The server implementation listens for HTTP requests and surfaces them to the app as a set of request features composed into an HttpContext:
+							* Kestrel server (Default, cross-platform HTTP server implementation).
+							* IIS HTTP server (In-process server for IIS).
+							* HTTP.sys server (Windows-only HTTP server based on the HTTP.sys kernel driver and HTTP Server API and supports windows authentication).
+Process managers:		- An ASP.NET Core app is a console app that must be started when a server boots and restarted if it crashes. The following are:
+							* Nginx (Linux, can be used as reverse proxy)
+							* Apache (Linux, can be used as reverse proxy)
+							* IIS (Windows, can be used as reverse proxy)
+							* Windows Service (Windows)
+ASP.NET Core Module:	- The ASP.NET Core Module is a native IIS module that plugs into the IIS pipeline to either:
+							* Host an ASP.NET Core app inside of the IIS worker process (w3wp.exe), called the in-process hosting model.
+							* Forward web requests to a backend ASP.NET Core app running the Kestrel server, called the out-of-process hosting model. This uses Kestrel and doesn't function with HTTP.sys.
+Reverse proxies:		- A reverse proxy server receives HTTP requests from the Internet and forwards them to Kestrel. But why should you use it:
+							* Configure load balancing
+							* Protection from attacks
+							* Global Server Load Balancing (GSLB):	A system that checks from where you visit to give the most closes website.
+							* Caching:
+							* SSL encryption:		
+Reverse proxy flow:		- Flow of a normal (Kestrel) request vs a reverse proxy one:
+							* Normal flow:		Internet -> HTTP -> Kestrel <-> HttpContext <-> Application code
+							* Reverse proxy:	Internet -> Reverse proxy server -> HTTP -> Kestrel <-> HttpContext <-> Application code
+HTTP/2:					- This is an upgraded version of the normal HTTP protocol. Every connection should use ALPN (explained down below). You can have this working for the following web servers:
+							* Kestrel:
+								+ Windows Server 2016/Windows 10 or later.
+								+ Linux with OpenSSL 1.0.2 or later (for example, Ubuntu 16.04 or later).
+								+ HTTP/2 will be supported on macOS in a future release.
+								+ .NET Core 2.2 or higher.
+							* HTTP.sys:
+								+ Windows Server 2016/Windows 10 or later
+								+ Target framework: Not applicable to HTTP.sys deployments.
+							* IIS (in-process):
+								+ Windows Server 2016/Windows 10 or later; IIS 10 or later
+								+ Target framework: .NET Core 2.2 or later
+							* IIS (out-of-process):
+								+ Windows Server 2016/Windows 10 or later; IIS 10 or later
+								+ Public-facing edge server connections use HTTP/2, but the reverse proxy connection to Kestrel uses HTTP/1.1.
+								+ Target framework: Not applicable to IIS out-of-process deployments.
+Why use HTTP/2:			- Why go through all that trouble just to use HTTP/2?:
+							* Multiplexing and concurrency:	Several requests can be sent over the same TCP connection, and responses can be received out of order, eliminating the need for multiple connections between the client and the server and reducing head-of-line blocking.
+							* Stream dependencies:			The client can indicate to the server which resources are more important than others.
+							* Header compression:			HTTP header size is reduced.
+							* Server push:					The server can send resources the client has not yet requested.
+TLS:					- Transport Layer Security, or TLS, is a widely adopted security protocol designed to facilitate privacy and data security for communications over the Internet:
+							* HTTPS is an implementation of TLS encryption on top of the HTTP protocol, which is used by all websites as well as some other web services. Any website that uses HTTPS is therefore employing TLS encryption.
+							* But why use a TLS:
+								+ Encryption: 		Your data is being hidden when transfered.
+								+ Authentication:	The two parties ensures that they are who they say they are.
+								+ Integrity: 		Verifies that the data has not been forged or tampered with.
+ALPN:					- Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension that allows the application layer to negotiate which protocol should be performed over a secure connection in a manner that avoids additional round trips and which is independent of the application-layer protocols.
+
+
+Good guy Forwarded Headers middleware
+==================================================================================================================================================================================================
+Why use it:				- When using proxies, the request can change a lot (see examples below). With the middleware, you retrieve headers that have information about the original request.
+							* When HTTPS requests are proxied over HTTP, the original scheme (HTTPS) is lost and must be forwarded in a header.
+							* Because an app receives a request from the proxy and not its true source on the Internet or corporate network, the originating client IP address must also be forwarded in a header.
+Headers send by proxy:	- The following headers are being forwarded by the proxy:
+							* X-Forwarded-For:		Holds information about the client that initiated the request and subsequent proxies in a chain of proxies. This parameter may contain IP addresses (and, optionally, port numbers).	
+							* X-Forwarded-Proto:	The value of the originating scheme (HTTP/HTTPS). The value may also be a list of schemes if the request has traversed multiple proxies.
+							* X-Forwarded-Host:		The original value of the Host header field. Usually, proxies don't modify the Host header.
+What does the middle:	- The following fields of the HttpContext are updated:
+							* HttpContext.Connection.RemoteIpAddress:	Set using the X-Forwarded-For header value.
+							* HttpContext.Request.Scheme:				Set using the X-Forwarded-Proto header value.
+							* HttpContext.Request.Host:					Set using the X-Forwarded-Host header value.
+When needed:			- You must enable this when the app is NOT hosted out-of-process behind IIS and the ASP.NET Core Module because it is already enabled automatically for this.
+Where to place:			- Must be placed before other middleware:
+							* app.UseForwarededHeaders();
+
+
+Short summary of the Rewriting middleware
+==================================================================================================================================================================================================
+What is it:				- URL rewriting is the act of modifying request URLs based on one or more predefined rules. 
+Why use it:				- There are many scenario's to use it, but keep in mind that it can reduce the performance of the app:
+							* Remove, add or reorganize URL segments on incoming requests.
+							* Optimize public URLs for Search Engine Optimization (SEO).
+							* Redirect insecure requests to secure endpoints.
+URL redirect:			- A URL redirect involves a client-side operation, where the client is instructed to access a resource at a different address than the client originally requested. This requires a round trip to the server. The redirect URL returned to the client appears in the browser's address bar when the client makes a new request for the resource.
+							* 301 response:	Moved Permanently status code is used where the resource has a new, permanent URL and you wish to instruct the client that all future requests for the resource should use the new URL. The client may cache and reuse the response when a 301 status code is received.
+							* 302 response: Found status code is used where the redirection is temporary or generally subject to change. The 302 status code indicates to the client not to store the URL and use it in the future.
+URL rewrite:			- A URL rewrite is a server-side operation that provides a resource from a different resource address than the client requested. Rewriting a URL doesn't require a round trip to the server. The rewritten URL isn't returned to the client and doesn't appear in the browser's address bar.
+							* No extra resonse is returned to the client.
+When to use it:			- Actually, you must only use it if you're unable to use the following approaches (or working on HTTP.sys server LOL):
+							* URL Rewrite module with IIS on Windows Server.
+							* Apache mod_rewrite module on Apache Server.
+							* URL rewriting on Nginx.
+						- There are two major down sides of using the middleware instead to the modules named above:
+							* The middleware doesn't support all the functionality.
+							* The performance is better within the modules.
+Fine, one example then:	- This exmaple uses redirect, reqrite and appends apache module rewrite:
+							* var options = new RewriteOptions()
+							.AddRedirect("redirect-rule/(.*)", "redirected/$1")
+							.AddRewrite(@"^rewrite-rule/(\d+)/(\d+)", "rewritten?var1=$1&var2=$2", 
+								skipRemainingRules: true)
+							.AddApacheModRewrite(apacheModRewriteStreamReader);
+
+							app.UseRewriter(options);
+
+
+The Startup class
+==================================================================================================================================================================================================
+What is it: 			- The Startup class configures services and the app's request pipeline. It contains two methods:
+							* Configure: 			Configure the HTTP request pipeline. The request pipeline is configured by adding middleware components to an IApplicationBuilder instance. 
+								+ Developer Exception page.
+								+ Exception handler.
+								+ HTTP String Transport Security (HSTS)
+								+ HTTPS redirection.
+								+ Static files
+								+ General Data Protection Regulation (GDPR)
+							* ConfigureServices:	Add services to the container. When services are added to the container with "Add{Service}" methods, they can be used within the Configure method. They serices are resolved via DI or ApplicationServices.
+								+ Optional.
+								+ Called by the host before the Configure method to configure the app's services.
+								+ Where the configuration options are set by convention.
+Use startup filters:	- You can explicitly define middleware to run at the start/end of the Configure method. For this to work, you'll need to use a class that implements the IStartupFIlter interface:
+							* public class RequestSetOptionsStartupFilter : IStartupFilter
+							{
+								public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+								{
+									return builder =>
+									{
+										builder.UseMiddleware<RequestSetOptionsMiddleware>();
+										next(builder);
+									};
+								}
+							}
+							* WebHost.CreateDefaultBuilder(args)
+							.ConfigureServices(services =>
+							{
+								services.AddTransient<IStartupFilter, 
+									RequestSetOptionsStartupFilter>();
+							})
+							.UseStartup<Startup>()
+							.Build();
+
+
+Extra stuff:
+==================================================================================================================================================================================================
+AppDomain:			- For most applications, you do not need to create your own application domain; the runtime host creates any necessary application domains for you. However, you can create and configure additional application domains if your application needs to isolate code or to use and unload DLLs.
+TypeConverter:		- Provides a unified way of converting types of values to other types, as well as for accessing standard values and subproperties. For example, converting a string into a custom type.
+
+
+Extra attribute stuff:
+==================================================================================================================================================================================================
+[HandleError]																	- When an exception happens, it will search within the Controllers View folder for a view named "Error". After that, it will search in the Shared folder for a view called "Error".
+[HandleError(ExceptionType = typeof(SqlException), View = "DatabaseError")]		- Specify for which exception it has to show which page.
+[OutputCache]																	- Cache things.
+[OutputCache(Duration = int.MaxValue, VaryByParam = "id")]						- Cache the result differently based on the parameter "id".
+[OutputCache(Duration=3600, Location=OutputCacheLocation.Client, NoStore=true)]	- Cache something on the client and tell the proxy servers and browsers that they should not store a permanent copy of the cached content.
+																					* Any: 				On the browser, on a proxy server or on the server self.
+																					* Client:			On the browser of the client.
+																					* Downstream:		The output cache can be stored in any HTTP 1.1 cache-capable devices other than the origin server. This includes proxy servers and the client that made the request.
+																					* Server:			On the web server.
+																					* None:				Nowhere.
+																					* ServerAndClient:	Both on the server and browser. The proxy cannot cache it.
+
+
+
+
+DataAdapter https://docs.microsoft.com/en-us/dotnet/api/system.data.common.dataadapter?view=netframework-4.8
+MessageChannel is for creating a message channel between an web page and an embedded iframe.
+Request.Browser.IsMobileDevice
+[ValidateInput(true/false)]: Sometimes, your required to save Html data in the database. By default Asp.Net MVC doesn't allow a user to submit html for avoiding Cross Site Scripting attack to your application.
+routes.IgnoreRoute("Bagel/{*pathInfo}"): Why the *PathInfo
+RenderSection/RenderPage
+
+https://www.examtopics.com/exams/microsoft/70-486/view/10/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

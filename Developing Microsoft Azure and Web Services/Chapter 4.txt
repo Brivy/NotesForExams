@@ -1,0 +1,452 @@
+4.1 Design a Web API
+==============================================================================================================================
+
+Choosing appropriate HTTP methods
+	Information:
+	- Representational State Transfer (REST) services are built upon HTTP.\
+	- The following HTTP verbs are important:
+		* Delete:	Specifies that a given URI be deleted.
+		* Get:		Retrieves one or more entities or some other data that is identified by the URI of the request.
+		* Put:		Replaces an entity that is identified by the URI. By standards, this verb requires all fields on the entity be specified, regardless of how many change.
+		* Post:		Inserts a new entity to the URI.
+		* Head:		Retrieves just the message headers identified by the URI.
+		* Patch:	Transmits a partial change to the entity identified by the URI where only identifiers and modified fields are specified.
+		* Options:	Represents requests for information about the communication op-tions available on the target resource.
+	
+	- HttpGet is used for all query and retrieval operations and returns a 404 when an resource is not found.
+	- HttpDelete deletes the resource and can return a 200 OK, 202 Accepted or a 204 No Response.
+	- HttpPost creates a new resource and can return a 201 Created or just a 200 OK.
+	- HttpPut is idempotent (calling the endpoint a 100 times will always create the same outcome) and updates resources. 
+
+
+Defining HTTP resources with HTTP actions
+	Information:
+	- Logically, you create the model first because it's the data that you expose.
+	- Controllers should handle HTTP requests and define the actual service that you expose to users. 
+	- Inherit from the System.Web.Http.ApiController base class to get all the needed functionality.
+
+
+Mapping URI space using routing
+	Information:
+	- A Routing Table is a class that implements the System.Web.Http.Routing.IHttpRoute interface and performs the simple task of mapping an incoming HttpRequestMessage to a specified controller and action. 
+	- A Routing Table works as follows:
+		* To match the correct controller, the Web API adds the literal Controller to the controller variable. 
+		* To match an action, the Web API examines the HTTP method and tries to match it to an action whose name corresponds to the HTTP method name.
+		* By default, the action names used correspond to four specific HTTP methods: GET, POST, PUT, and DELETE.
+		* Finally, placeholder variables in the route template are mapped specifically to the corresponding action parameters.
+
+	- There are some System.Web.Http.ActionMethodSelector attributes:
+		* HttpGet
+		* HttpPost
+		* HttpDelete
+		* HttpPut
+	- While these attributes can be found in both the System.Web.Http and System.Web.Mvc, you should always look at the base class. If it uses the ApiController one, use System.Web.Http.
+	- Using the System.Web.Http.AcceptVerbsAttribute class, you can specify multiple actions.
+	
+	Code:
+	- [System.Web.Http.AcceptVerbs("GET", "HEAD")]
+		* Use multiple actions on an action
+	- [ActionName("FindCustomers")]
+		* Changing the name of the action.
+	- [NonAction]
+		* Use this for an invisible action.
+		
+	- public static void Register(HttpConfiguration config)
+	{
+		config.Routes.MapHttpRoute(
+		name: "NamedApi",
+		routeTemplate: "api/{controller}/{action}/{id}",
+		defaults: new { id = RouteParameter.Optional } );    
+	}
+		* Defining a route table with the action token (the url api/Controller/Customers will become api/Controller/GetCustomers)
+	
+
+Choosing appropriate formats for responses to meet requirements
+	Information:
+	- The Accept header specifies the type of data that you as client expect from the server.
+	- The serialization of the response is done by an object called the media-type formatter.
+	- The process of returning your data in the format requested by the client is called content negotiation.
+	- To create your own media-type formatter, you should create a class that inherits from the MediaTypeFormatter or BufferedMediaTypeFormatter class.
+	
+	Code:
+	- Accept: text/html,application/xhtml+xml,application/xml
+		* An Accept header.
+
+
+Planning when to make HTTP actions asynchronous
+	Information:
+	- Asynchronous code is all about freeing your thread to process other requests while the I/O is being processed. This lets your server process more requests with fewer threads.
+	- Only use async on I/O work, CPU-bound work will hurt performance.
+	
+
+
+
+
+
+
+
+
+4.2 Implement a Web API
+==============================================================================================================================
+
+Accepting data in JSON format
+	Information:
+	- If your clients support JavaScript, using AJAX creates a better user experience for them.
+
+
+Using content negotiation to deliver different data formats
+	Information:
+	- Content negotiation is the process by which a response format is selected for a given response when there are multiple representations available. 
+	- The primary way content negotiation happens is via the HttpRequest headers:
+		* Accept:			Specifies the media types that are acceptable in the response. Common formats are “application/json”, “application/xml”, or “text/xml”.
+		* Accept-Charset:	Specifies which character sets are allowed. Common examples include UTF-8 or ISO-8859-1.
+		* Accept-Encoding:	Specifies which encodings are acceptable.
+		* Accept-Language:	Specifies the preferred language. 
+	- JQuery AJAX calls add the X-Requested-With header to prevent Cross-site Request Forgery.
+	- If no Accept header value is indicated, a request defaults to JSON.
+	
+	- Content negotiation happens in the following sequence:
+		* Processing starts when the request is received by the server.
+		* The pipeline extracts an instance of the IContentNegotiator service from the HttpConfiguration instance. 
+		* The HttpConfiguration includes a Formatters collection that provides a list of all available media formatters.
+		* The Negotiate method of the IContentNegotiator service is called. This method accepts:
+			* The type of object being serialized
+			* A collection of the media formatters
+			* The HTTP request
+		- And the Negotiate method returns the following:
+			* The formatter being used
+			* The media type for the HTTP response
+		- When no formatter is returned, the client will receive a 406 Not Acceptable.
+
+
+Defining actions and parameters to handle data binding
+	Information:
+	- Simple types are filled with data from the URL.
+	- Complex types are read from the message body using a media-type formatter. This is basically a key principle of HTTP.
+	- There are ways to influence the outcome of these bindings:
+		* Using the [FromUri] attribute, you can create a complex type from URI.
+		* Using the [FromBody] attribute, you can retrieve simple types out of the message body.
+	- Using TypeConverters and Modelbinders to maximize the customizability (this is more in-dept specified in the previous exam).
+	
+
+Using HttpMessageHandler to process client requests and server responses
+	Information:
+	- The process of getting a request to the controller action is done by what's called a message handler. This is mostly implemented as a cross-cutting concern.
+	- A cross-cutting concern is something that doesn’t really fit in one logical place in your code, but instead should be executed at multiple places in your code.
+	- Inheriting from the System.Net.Http.DelegatingHandler makes it possible to create a custom message handler.
+
+	Code:
+	- protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) { ... }
+		* A custom message handler.
+	- config.MessageHandlers.Add(new LoggingMessageHandler());
+		* Adding the message handler to the WebApiConfig class.
+	- config.Routes.MapHttpRoute(
+		...
+		handler: new LoggingMessageHandler()          
+	);
+		* Adding a message handler to a single routing table.
+
+
+Implementing dependency injection
+	Information:
+	- Create a custom dependency resolver by implementing the interface IDependencyResolver.
+	- Add the custom dependency resolver to the HttpConfiguration class to use it.
+	- In the past, you had to install the IoC Unity by yourself and call the BootStrapper.Initialize in the Global.asax to start using it.
+	
+	Code:
+	- config.DependencyResolver = new ResolveController();
+		* Adding the dependency resolver to the configuration.
+	- container.RegisterType<IContentRepository, WebClientContentRepository>();
+		* Register a service and implementation type in Unity.
+		
+
+Implementing action filters and exception filters
+	Information:
+	- Filters are used in Web API to decorate a controller or an action method.
+	- You can also apply Filters globally by adding it to HttpConfiguration.Filters.
+
+
+Implementing asynchronous and synchronous actions
+	Information:
+	- Because CPU-bound operations require a thread to process, an asynchronous call would just pick a different thread and then switch back to another thread when it finishes.
+
+
+Implementing streaming actions
+	Information:
+	- Using the PushStreamContent class, you can stream data to the client.
+
+	Code:
+	- response.Content = new PushStreamContent(OnStreamAvailable, "text/plain");
+		* Using the PushStreamContent in the HttpResponseMessage.Content property to stream results.
+		
+
+
+
+
+
+
+
+
+4.3 Secure a Web API
+==============================================================================================================================
+
+Authenticating and authorizing users
+	Information:
+	- You'll need authentication (username and password) and authorization (can you do this thing) to make security work.
+	
+
+Implementing HttpBasic authentication
+	Information:
+	- Basic authentication provides a simple user name/password authentication mechanism over plaintext. 
+	- It is encoded in Base64 so that most web technologies that re-quire authentication can work with. 
+	- There are some trade-offs:
+		* The advantages are:
+			+ Well known, mature internet standard
+			+ All major browsers support it (Internet Explorer, Safari, Firefox, Chrome, Opera, etc.)
+			+ Simplest of the currently implemented protocols
+			+ Natively supported by Internet Information Services (IIS)
+		* The disadvantages are:
+			+ User credentials are transmitted in the request.
+			+ The credentials are not just part of the request; by default they are transmitted in plaintext. This makes them vulnerable to interception unless additional steps are measured
+			+ User credentials continue to be sent in subsequent requests.
+			+ There is no way to explicitly log out after authentication except by explicitly ending the browser session.
+			+ Highly vulnerable to XSRF unless additional measures are taken.
+	- There is a check if the Authentication header is available and if not, the request is send back with a 401 Unauthorized but it includes a WWW-Authentication header saying that you'll basic authentication.
+	- To create a Basic authentication string, the following steps must be completed:
+		* Append a username and password with a semicolon.
+		* Encode the string with base64
+		* Append "Basic " to the string. 
+		* Send the string to the server in the Authorization header: Authorization: Basic Sm9oblFQdWJsaWM6ISpNeVBhNTV3MHJkKiE= 
+	
+	- ALWAYS USE SSL OR THE USERNAME/PASSWORD CAN BE INTERCEPTED
+	
+
+Implementing Windows Authentication
+	Information:
+	- Using your Windows Authentication to login (also Kerberos or NTLM).
+	- There are some trade-offs:
+		* The advantages are:
+			+ Natively supported by Internet Information Services (IIS).
+			+ Client credentials are not transmitted in the request.
+			+ If the client is a member of the same domain as the server, the client does not need to enter credentials.
+		* The disadvantages are:
+			+ Requires client-side NTLM or Kerberos support.
+			+ This is a poor choice to use for consumer-facing systems.
+	- Apperantly it's very easy to set up:
+		* On the server side, add the <authentication> element to the <system.web> and set the mode="Windows".
+		* On the client side if you are working with HttpClient, you'll only need to set the property UseDefaultCredentials to true.
+	
+	Code:
+	- <system.web>
+		<authentication mode="Windows" />
+	</system.web>
+		* Setting the authentication mode to Windows on the server.
+	- HttpClientHandler ClientHandler = new HttpClientHandler{ UseDefaultCredentials = true };
+		* Setting the HttpClient to use default credentials to true on the client.
+		
+
+Preventing cross-site request forgery
+	Information:
+	- XSRF is about the browser implicitly trusting a URL and sending the credentials it has stored with a request to that website.
+	- This is mostly done by authentication mechanisms like Basic and cookie-based.
+	- In MVC, you can protect yourself with the ValidateAntiForgeryToken attribute.
+	- You can mimic such a mechanism in Web API in the following way:
+		* Get the token from the cookie.
+		* Get the token from the form data.
+		* Pass the values for the token from both sources to AntiForgery.Validate.
+		* Send an Unauthorized when validation fails.
+
+
+Enabling cross-domain requests
+	Information:
+	- Browsers use same-origin policy to prevent for example AJAX calls to resources outside the current origin.
+	- This implies the URL, but also another protocol or different port.
+	- CORS can be enabled from within the web.config file, but the book recommends the nuget package for that.
+	- The nuget package enables the [EnableCors] attribute to be used. 
+	
+	Code:
+	- <system.webServer>
+		<httpProtocol>
+			<customHeaders>
+				<add name="Access-Control-Allow-Origin" value="*"/>
+				<add name="Access-Control-Allow-Headers" value="Origin, X-Requested-With, Content-Type, Accept" />
+			</customHeaders>
+		</httpProtocol>
+	</system.webServer>
+		* How CORS was enabled in the old days.
+	- [EnableCors(origins: "http://localhost:26891", headers: "*", methods: "*")]
+		* Action specific CORS activation.
+
+
+Implementing and extending authorization filters
+	Information:
+	- The [Authorize] attribute prevents non-logged in users from accesing a certain page.
+	- The functionality of this attribute can be extended:
+		* AuthorizeAttribute: 			Extend this class to perform authorization logic based on the current user and the user’s roles.
+		* AuthorizationFilterAttribute:	Extend this class to perform synchronous authorization logic that is not necessarily based on the current user or role.
+		* IAuthorizationFilter:		    Implement this interface to perform asynchronous authorization logic (only do this when it's I/O bound). 
+	- While it's fairly easy to inherit the AuthorizeAttribute, you should only inherit the other two when you have authorization logic that’s not based on the current user or role.
+	
+
+
+
+
+
+
+
+
+4.4 Host and manage a Web API
+==============================================================================================================================
+
+Self-hosting a Web Api
+	Information:
+	- To self host a website you should do at least two things:
+		* Create an instance of the HttpSelfHostConfiguration class.
+		* Create an instance of the HttpSelfHostServer.
+	- I'm not going to write more on this topic because there are at the moment a lot more options to self host like OWIN and just ASP.NET Core applications in general are self-hosted.
+
+
+Hosting Web API in an ASP.NET app
+	Information:
+	- Add an application pool.
+	- Add a new application or virtual directory.
+	
+
+Hosting services in a Windows Azure worker role
+	Information:
+	- When deploying to Windows Azure, you have three options:
+		* Windows Azure Websites
+		* Windows Azure Cloud Services
+		* Windows Azure Virtual Machines (VMs)
+
+
+Restricting message size
+	Information:
+	- On a self-hosted environment, you must protect yourself against DOS.
+	- This can be done by setting the MaxReceivedMessageSize and the MaxBufferSize, but also from apache/nginx configuration with .NET Core.
+	
+	Code:
+	- var config = new HttpSelfHostConfiguration(baseAddress);
+	config.MaxReceivedMessageSize = 1024;
+	config.MaxBufferSize = 1024;
+		* Setting the size limit of some stuff when self-hosted.
+	- <httpRuntime maxRequestLength="1024" />
+		* Setting the max request length when hosting in IIS.
+		
+
+Configuring the host server for streaming
+	Information:
+	- When you want to send a big file to a controller, you must use streaming instead of buffering because it will otherwise use a lot of memory.
+	- The IHostBufferPolicySelector determines if buffering or streaming should be used.
+	- Inherit form the WebHostBufferPolicySelector (the default implementation for the IHostBufferPolicySelector) and override the UseBufferedInputStream method.
+	- After this is done, you must replace the default implementation with the new one and update the Web.Config to allow big files.
+	
+	Code:
+	- public class StreamingPolicySelector : WebHostBufferPolicySelector {
+		public override bool UseBufferedInputStream(object hostContext) { ... }
+	}
+		* Overriding the WebHostBufferPolicySelector.
+	- config.Services.Replace(typeof(IHostBufferPolicySelector), new StreamingPolicySelector());
+		* Replacing the IHostBufferPolicySelector.
+	- <system.webServer>  
+		<security>
+			<requestFiltering>
+				<requestLimits maxAllowedContentLength="2147483648" />
+			</requestFiltering>
+		</security>
+	</system.webServer>
+	<system.web>
+		<httpRuntime maxRequestLength="2097152" />
+	</system.web>
+		* Enable some big boy files.
+
+	
+
+
+
+
+
+
+
+4.5 Consume Web API web services
+==============================================================================================================================
+
+Consuming Web API services
+	Information:
+	- The book uses HttpClient, yeah.
+	
+	Code:
+	- HttpResponseMessage GetResponse = await client.GetAsync("api/values/1");
+		* Get some values.
+	- if (message.IsSuccessStatusCode) {        
+		Foo  result = await message.Content.ReadAsAsync<Foo>();
+	}
+		* Check if the request returned a correct status code and read the result.
+	
+	- var message = await client.PostAsync<Foo>("api/values", new Foo());
+		* Post values.
+	- var message = await client.PostAsJsonAsync<Foo>("api/values", new Foo());
+		* Post as JSON? Not really needed IMO.
+
+	- var message = await client.PutAsync<Foo>("api/values", new Foo());
+		* Put values.
+	- var message = await client.PutAsJsonAsync<Foo>("api/values", new Foo());
+		* Put as JSON? Not really needed IMO.
+
+	- message = await client.DeleteAsync("api/values/1);
+		* Delete some stuff.
+
+	- message.EnsureSuccessStatusCode();
+		* Results in a HttpRequestException when it's not a success.
+
+
+Sending and receiving requests in different formats
+	Information:
+	- There are several current options with respect to media type (MIME) formats:
+		* application/xml
+		* text/html
+		* image/png
+		* application/json
+		* Custom format
+
+	- While there is out-of-the-box support for XML, JSON and form-urlencoded data, you can create your own formatters:
+		* MediaTypeFormatter:			Needed for asynchronous work.
+		* BufferedMediaTypeFormatter:	Needed for synchronous work.
+
+	- When creating the custom formatter you should know the following things:
+		* Add the supported media types in the constructor.
+		* Specify the CanReadType and set it to true when it supports deserialization.
+		* The CanWrite is also handy to set to true.
+		* The WriteToStream method needs to be implemented in either case (oth-erwise, the type can’t be transmitted).
+		* If the formatter needs to support deserialization, the ReadFromStream method needs to be overridden and implemented as well.
+		* Enable it in the configuration.
+
+	Code:
+	- public class CustomerCsvFormatter : BufferedMediaTypeFormatter {    
+		public class CustomerCsvFormatter() {         
+			SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/csv");     
+		}
+	}
+		* Built a custom formatter with support for csv.
+	- config.Formatters.Add(new CustomerCsvFormatter()); 
+		* Enabling the custom formatter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

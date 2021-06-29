@@ -1,0 +1,455 @@
+2.1 Query and manipulate data by using the Entity Framework
+==============================================================================================================================
+
+Querying, updating, and deleting data by using DbContext
+	Information:
+	- You can use LINQ or the LINQ extension methods for retrieving data from Entity Framework
+	- Understanding the difference between the Add or Attach methods is key when updating objects:
+		* Add(): 	Entities added with the Add() results in having an EntityState value of Added. Using the method before any modifications results in a create statement.
+		* Attach():	Entities added with the Attach() results in having an EntityState value of UnChanged. Using the method before any modifications results in an update statement.
+	- Call the Remove() method to delete stuff from the Entity Framework.
+	
+	Code:
+	- context.Accounts.Attach(account);
+		* Attach an entity to the EF.
+	- context.Set<Account>().Remove(query);
+		* Set the specific entity type to remove.
+
+
+Building a query that uses deferred execution
+	Information:
+	- Object-relational mapping (ORM) is a programming technique for converting data between incompatible type systems in object-oriented programming.
+	- Lazy loading means that you retrieve the data only when you actually need it.
+	- Be carefull when using lazy loading especially when you throw the query in a foreach loop.
+	
+
+Implement lazy loading and eager loading
+	Information:
+	- In total there are three types of loading options:
+		* Lazy loading: 	When executed, the query returns the primary or target entity, but related data is not retrieved.
+		* Eager loading: 	The target, or primary entity, is retrieved when the query is triggered and the related items come with it.
+		* Explicit loading:	Event when lazy loading is disabled; you can still make use of it to lazily load entities if you have the need to do so. The Load extension method enables you to execute queries individually, giving you de facto lazy loading if you want.
+	- By setting the value to lazy loading value to true/false, the .edmx file will also be modified accordingly.
+	- You can also set the value by code. This is done by the DataContext (the class that inherits from the DBContext).
+	- There are several greedy operations (that will force the query to execute):
+		* Caling the ToList, ToArray, or ToDictionary methods.
+		* Calling an aggregate function like Average, Count and Max.
+	
+	Code:
+	- context.Configuration.LazyLoadingEnabled = enableLazyLoading;
+		* Enable lazy loading by code.
+
+
+Creating and running compiled queries
+	Information:
+	- EF supports compiled queries which are basically cached and only the parameters are changed when you run the query.
+	- This is done automatically (by 4.5) and it's done by comparing the hash of a query against the in-memory cache of queries that ran previously.
+	- You can create your own compiled queries with the CompiledQuery class (but this is acutally not needed anymore).
+	
+	Code:
+	- static readonly Func<MyObjectContext, string, Person> compiledQuery = 
+		CompiledQuery.Compile<MyObjectContext, string, Person>((ctx, email) => 
+			(from p in ctx.People  
+			where p.EmailAddress == email 
+			select p).FirstOrDefault());
+		* Creating a static compiled query.
+	- Person p = compiledQuery.Invoke(context, "Foo@bar");
+		* Using the compiled query.
+
+
+Querying data by using Entity SQL
+	Information:
+	- Entity SQL is basically SQL but it has the extra knowledge of your conceptual model.
+	- You can use the EntityDataReader instead of the regular DataReader to get a better understanding of your model.
+	- Basically not needed because you are probaly using LINQ-to-SQL.
+	
+	Code: 
+	- var queryString = "SELECT VALUE p FROM MyEntities.People AS p WHERE p.FirstName='John'";
+		* Create a query with Entity SQL.
+	- ObjectQuery<Person> people = context.CreateQuery<Person>(queryString);
+		* Returns a strongly typed object.
+
+	- EntityCommand cmd = conn.CreateCommand();
+		* Create a EntityCommand.
+	- cmd.CommandText = queryString;
+		* Apply the query to the command.
+	- using (EntityDataReader rdr = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.CloseConnection)) { ... }
+		* Use the EntityDataReader to execute the command.
+
+
+
+
+
+
+
+
+
+2.2 Query and manipulate data by using Data Provider for Entity Framework
+==============================================================================================================================
+
+Querying and manipulating data by using Connection, DataReader, Command from the System.Data.EntityClient namespace
+	Information:
+	- There is a separate Data Provider for the EF.
+	- You'll need to connect to the database. For EF there are three constructors under the EntityConnection class:
+		* EntityConnection connection = new EntityConnection();
+		* EntityConnection connection = new EntityConnection(ConnectionStringHere);
+		* EntityConnection Connection = new EntityConnection(EfBuilder.ToString());		// It's noteworthy that you'll need to specify the metadata. This can be found on page 123.
+	- Using the EntityCommand is basically the same as his provider-specific counterpart. But this are the methods to learn:
+		* CreateParameter:	Creates a new EntityParameter (used in conjunction with parameterized queries).
+		* ExecuteNonQuery:	Executes the Current command; used typically when you have an INSERT, UPDATE, or DELETE query. Also has an asynchronous counterpart named ExecuteNonQueryAsync.
+		* ExecuteReader:	Executes the query returning an EntityDataReader. Exhibits the same behavior that other provider DBDataReader implementations do.
+		* ExecuteScalar:	Executes a query, returning only one value back. It is the equivalent of calling ExecuteReader and retrieving only the first value in the first row.
+	- To use the EntityTransaction, remember to set the EntityConnection property and IsolationLevel and using the Commit or Rollback methods.
+
+
+Performing synchronous and asynchronous operations
+	Information:
+	- Async, the non-blocking technology, has some methods:
+		* ExecuteScalarAsync
+		* ExecuteReaderAsync
+		* ExecuteNonQueryAsync
+		
+
+Managing transactions (API)
+	Information:
+	- For transactions, there is no specific EntityTransaction of some kind. You can just use the DbTransaction class.
+	- To get a transaction working for an EntityConnection, you'll need to manually call a BeginTransaction().
+	- Using a TransactionScope has the benefit of automatically ending the transaction.
+	- The behavior of the TransactionScope should be the same if you compare it with the other providers.
+	
+	Code:
+	- IDbTransaction TransactionInstance = Context.Database.Connection.BeginTransaction();
+		* Begin a transaction on a specific context.
+	- TransactionInstance.Commit(); OR TransactionInstance.Rollback();
+		* Using the TransactionInstance to Commit or Rollback the saved changes.
+	- using (TransactionScope CurrentScope = new TransactionScope()) { ... }
+		* A custom TransactionScope.
+
+
+
+
+
+
+
+
+
+2.3 Query data by using LINQ to Entities
+==============================================================================================================================
+
+Querying data using LINQ operators
+	Information:
+	- Please, just use this instead of the ADO.NET libraries to populate an manipulate objects.
+	- LINQ has three distinc actions:
+		* Obtain the data.
+		* Create the query.
+		* Execute the query.
+	- For an item to be queryable through LINQ, it must implement either the IEnumerable or IQueryable interface.
+	- To create a LINQ to Entities query, the following happens:
+		* An ObjectQuery class instance is created from the ObjectContext class.
+		* Compose a LINQ to Entities query using the ObjectQuery instance.
+		* Convert to LINQ standard query operators or Expression Trees.
+		* Execute the query.
+		* Return the result to the client.
+	- Use ObjectContext when using LINQ to entities and use DbContext when using the current version of the EF.
+	- While using the ObjectQuery class for creating LINQ, you can return a IQueryable and a IEnumerable.
+
+	Code:
+	- IQueryable<Account> query = from acct in Context.Accountswhere acct.AccountAlias == "Primary"select acct.CreatedDate;
+		* Query that will retrieve the CreatedDate when executed.
+
+
+IEnumerable versus IQueryable
+	Information:
+	- IEnumerable items are characterized by:
+		* Usage in LINQ to Objects or LINQ to XML.
+		* Are performed in-memory.
+		* Are performed on the heap.
+	- IQueryable items are notably different in most cases:
+		* Run out of process.
+		* Support several different datasources including remote ones.
+		* Are used in LINQ to Entity Framework, LINQ to DataService.
+	- And now for a good comparision from stackoverflow:
+		* IQueryable (LINQ-to-SQL) will be executed against the database. This is preferable when you don't want to return a lot of data from the database.
+		* IEnumerable (LINQ-to-Object) will execute the original query and apply the LINQ queries in-memory.
+
+
+Logging queries
+	Information:
+	- There is a way to log queries.
+	
+	Code:
+	- String Tracer = (query as ObjectQuery).ToTraceString();
+		* Cast and log a query.
+	- String Output = (from Acct in ContextName.ContextSet select Acct).ToString();
+		* Just use the .ToString() method.
+
+
+
+
+
+
+
+
+
+2.4 Query and manipulate data by using ADO.NET
+==============================================================================================================================
+
+Querying data using Connection, DataReader, Command, DataAdapter and DataSet
+	Information:
+	- The most essential items of ADO.NET are as follows:
+		* Connection:	IDbConnection is the interface that all Connection objects must implement like SqlConnection and OleDbConnection.
+		* DataReader:	DbDataReader is the base class that all provider-specific DataReader items inherit like SqlDataReader and OracleDataReader.
+		* Command:		IDbCommand is the interface that each Command object implements like SqlCommand and OleDbCommand.
+		* DataAdapter:	IDbDataAdapter is the interface that DataAdapters implement like SqlDataAdapter and OleDbDataAdapter.
+		* DataTable:	Part of the System.Data namespace. There are no provider-specific DataTable implementations.
+		* DataSet:		Part of the System.Data namespace. There are no provider-specific DataSet implementations.
+
+
+SqlConnection
+	Information:
+	- Wrap any calls to the Open method in a try/catch or try/finally block.
+	
+	Code:
+	- using (SqlConnection connection = new SqlConnection("ConnectionStringName")){ connection.Open(); }
+		* Open a SqlConnection.
+
+
+SqlCommand
+	Information:
+	- A SqlCommmand needs an open and available SqlConnection to operate.
+	- You'll need to set the SqlCommand.CommandText with your query. This can also be done by the contructor like SqlCommand command = new SqlCommand(queryString, connection);
+	- Never concatenate values to build SQL strings.
+	- Because dynamic SQL are built using parameterization, they can take advantage of cached execution. This is better than the performance of stored procedures.
+	- There are multiple execution options:
+		* You can use it as an input for the SelectCommand property in a SqlDataAdapter.
+		* You can call the ExecuteScalar method to retrieve an individual value.
+		* You can call the ExecuteReader to retrieve a SqlDataReader.
+	- Each execution method features an asynchronous counterpart that is indicated by the prefix "Begin" at the beginning of it.
+	- Make sure your SqlCommand is disposed after using it.
+	
+	Code:
+	- using (SqlCommand sqlCommand = new SqlCommand("SELECT * FROM Transactions WHERE id = @ID", Connection))
+		* Create a parameterized query.
+	- SqlCommand.Parameters.AddWithValue("@ID", "IDValue")
+		* Add values to the parameterized query.
+	- using(SqlDataReader reader = command.ExecuteReader()) { while (reader.Read()) { ... } }
+		* Using the .ExecuteReader function to read the results.
+	- newProdID = (Int32)cmd.ExecuteScalar();
+		* Using the .ExecuteScalar() function to execute a command.
+	- adapter.SelectCommand = new SqlCommand(queryString, connection);
+		* Using the .SelectCommand function of the DataAdapter.
+		
+
+SqlDataReader
+	Information:
+	- The SqlDataReader is a forward-only cursor that you can (for instance) invoke by declaring the ExecuteReader or BeginExecuteReader methods of the SqlCommand class.
+	- The buffer will load the data, but it will only be streamed back when you actually iterate it by calling the Read method.
+	- While you can tell if the result has rows (by using the HasRows property), you actually can't tell how many rows it are.
+
+	Code:
+	- SqlDataReader Reader = Command.ExecuteReader(CommandBehavior.CloseConnection); while (Reader.Read()) { ... }
+		* Another way to use the ExecuteReader.
+
+
+SqlDataAdapter
+	Information:
+	- A Strongly Typed Dataset is a custom class and it consists of classes derived form DataSet, DataTable and DataRow. A typed class assumes all of the functionality of the DataSet class and can be used with methods that take an instance of a DataSet class as a parameter. It is bind with the database tabless at design time and you have all the schema information at design time in your code. . This is also stored in an .xsd file.
+	- An UnTyped DataSet is an instance of class System.Data.DataSet. It is binded with the tables at runtime and there no corresponding built-in schema. You are not aware of the schema of the dataset at design time and there is no error checking facility at the design time as they are filled at run time when the code executes.
+	
+	- The SqlDataAdapter is basically the same as the SqlDataReader but with a few major difference: 
+		* It populates a DataSet (with one DataTable per query specified in the SelectCommand property), and you can iterate the table as many times in as many directions you see fit.
+		* LINQ is also possible to use on the DataSet.
+		* You can also check how many rows there are.
+	- Designed to support CRUD operations.
+	- The .Fill method does a lot of work like connecting to thte database, executing the command and handles the creation of DataTables.
+	- Using the SELECT statement will create a DataTable and it will be added to the DataSet.
+	- By default, DataColumns are the only items created by the adapter.
+	- DataTables have primary keys and constraints that can be used to search for the data. This is done automatically, but if you are including an OUTER JOIN or subquery, you'll need to add the keys manually.
+	- After the DataTable and DataColumn items are created, it takes the query values and builds a DataRow for each record returned.
+	- Each value included in the SELECT command will map back to a column in the DataTable.
+	
+	- When updating the database, the DataTable in conjunction with the adapter will handle change tracking for you. This is called DataRowState and is accessed via the RowState property of a DataRow).
+	- A SqlParameter is created corresponding to each value, and when Update is called, each row is interrogated and the column in the DataRow is mapped to the respective paramter.
+	
+	- More interesting members of the SqlData adapter:
+		* AcceptChangesDuringFill: 		By default, the RowState property is set to Unchanged when you call the Fill method. If you set AcceptChangesDuringFill to false, all the rows returned will have a RowState of Added.
+		* AcceptChangesDuringUpdate:	Normally, the RowState of each property will be set to UnChanged when you have added/updated/deleted the property. When settings this value, this doesn't happen and all the statusses will remain the same.
+		* UpdateBatchSize:				Setting this value to 100 will result in 1 round trip to the database instead of 100.
+		* OnRowUpdating/OnRowUpdated:	When the state can change when working with rows, you can attach events to the following properties to get notified when a row is updating/updated.
+		* ContinueUpdateOnError:		When you have 100 rows and an error occurs on row 50, the other ones will not update anymore. The SqlDataAdapter will try to continue with these rows when this property is set to true.
+		* FillSchema:					It will create a DataTable object, but instead of populating it, it only creates it.
+		
+	- To be a fully functional adapter, you must set the following properties:
+		* SelectCommand
+		* InsertCommand
+		* UpdateCommand
+		* DeleteCommand
+	- Exceptions will be thrown when you for example have a RowState of Added but no belong InsertCommand.
+	
+	Code:
+	- sqlAdapter.AcceptChangesDuringFill = false;
+		* By default, the RowState property is set to Unchanged when you call the Fill method. If you set AcceptChangesDuringFill to false, all the rows returned will have a RowState of Added.
+	- using (SqlDataAdapter sqlAdapter = new SqlDataAdapter(Command)) { ... }
+		* Create the adapter in a using statement so it gets disposed when it's finished.
+	- DataSet CurrentSet = new DataSet("CurrentSet");
+		* Create a new DataSet.
+	- sqlAdapter.Fill(CurrentSet);
+		* Fill the DataSet with the SqlAdapter and the defined query.
+
+
+Performing synchronous and asynchronous operations
+	Information:
+	- SqlCommand asynchronous methods all start with "Begin":
+		* SqlCommand.BeginExecuteReader
+		* SqlCommand.BeginExecuteXmlReader
+		* SqlCommand.BeginExecuteNonQuery
+	
+	Code:
+	- IAsyncResult sqlResult = sqlCommand.BeginExecuteReader(CommandBehavior.CloseConnection);
+		* Execute the query async.
+	- while (!sqlResult.IsCompleted) { ... }
+		* Wait for the result to complete.
+
+
+Managing transactions
+	Information:
+	- A TransactionScope supports a lot of stuff like DataAdapter.Update and DbContext.SaveChanges().
+	- Implementing transactions can be usefull, but sometimes you just don't want to.
+
+
+
+
+
+
+
+
+
+2.5 Create an Entity Framework data model
+==============================================================================================================================
+
+Structuring the data model using Table-per-Type and Table-per-Hierarchy inheritance
+	Information:
+	- Table-per-Hierarchy: 	This approach suggests one table for the entire class inheritance hierarchy. The table includes a discriminator column which distinguishes between inheritance classes:
+		* This approach has some benefits:
+			+ Fewer database tables leading to a simplified database schema.
+			+ Notably faster CRUD operations in most cases. (This is because all of the data is stored in one table.)
+		* But it also has its downsides:
+			+ There is necessary data redundancy, and because one of the main purposes of normalizing data is to remove redundancy, this is not a small issue.
+			+ Data integrity issues are more likely because of data redundancy.
+			+ Because of the data model, complexity is increased.
+	- Table-per-Type: 		This approach suggests a separate table for each domain class.
+		* This approach has some benefits:
+			+ Data is not stored redundantly.
+			+ Data is structured in third normal form so data integrity is improved.
+			+ A much simpler implementation. Adding or removing an entity can be accomplished by simply adding or deleting the underlying table in the database.
+		* But it also has its downsides:
+			+ There is a performance decrease, particularly around CRUD operations.
+			+ Makes database administration more complicated because of all the additional tables in the system.
+		
+	
+Choosing and implementing an approach to manage a data model (code first vs model first vs database first)
+	Information:
+	- How to create an Entity Data Model:
+		* Select ADO.NET Entity Data Model from a new item.
+		* Then, select what way you want to generate it (from the database or just an empty model).
+		* Configure the Data Connection next.
+		* When creating from the Database, select what you want to be in the model (like tables/views/stored procedures).
+		* The model will be created for you.
+	- The properties of an EDM are very rich of value and when working with them:
+		* Setting Base Class Library types
+		* Setting a type to nullable or not.
+		* Getter and setter access visibility levels.
+		* Autogenerated values.
+		* Ensuring that another user or process has not changed the value you’re referencing prior to submitting a save with the Concurrency Mode property. To ensure that the value has not changed, you need to set the Concurrency Mode property to Fixe
+	
+
+Implementing POCOs
+	Information:
+	- To create a POCO (plain old common object), you'll need to follow a few guidelines:
+		* The name of the entity type must match the POCO name.
+		* Each entity property must map to a public POCO property.
+		* The names of the types and the actual property types themselves must map and be equivalent (obviously there’s no magic that can map the name “Microsoft” to a GUID).
+	- Either you create the classes or the EF designer. It can't be both. For this to work, you'll need to disable autogeneration.
+	- How to wire up these classes:
+		* Define a property in the context corresponding to each POCO you created.
+		* Define the property using the ObjectSet (if you’re using an ObjectContext) or DbSet (if you’re using the DbContext) generic class, specifying your POCO as the target definition.
+		* Add code to the context’s constructor, initializing the property calling the CreateObjectSet base class method (again, passing in the POCO class definition to the method).
+	
+	- A DbContext is used for implementing the POCOs.
+	- A Scalar property is a property whose actual values are contained in the entity. A property of an entity that maps to a single field in the storage mdoel.
+	- A Navigation property is used to navigate through relations in data. It allows you to navigate from one entity to a "connected" entity.
+	- For each POCO, you need to decorate the clas definition with the Table attribute.
+	- When having the ScalarProperty and NavigationProperty in place, you can define the POCOs in the DbContext.
+
+	- ObjectContext is created basically in the same way as DbContext but with some small differences.
+
+	Code:
+	- public partial class EntityFrameworkSamplesEntitiesDb : DbContext { ... }
+		* Inheriting from the DbContext.
+	- public EntityFrameworkSamplesEntitiesDb(): base("name=EntityFrameworkSamples Entities1") { ... }
+		* Using the constructor of the DbContext to use the DbContext.
+	- public DbSet<Account> Accounts { get; set; }
+		* Defining a POCO for the DbContext.
+
+	- public partial class EntityFrameworkSamplesEntitiesSample : ObjectContext { ... }
+		* Inheriting from the ObjectContext.
+	- public EntityFrameworkSamplesEntitiesSample(): base("name=EntityFramework SamplesEntities1") { ... }
+		* Using the constructor of the ObjectContext to use the ObjectContext.
+	- Accounts = new ObjectSet<Account>();
+		* Setting properties that correspond to tables in the constructor.
+	- public ObjectSet<Account> Accounts { get; set; }
+		* Defining a POCO for the ObjectContext.
+
+
+Describing a data model using conceptual schema definitions, storage schema definitions, and mapping language (CSDL, SSDL, & MSL)
+	Information:
+	- A .edmx file consists of three things:
+		* A conceptual model.	=> CSDL => Conceptual schema definition language.
+		* A storage model.		=> SSDL => Storage schema definition language.
+		* A mapping model 		=> MSL 	=> Mapping specification language.
+	
+	- The CSDL describes the entities, relationships and functions that comprise a conceptual model of a data-driven application. 
+	- The SSDL represents the storage model of the underlying database. Basically, it hold information about the data store.
+	- The MSL is a little bit more complicated:
+		* An .edmx file that serves as the container for everything else.
+		* A ModelName.Context.tt file for template generation of the underlying .NET classes specified in the model
+		* A ModelName.Context.cs class that contains the .NET code definition of the respective context.
+		* A ModelName.Designer.cs class that provides design time support for the entity definitions
+		* A ModelName.edmx.Diagram that includes an XML representation.
+		* A ModelName.tt file that contains template information needed to generate the data classes.
+	- Basically, the MSL maps between the SSDL and CSDL and tells how to communicate, how the end-user objects end up in the database and vica versa.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

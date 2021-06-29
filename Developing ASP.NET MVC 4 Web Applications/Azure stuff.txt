@@ -1,0 +1,264 @@
+Azure stuff:
+==================================================================================================================================================================================================
+Azure Monitoring REST API: 	The Azure Monitor API makes it possible to programmatically retrieve the available default metric definitions, granularity, and metric values. The data can be saved in a separate data store such as Azure SQL Database, Azure Cosmos DB, or Azure Data Lake. From there additional analysis can be performed as needed.
+Azure Blob Storage:			Place to store data, but this is unstructered.
+Azure File Storage:			Place to store data, but is a complete file system with folders and such.
+
+
+Azure key vault stuff:
+==================================================================================================================================================================================================
+What is the key vault:	Securly storing and accessing secrets.
+Key vault terms:		
+						- Tenant: 				Is the organization that owns and manages a specific instance of Microsoft cloud services.
+						- Vault owner:			Person that can create a key vault and gain full access and control over it.
+						- Vault consumer:		Person that performs actions on the assests inside the key vault when the vault owner grants him permission.
+						- Resource:				Manageable item in Azure. This includes virtual machines, storage accounts, web app, databases and virtual networks.
+						- Resource group:		Container that holds related resources for an Azure solution.
+						- Security principal:	In Azure this is a security identity that user-created apps, services and automation tools use to access specific Azure resources.
+						- Active Directory:		This is the Active Directory service for a tenant.
+						- Azure tenant ID:		An tenant ID is a unique way to identify an Azure AD instance within an Azure subscription.
+						- Managed identities:	You'll need to authenticate to the Key Vault to retrieve the values. Using a managed identity makes solving this problem simpler by giving Azure services an automatically managed idenity in Azure AD.
+Usefull code snippets:	
+						- var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential(), options);		Create a new key vault connection with azure credentials and specified options.
+						- client.SetSecret("mySecret", "mySecretValue");											Set a secret in the key vault.
+						- KeyVaultSecret secret = client.GetSecret("mySecret"); 									Retrieve a secret by name.
+						- client.StartDeleteSecret("mySecret");														Delete your secret.
+
+
+Azure role stuff:
+==================================================================================================================================================================================================
+Crash dumps:		- When you enable collection of crash dumps, the resulting data is written to the CrashDumps directory in the DiagnosticStore local resource that is automatically configured for your role.
+Crashing:			- When crashing, the OnStop method will not run for your web role.
+Stopping:			- The web server will shut down when pending requests cannot be completed in five minutes.
+					- When the OnStop method returns, the Web role is shut down immediately.
+Task types:			- There are multiple task types available:
+						* Simple: Means this task would needs to be complete before the Role Starts. If task will not complete and exit, the Role will stuck to wait till the task completion. Simple tasks run until they exit, and then the next task (or the RoleEntryPoint if this is the last startup task) is executed.
+						* Background: This task would be independent from the Role itself. First startup task will execute and immediately after the Role, and even when this task is not completed, the Role will start separately from the startup task.
+						* Foreground: The startup task will run and then Role will start so it does behave same way as the background task, however the role will stay running as long as startup task is running. You can choose it, if you want the role instance to stay up as long as the task is running. Also the role shutdown can only happen when all the foreground tasks exit.
+Input endpoints: 	- When you need to add the input endpoints manually by remote debugging, you'll need to change the C:\Config\<DeploymentID>.WebRole.xml file.
+
+
+(Azure) Redis stuff:
+==================================================================================================================================================================================================
+What is Redis:				- Basically a cache.
+CacheSecrets.config:		- Place do place the connection string
+							#code:
+								<appSettings>
+									<add key="CacheConnection" value="<cache-name>.redis.cache.windows.net,abortConnect=false,ssl=true,allowAdmin=true,password=<access-key>"/>
+								</appSettings>
+Usefull code snippets:		
+							- Connection.GetDatabase():										Start a connection.
+							- cache.StringSet("Hello", "World!"):							Set a value in the cache.
+							- cache.StringSet("Hello", "World!", TimeSpan.FromMinutes(90)):	Set a value in the cache with a timespan.
+							- cache.StringSet("Hello"):										Retrieve the value.
+							- (System.Net.DnsEndPoint) Connection.GetEndpoints()[0];		Get the Redis cache endpoint properties.
+							- Connection.GetServer(endpoint.Host, endpoint.Port);			Get the Redis server properties.
+							- server.ClientList();											Retrieve all the connected clients.
+
+
+Azure monitor
+==================================================================================================================================================================================================
+What is it: 		- Azure Monitor maximizes the availability and performance of your applications and services by delivering a comprehensive solution for collecting, analyzing, and acting on telemetry from your cloud and on-premises environments.
+What can you do:	- When recieving the data from sources, the following can be done:
+						* Application insights: Detect and diagnose issues across applications and dependencies.
+						* Visualize: 			Create dashboards, views and more to visualize the recieved data.
+						* Analyze: 				Dive deeper in the data.
+						* Respond:				Create alerts and automated actions for when things go sideways.
+						* Integrate: 			Use the API's to export the data.
+
+
+Azure API management
+==================================================================================================================================================================================================
+What is it: 		- API Management (APIM) is a way to create consistent and modern API gateways for existing back-end services.
+Components:			- The system is made up of the following components:
+						* API gateway:		Is the endpoint that accepts API calls and API/JWT keys, enforces rate limits, can transform the API without code, caches stuff and logs call metadata.
+						* Azure portal:		Is the administrative interface where you can define/import API schemas, package the API, set policies, get insights and manage users.
+						* Developer portal:	Is a develop environment where you can read/test the API and get for example the API keys and analytics.
+Products:			- Products are how APIs are surfaced to developers. Products in API Management have one or more APIs, and are configured with a title, description, and terms of use. They can be Open or Protected:
+						* Protected: 	You must be subscribed to the product before you can use it.
+						* Open: 		Can be used without a subscription.
+Groups:				- Groups are used to manage the visibility of products to developers:
+						* Administrators:	Manage API Management service instances, creating the APIs, operations, and products that are used by developers.
+						* Developers:		Developers are the customers that build applications using your APIs. Developers are granted access to the developer portal and build applications that call the operations of an API.
+						* Guests:			Unauthenticated developer portal users, such as prospective customers visiting the developer portal of an API Management instance fall into this group. They can be granted certain read-only access, such as the ability to view APIs but not call them.
+Policies:			- Policies are a way to change Azure API behavior through configuration. Some examples are:
+						* Conversion from XML to JSON
+						* Call rate limiting to restrict the number of incoming calls from a developer.
+						
+
+Azure deployment slots
+==================================================================================================================================================================================================
+What is it:			- When you deploy your web app, web app on Linux, mobile back end, or API app to Azure App Service, you can use a separate deployment slot instead of the default production slot.
+Benefits:			- There are some benefits ofcourse:
+						* Validate app changes in staging deployment slot before swapping it with the production slot.
+						* Warm up a slot before being swapped into production. With this, you can eliminate down time within the application.
+						* Can swap back to the "old" production when the new one has bugs.
+
+
+Azure table storage
+==================================================================================================================================================================================================
+What is it:			- Azure Table storage stores large amounts of structured data. The service is a NoSQL datastore which accepts authenticated calls from inside and outside the Azure cloud. Azure tables are ideal for storing structured, non-relational data.
+URL formats:		- Azure Table Storage accounts use this format: http://<storage account>.table.core.windows.net/<table>
+Accounts:			- All access to Azure Storage is done through a storage account:
+						* An Azure storage account contains all of your Azure Storage data objects: blobs, files, queues, tables, and disks. 
+						* The storage account provides a unique namespace for your Azure Storage data that is accessible from anywhere in the world over HTTP or HTTPS. 
+						* Data in your Azure storage account is durable and highly available, secure, and massively scalable.
+
+Azure table BLOB storage
+==================================================================================================================================================================================================
+What is it:			- Azure Blob storage is Microsoft's object storage solution for the cloud. Blob storage is optimized for storing massive amounts of unstructured data. Unstructured data is data that doesn't adhere to a particular data model or definition, such as text or binary data.
+When to use:		- The Blob storage is specifically designed for:
+						* Serving images or documents directly to a browser.
+						* Storing files for distributed access.
+						* Streaming video and audio.
+						* Writing to log files.
+						* Storing data for backup and restore, disaster recovery, and archiving.
+						* Storing data for analysis by an on-premises or Azure-hosted service.
+Made of:			- A Blob storage consists of three concepts:
+						* A storage account.
+						* A container.
+						* A blob.
+Storage accounts:	- Provides a unique namespace in Azure for your data. The combination of the account name and the Azure Storage blob endpoint forms the base address for the objects in your storage account.
+						* The base address is like this: http://briansaccount.blob.core.windows.net
+Containers:			- A container organizes a set of blobs, similar to a directory in a file system. A storage account can include an unlimited number of containers, and a container can store an unlimited number of blobs.
+The Blobs:			- There are three kinds of Blobs:
+						* Block blobs: 	Store text and binary data up to 4.75 TB.
+						* Append blobs:	Are made up of block blobs but are optimized for append operations. Mostly used for logging data from virtual machines.
+						* Page blobs:	Store random access files up to 8 TB.
+
+Azure Virtual Network
+==================================================================================================================================================================================================
+What is it: 		- VNet enables many types of Azure resources, such as Azure Virtual Machines (VM), to securely communicate with each other, the internet, and on-premises networks.
+
+
+Azure relay (relay == passing information):
+==================================================================================================================================================================================================
+What is it:			- It enables you to securely expose services that run in your corporate network to the public cloud. This can be done without opening a port on your firewall or making intrusive changes to your corporate network infrastructure.
+Basic flow:			
+					- An on-premises service connects to the relay service through an outbound port.
+					- It creates a bi-directional socket for communication tied to a particular address.
+					- The client can then communicate with the on-premises service by sending traffic to the relay service targeting that address.
+					- The relay service then relays data to the on-premises service through the bi-directional socket dedicated to the client. The client doesn't need a direct connection to the on-premises service. It doesn't need to know the location of the service. And, the on-premises service doesn't need any inbound ports open on the firewall. 
+Two features:		
+					- Hybrid connections: Based on HTTP and WebSockets protocols. 
+					- WCF Relay: Create a connection between the on-premise service and relay service using a suite of WCF "relay" bindings. The relay bindings map to new transport binding elements designed to create WCF channel components that integrate with Service Bus in the cloud.
+
+
+Azure Kudu (Secret service site)
+==================================================================================================================================================================================================
+What is it: 		- Every Azure Web App includes a “hidden” or “background “service site called Kudu.  
+What can it do:		- It is useful for: 
+						* Capturing memory dumps
+						* Looking at deployment logs
+						* Viewing configuration parameters and much more.
+How to access it:	- https://{site name}.scm.azurewebsites.net
+
+
+Azure DevTest Labs
+==================================================================================================================================================================================================
+What is it: 		- Azure DevTest Labs enables developers on teams to efficiently self-manage virtual machines (VMs) and PaaS resources without waiting for approvals.
+Test tasks:			- Testing the latest versions of your applications by doing the following tasks:
+						* Quickly provision Windows and Linux environments by using reusable templates and artifacts.
+						* Easily integrate your deployment pipeline with DevTest Labs to provision on-demand environments.
+						* Scale up your load testing by provisioning multiple test agents and create pre-provisioned environments for training and demos.
+Concepts:			- Some concepts that should make it easier to understand all of this:
+						* Labs:						A lab is the infrastructure that encompasses a group of resources, such as Virtual Machines (VMs), that lets you better manage those resources by specifying limits and quotas.
+						* Virtual machines:			Azure VMs give you the flexibility of virtualization without having to buy and maintain the physical hardware that runs it.
+						* Claimable VM:				An Azure Claimable VM is a virtual machine that is available for use by any lab user with permissions.
+						* Environment:				In DevTest Labs, an environment refers to a collection of Azure resources in a lab.
+						* Base images:				Base images are VM images with all the tools and settings preinstalled and configured to quickly create a VM.
+						* Artifacts:				Artifacts are used to deploy and configure your application after a VM is provisioned.
+						* Artifact repositories:	Artifact repositories are git repositories where artifacts are checked in.
+						* Formulas:					Formulas, in addition to base images, provide a mechanism for fast VM provisioning. A formula in DevTest Labs is a list of default property values used to create a lab VM.
+						* Policies:					Policies help in controlling cost in your lab. For example, you can create a policy to automatically shut down VMs based on a defined schedule.
+						* Caps:						Caps is a mechanism to minimize waste in your lab. For example, you can set a cap to restrict the number of VMs that can be created per user, or in a lab.
+						* Security levels:			Security access is determined by Azure role-based access control (Azure RBAC).
+
+
+Azure Service Bus Messaging
+==================================================================================================================================================================================================
+What is it:			- Microsoft Azure Service Bus is a fully managed enterprise integration message broker. Service Bus can decouple applications and services. Service Bus offers a reliable and secure platform for asynchronous transfer of data and state.
+Basic scenarios:	- Why/when to use this:
+						* Messaging:				Transfer business data, such as sales or purchase orders, journals, or inventory movements.
+						* Decouple applications:	Improve reliability and scalability of applications and services. Client and service don't have to be online at the same time.
+						* Topics and subscriptions:	Enable 1:n relationships between publishers and subscribers.
+						* Message sessions:			Implement workflows that require message ordering or message deferral.
+Concepts:			- Some concepts that should make it easier to understand all of this:
+						* Namespaces:	A container for all messaging components.
+						* Queues:		Queues store messages until the receiving application is available to receive and process them.
+						* Topics:		While a queue is often used for point-to-point communication, topics are useful in publish/subscribe scenarios.
+More features:		- Service Bus includes advanced features that enable you to solve more complex messaging problems.
+						* Message sessions:			To create a first-in, first-out (FIFO) guarantee in Service Bus, use sessions. Message sessions enable joint and ordered handling of unbounded sequences of related messages.
+						* Autoforwarding:			The autoforwarding feature chains a queue or subscription to another queue or topic. They must be part of the same namespace. With autoforwarding, Service Bus automatically removes messages from a queue or subscription and puts them in a different queue or topic.
+						* Dead-letter queue:		A DLQ holds messages that can't be delivered to any receiver. It holds messages that can't be processed. Service Bus lets you remove messages from the DLQ and inspect them. 
+						* Scheduled delivery:		You can submit messages to a queue or topic for delayed processing. You can schedule a job to become available for processing by a system at a certain time.
+						* Message deferral:			This deferral might be because of special circumstances in the application. The message remains in the queue or subscription, but it's set aside.
+						* Batching:					Client-side batching enables a queue or topic client to delay sending a message for a certain period of time. If the client sends additional messages during this time period, it transmits the messages in a single batch.
+						* Transactions:				A transaction groups two or more operations together into an execution scope.
+						* Filtering and actions:	Subscribers can define which messages they want to receive from a topic. These messages are specified in the form of one or more named subscription rules.
+						* Autodelete on idle:		Autodelete on idle enables you to specify an idle interval after which a queue is automatically deleted. The minimum duration is 5 minutes.
+						* Duplicate detection:		An error could cause the client to have a doubt about the outcome of a send operation. Duplicate detection enables the sender to resend the same message. Another option is for the queue or topic to discard any duplicate copies.
+						* Security protocols:		Service Bus supports security protocols such as Shared Access Signatures (SAS), Azure role-based access control (Azure RBAC) and Managed identities for Azure resources.
+						* Geo-disaster recory:		When Azure regions or datacenters experience downtime, Geo-disaster recovery enables data processing to continue operating in a different region or datacenter.
+
+Azure Traffic Manager
+==================================================================================================================================================================================================
+What is it:			- Traffic Manager uses DNS to direct client requests to the most appropriate service endpoint based on a traffic-routing method and the health of the endpoints. An endpoint is any Internet-facing service hosted inside or outside of Azure.
+Basic features:		- Some basic features of traffic manager:
+						* Increase application availability:			Traffic Manager delivers high availability for your critical applications by monitoring your endpoints and providing automatic failover when an endpoint goes down.
+						* Improve application performance:				Azure allows you to run cloud services or websites in datacenters located around the world. Traffic Manager improves application responsiveness by directing traffic to the endpoint with the lowest network latency for the client.
+						* Perform service maintenance without downtime:	You can perform planned maintenance operations on your applications without downtime. Traffic Manager can direct traffic to alternative endpoints while the maintenance is in progress.
+						* Combine hybrid applications:					Traffic Manager supports external, non-Azure endpoints enabling it to be used with hybrid cloud and on-premises deployments, including the "burst-to-cloud," "migrate-to-cloud," and "failover-to-cloud" scenarios.
+						* Distribute traffic for complex deployments	Using nested Traffic Manager profiles, multiple traffic-routing methods can be combined to create sophisticated and flexible rules to scale to the needs of larger, more complex deployments.
+
+
+
+
+
+
+
+
+
+
+https://docs.microsoft.com/en-us/azure/application-insights/app-insights-tutorial-users 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

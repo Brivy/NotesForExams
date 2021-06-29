@@ -86,7 +86,7 @@ Enabling and configuring health monitoring
 	- 	<providers>
 			<add name="EventLogProvider" type="System.Web.Management.EventLogWebEventProvider, System.Web" />
 		</providers>
-			* Indicates the prover to be used to write the event.
+			* Indicates the provider to be used to write the event.
 	- 	<profiles>
 			<add name="Default" minInstances="1" maxLimit="Infinite" minInterval="00:01:00" custom="" />
 		</profiles>

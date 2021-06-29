@@ -1,0 +1,245 @@
+Different executables:
+==================================================================================================================================================================================================
+Aspnet_regiis.exe: 		You can also use the tool to perform other ASP.NET configuration operations (like encrypting/decrypting).
+Ngen.exe:				The Native Image Generator (Ngen.exe) is a tool that improves the performance of managed applications.
+Aspnet_merge.exe:		The ASP.NET Merge tool enables you to combine and manage the assemblies that are created by the ASP.NET compilation tool (Aspnet_compiler.exe).
+EdmGen.exe:				EDM Generator is a command-line tool used for working with Entity Framework model and mapping files.
+Mage.exe:				The Manifest Generation and Editing Tool is a command-line tool that supports the creation and editing of application and deployment manifests.
+AL.exe:					The Assembly Linker generates a file that has an assembly manifest from one or more files that are either modules or resource files.
+Ildasm.exe:				The IL Disassembler is a companion tool to the IL Assembler. Ildasm.exe takes a portable executable (PE) file that contains intermediate language (IL) code and creates a text file suitable as input to Ilasm.exe.
+Ilasm.exe:				The IL Assembler generates a portable executable (PE) file from intermediate language (IL).
+SvcUtil.exe:			The ServiceModel Metadata Utility tool is used to generate service model code from metadata documents, and metadata documents from service model code (for example WCF services).
+
+Outdated tools:
+Aspnet_regbrowsers.exe:	I can't figure out what this is LOL, probably outdated.
+Aspnet_setreg.exe:		The tool will use CryptProtectData to encrypt the values you put in the registry.
+Aspnet_compiler.exe:	The ASP.NET Compilation tool enables you to compile an ASP.NET Web application, either in place or for deployment to a target location such as a production server.
+
+
+Eager and explicit loading
+==================================================================================================================================================================================================
+What is it:				- Entity Framework supports three ways to load related data - eager loading, lazy loading and explicit loading.
+Explaination:			- The different types:
+							* Eagerly loading: 	This is the process whereby a query for one type of entity also loads related entities as part of the query using the "Include" method.
+							* Lazy loading:		This is the process whereby an entity or collection of entities is automatically loaded from the database the first time that a property referring to the entity/entities is accessed. The property must be "Virtual" for this to happen.
+							* Explicit loading:	Even with lazy loading disabled it is still possible to lazily load related entities, but it must be done with an explicit call.
+Important notes:		- When working with loading types, keep in mind that:
+							* Using serialization and Lazy Loading can end up querying your entire database. Because of that, make sure to turn of Lazy Loading by removing the "Virtual" from the property.
+							* The Query method provides access to the underlying query that Entity Framework will use when loading related entities.
+
+Code examples:
+	- var blogs1 = context.Blogs
+					.Include(b => b.Posts)
+					.ToList();
+		* Eager loading blogs and blogposts.
+	- public virtual ICollection<Post> Posts { get; set; }
+		* A property that's lazy loaded  when accessed.
+	- context.Entry(blog).Collection(p => p.Posts).Load();
+		* Explicit load the posts that belong to a blog in this example.
+	- context.Entry(blog)
+		  .Collection(b => b.Posts)
+		  .Query()
+		  .Where(p => p.Tags.Contains("entity-framework"))
+		  .Load();
+		* Only load in a certain part of the collection using explicit loading and the Query method.
+
+
+Self Hosted server (Use OWIN for newer versions)
+==================================================================================================================================================================================================
+What is it: 			- You can host a Web API as separate process than ASP.NET. It means you can host a Web API in console application or windows service or OWIN or any other process that is managed by .NET framework. 
+Components:				- There are two components that make up for the Self-Hosted server:
+							* HttpSelfHostConfiguration: 	Configure the application configuration here (like the address and the routing).
+							* HttpSelfHostServer:			Accepts the configuration and starts the server.
+
+Code examples:
+	- var config = new HttpSelfHostConfiguration("http://localhost:5150");
+		* Create a new configuration.
+	- config.Routes.MapHttpRoute("default", "{*url}", new { controller = "Test" });
+		* Add a new route to the configuration.
+	- using (HttpSelfHostServer server = new HttpSelfHostServer(config))
+	{
+		server.OpenAsync().Wait();
+		Console.WriteLine("Press Enter to quit.");
+        Console.ReadLine();
+	}
+		* Using a HttpSelfHostServer that will be created and kept open by using the console.
+		
+
+DataReader vs DataAdapter
+==================================================================================================================================================================================================
+Why this section?		- While it's pretty clear what both of the ADO.NET methods do, it's not so clear on when to use which one.
+DataReader info:		- The following components of the DataReader must be remembered:
+							* It retrieves a read-only, forward-only stream of data from a database.
+							* Results are returned as the query executes, and are stored in the network buffer on the client until you request them using the Read method.
+							* Using the DataReader can increase application performance both by retrieving data as soon as it is available, and (by default) storing only one row at a time in memory, reducing system overhead.
+DataAdapter info:		- The following components of the DataAdapter must be remembered:
+							* It's used to retrieve data from a data source and populate tables within a DataSet.
+							* It also resolves changes made to the DataSet back to the data source.
+							* It uses the Connection object of the .NET Framework data provider to connect to a data source.
+							* At last, it uses Command objects to retrieve data from and resolve changes to the data source.
+Different types:		- Each data provider has a DbDataReader and a DbDataAdapter object (both are abstract classes):
+							* SqlDataReader and SqlDataAdapter:			The .NET Framework Data Provider for SQL Server.
+							* OleDbDataReader and OleDbDataAdapter: 	The .NET Framework Data Provider for OLE DB (Object Linking and Embedding, Database)
+							* OdbcDataReader and an OdbcDataAdapter: 	The .NET Framework Data Provider for ODBC (Open DataBase Connectivity).
+							* OracleDataReader and OracleDataAdapter:	The .NET Framework Data Provider for Oracle.
+							
+
+Extra IIS information
+==================================================================================================================================================================================================
+What is it:				- IIS has some options that are fairly unknown if you don't work with them.
+The extra options:		- Here are a few I came across:
+							* <Caching>: 
+								+ Allows you to enable or disable page output caching IIS 7 application. 
+								+ Allows you to configure whether IIS caches page output in user mode, kernel mode, or both and what, if any, output caching limits you want to impose.
+								+ Unnecessary for static files.
+
+
+(old) Deployment methods
+==================================================================================================================================================================================================
+What is it: 			- There are certain ways to deploy your application to your server.
+The methods:			- The candiates are:
+							* FTP: 			Using FTP to deploy your website. As far as I can see is this only for IIS 7.
+							* WebDeploy:	It's an extensible client-server tool for syncing content and configuration to IIS.
+							* XCOPY:		Copies files and directories, including subdirectories.
+							* RoboCopy:		XCOPY but than with more features.
+Tier-list:				- WebDeploy is the best within this list.
+
+
+Extra EF info
+==================================================================================================================================================================================================
+Why this section?		- Because it's sometimes unclear on the exam what version you want.
+Old stuff:				- ObjectContext and ObjectSet are legacy EF code, for which DbSet and DbContext have created as wrappers around ObjectContext model to make EF a much better experience:
+							* Underneath DbSet and DbContext, EF is still using ObjectContext / ObjectSet.
+							* Starting with EF 7, they got rid of all base code, and are re writing the whole EF ORM.
+Newer stuff:			- Now we have the DbContext and the DbSet objects:
+							* DbContext (the database):		A collection of your entity models, connection to the database, logging, tracking, and glue, etc. This usuall contains 1 or more DbSet<YourEntity>.
+							* DbSet<>	(the table):		An object representing a collection of a specific entity. This contains information such as caching, inserting, updating, selecting for only a specific entity.
+
+
+Some other cool ADO.NET stuff
+==================================================================================================================================================================================================
+Why this section?		- Because when covering practice questions, new things tend to pop up.
+So, whats new:			- The things I came across:
+							* SqlCommand.ExecuteReader(CommandBehavior):
+								+ This method will send the CommandText to the Connection and builds a SqlDataReader using one of the CommandBehavior values.
+								+ Read them for once (https://docs.microsoft.com/en-us/dotnet/api/system.data.commandbehavior?view=net-5.0&viewFallbackFrom=dotnet-plat-ext-5.0).
+
+
+DataContract stuff
+==================================================================================================================================================================================================
+Why this section?		- There are some things about DataContract that are not clear yet.
+IExtensibleDataObject:	- Provides a data structure to store extra data encountered by the XmlObjectSerializer during deserialization of a type marked with the DataContractAttribute attribute:
+							* Implement the IExtensibleDataObject interface in a class.
+							* Add the ExtensionData property to your type.
+							* Add a private member of type ExtensionDataObject to the class.
+							* Implement get and set methods for the property using the new private member.
+							* Apply the DataContractAttribute attribute to the class. Set the Name and Namespace properties to appropriate values if necessary.
+
+
+Code examples:
+	- [DataContract(Name = "Person", Namespace = "http://www.cohowinery.com/employees")]
+	class Person : IExtensibleDataObject
+	{
+		private ExtensionDataObject extensionDataObject_value;
+		public ExtensionDataObject ExtensionData
+		{
+			get
+			{
+				return extensionDataObject_value;
+			}
+			set
+			{
+				extensionDataObject_value = value;
+			}
+		}
+	}
+		* Implementing IExtensibleDataObject.
+
+
+LINQ to SQL vs EF
+==================================================================================================================================================================================================
+Why this section:		- EF and LINQ to SQL really look alike, but are not the same.
+Extra EF info:			- EF acts as a LINQ provider to an (EF) ADO.NET provider which then wraps another ADO.NET provider.
+The differences:		- There are quite some differences between the two of them:
+							* LINQ to SQL is largely SQL Server only, not so much by design as by implementation. The EF is designed to support, and does support, multiple DBs, if you have a compatible ADO.NET provider.
+							* Out of the box, LINQ to SQL has a very poor story for DB metadata changes. You have to regenerate parts of your model from scratch, and you lose customizations.
+							* The EF supports model features like many-to-many relationships and inheritance. LINQ to SQL does not directly support these.
+							* In .NET 3.5, LINQ to SQL had much better support for SQL-Server-specific functionality than the EF. This is mostly not true in .NET 4; they're fairly similar in that respect.
+							* The EF lets you choose Model First, DB First, or Code First modeling. LINQ to SQL, out of the box, really only supports DB First.
+							* LINQ to SQL does not support complex types, EF does.
+
+
+Creating NuGet packages
+==================================================================================================================================================================================================
+What this section:		- I can't properly remember how to create a NuGet package so I will write the steps down
+Steps:					- According to the documentation, the steps are as following:
+							* Create an account on nuget.org and make sure you have all the prerequisites installed.
+							* Create an .NET Class Library (and put in some code).
+							* Add package metadata (.nuspec) to the project file (or edit them in Visual Studio).
+							* Run the pack command.
+							* Publish the package after it's done.
+
+
+Cache dependencies
+==================================================================================================================================================================================================
+What is it:				- Establishes a dependency relationship between an item stored in an ASP.NET application's Cache object (so not for .NET Core).
+What does it:			- It monitors the dependency relationships so that when any of them changes, the cached item will be automatically removed.
+Different options:		- There are basically two options to chose from:
+							* CacheDependency(string):				Monitors a file or directory for changes. Can also be used to check multiple files.
+							* SqlCacheDependency(string, string): 	Monitors a table column for changes. Is very old according to the documentation.
+
+Code examples:
+	- CacheDependency dep = new CacheDependency(fileName, dt);
+	cache.Insert("key", "value", dep);
+		* Create a simple CacheDependency.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+Questions to investiage
+-----------------------------------
+Q:	You are developing a Microsoft Azure web application. The application will be deployed to 20 web role instances. A minimum of 18 running instances is needed to meet scaling requirements.
+	You need to configure the application so that upgrades are performed as quickly as possible, but do not violate scaling requirements.
+	How many upgrade domains should you use?
+
+A: 	*********How to calculate*********
+	----- 1. Calculate difference: ----- 
+	20 web role instances
+	18 minimum running instancess
+	= Difference of 2
+
+	----- 2. Calculate answer: -----
+	Total / difference = answer.
+	20 / 2 = 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

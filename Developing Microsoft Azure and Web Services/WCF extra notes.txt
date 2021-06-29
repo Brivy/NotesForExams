@@ -1,0 +1,319 @@
+Binding and behavior
+==================================================================================================================================================================================================
+What is a binding:			- A binding describes how the client will communicate with service.
+What is a behavior:			- A behavior is an extension on a binding.
+Notes:						- There are a few things to mention here:
+								* You CAN use a <serivce>. If you do not, default endpoints will be used.
+								* You CAN modify a predefined binding.
+
+Service attributes:			- Explaining some attributes:
+								* <service name>: 					The attribute indicates which service type the configuration is for. If you have only one service contract, the name attribute can be ommited.
+								* <service behaviorConfiguration>:	The attribute specifies a behavior that is also defined inside the configuration. If all services should use the same behavior, the name can be ommited.
+								* <endpoint address>: 				The attribute specifies the URI that other endpoints use to communicate to the service. The URI can be either an absolute or relative path.
+								* <endpoint contract>: 				The attribute specifies the contract this endpoint is exposing. The service implementation type must implement the contract type. If a service implementation implements a single contract type, then this property can be omitted.
+								* <endpoint binding>:				The attribute selects a predefined or custom binding to use for this specific endpoint. An endpoint that does not explicitly select a binding uses the default binding selection, which is BasicHttpBinding.
+								* <endpoint bindingConfiguration>:	The attribute selects a binding that is configured inside the <bindings><bindings/> section. It must match the same name.
+
+
+Code examples:
+	- <services>
+		<service name="MathService" behaviorConfiguration="MathServiceBehavior">
+			<endpoint address="http://localhost:8090/MyService/MathService.svc" contract="IMathService" binding="wsHttpBinding" bindingConfiguration="MyBindingConfig"/>
+			<endpoint address="net.tcp://localhost:8080/MyService/MathService.svc" contract="IMathService" binding="netTcpBinding"/> 
+		</service>
+    </services>
+		* Defining a two services that use the same behaviorConfiguration.
+		
+	- <behaviors>
+		<serviceBehaviors>
+			<behavior name="MathServiceBehavior">
+				<serviceMetadata httpGetEnabled="True"/>
+				<serviceDebug includeExceptionDetailInFaults="true" />
+			</behavior>
+		</serviceBehaviors>
+    </behaviors>
+		* Adding extra metadata to the binding by using a behavior.
+		
+	- <bindings>  
+		<wsHttpBinding>  
+			<binding name=MyBindingConfig" maxBufferSize="100" maxReceiveBufferSize="100" />  
+		</wsHttpBinding>  
+   </bindings>
+		* Modifying a Predefined Binding
+
+
+WCF Security Mode (http://wcftutorial.net/WCF_Security.aspx)
+==================================================================================================================================================================================================
+Different aspects:			- There are three things to consider with the security mode:
+								* Message integrity:	It ensures that message used in communication is not tampered by any malicious party.
+								* Message privacy:		It ensures confidentiality of the msessage so that no third part can even read the message.
+								* Transfer security:	It ensures that only authenticated user can able to read the content of the message.
+Differt types of security:	- There are in total five modes of transfer security:
+								* None:			This ensure that no security is applied while communication between server and client.
+								* Transport:	This encrypts all communication on the channel and provides integrity, privacy and mutual authentication by using HTTPS, TCP, IPC or MSMQ. Message inside are not secured.
+								* Message:		This will encrypt the message. Encrypting the message rather than transport enables the service to communicate securely over non secure transport such as HTTP.
+								* Mixed:		This uses Transport security for message integrity, privacy and service authentication and it uses Message security for securing client credential.
+								* Both:			This will secure the message using Message security and then it is transferred to the service using secure transport, but will overload performance.
+
+
+Code examples:
+	- <wsHttpBinding >
+		<binding name="WCFSecurityExample">
+			<security mode="None"/>
+		</binding>
+    </wsHttpBinding>
+		* No security has been applied.
+
+
+WCF Transport Security Protection Level (http://wcftutorial.net/Transport_Security_Protection_Level.aspx)
+==================================================================================================================================================================================================
+When to use what:			- If you are using a security mode that uses Transport level of security, you can specify what kind of security you want to use.
+Different kinds:			- There are in short, four levels:
+								* None
+								* Windows
+								* Username
+								* Certificate
+Exceptions:					- The NetTcpBinding/NetNamedPipeBinding/NetMsmqBinding support also three levels of protection to transfer the message:
+								* None: 				Message does not get protected while transfer from client and service
+								* Signed: 				This protection level make sure that message is received from authenticated user, but it message can be tampered by any third party.
+								* Encrypted and Signed: This level makes sure that message is received from authenticated user and it also encrypts the message
+
+
+Code examples:
+	- <wsHttpBinding >
+		<binding name="WCFSecurityExample">
+			<security mode="Transport">
+				<transport clientCredentialType="None"/>
+			</security>
+		</binding>
+    </wsHttpBinding>
+		* Using a clientCredentialType in Transport mode.
+	
+	- <netTcpBinding >
+		<binding name="WCFSecurityExample">
+			<security mode="Transport">
+				<transport clientCredentialType="Windows", protectionLevel="Sign"/>
+			</security>
+		</binding>
+    </netTcpBinding>
+		* Using a protectionLevel in Transport mode.
+
+
+WCF Message Security Protection Level (http://wcftutorial.net/Message_Security_Level.aspx)
+==================================================================================================================================================================================================
+When to use what:			- If you are using a security mode that uses Message level of security, you can specify what kind of security you want to use.
+Different kinds:			- There are in short, five types:
+								* None
+								* Windows
+								* Username
+								* Certificate
+								* IssuedToken
+
+Code examples:
+	- <netTcpBinding >
+		<binding name="WCFSecurityExample">
+			<security mode="Message"/>
+				<message clientCredentialType="Windows"/>
+		</binding>
+    </netTcpBinding>
+		* Using a clientCredentialType in Message mode.
+
+
+WCF transactions (http://wcftutorial.net/WCF-Transaction.aspx)
+==================================================================================================================================================================================================
+What are they:				- A transaction is a collection or group of one or more units of operation executed as a whole. It provides way to logically group single piece of work and execute them as a single unit.
+ACID:						- A transaction has the following characteristics:
+								* Atomic:		When transaction completes, all the individual changes made to the resource while process must be made as to they were all one atomic, indivisible operation.
+								* Consistent: 	Transaction must leave the system in consistent state.
+								* Isolated:		Resources participating in the transaction should be locked and it should not be access by other third party.
+								* Durable:		Durable transactions must survive failures.
+Modes:						- A transaction in WCF has three different modes:
+								* TransactionFlowOption.Allowed
+								* TransactionFlowOption.Mandatory
+								* TransactionFlowOption.NotAllowed
+Configuration:				- When you want to apply a transaction, you must specify this also inside the configuration by setting transactionFlow="true".
+
+
+Code examples:
+	- [ServiceContract]
+	public interface IService
+	{
+		[OperationContract]
+		[TransactionFlow(TransactionFlowOption.Allowed)]
+		bool AddEmployee(int id, string name, int salary);
+	}
+		* Allow a transaction on an operation contract.
+
+	- public class Service : IService
+	{
+		[OperationBehavior(TransactionScopeRequired = true)]
+		public bool AddEmployee(int id, string name, int salary) { ... }
+	}
+		* Require a transaction scope when you use this functionality.
+
+	- <bindings>
+		<wsHttpBinding>
+			<binding name="myTransactionBinding" transactionFlow="true" ></binding>
+		</wsHttpBinding>
+    </bindings>
+		* Setting the transactionFlow to true for the specific binding.
+
+
+Transfer modes (http://wcftutorial.net/WCF-Transfer-mode.aspx)
+==================================================================================================================================================================================================
+What are they:				- Based on the size and other condition of the data transfer, WCF supports two modes for transferring messages.
+Supported modes:			- There are four different kinds of modes to tranfser messages:
+								* Buffer transfer:	When the client and the service exchange messages, these messages are buffered on the receiving end and delivered only once the entire message has been received.
+								* Stream transfer:	When client and Service exchange message using Streaming transfer mode, receiver can start processing the message before it is completely delivered.
+								* StreamRequest:	In this mode of configuration, message send from client to service will be streamed
+								* StreamResponse:	In this mode of configuration, message send from service to client will be streamed.
+Important note:				- Yes, remember this.
+								* Only use Stream tranfer modes when the message size is large (< 64K)
+								* You can only stream a request when the only parameter is derived Stream.
+								* You can only stream a response when the response is derived from Stream.
+							
+
+Code examples:
+	- public void StreamRequest(Stream stream) { ... }
+		* Enable to stream the request.
+	- public Stream StreamResponse() { ... }
+		* Enable to stream the response.
+	- <bindings >
+		<netTcpBinding>
+			<binding name="MyService.netTcpBinding" transferMode="Buffered" closeTimeout ="0:01:00" openTimeout="0:01:00"></binding>
+		</netTcpBinding>
+    </bindings>
+		* Setting up a buffered binding.
+
+
+Streaming results (http://wcftutorial.net/WCF-Transaction.aspx)
+==================================================================================================================================================================================================
+What is it:					- Client and Service exchange message using Streaming transfer mode, receiver can start processing the message before it is completely delivered.
+Supported bindings:			- There are three bindings that support streaming:
+								* BasicHttpBinding
+								* NetTcpBinding
+								* NetNamedPipeBinding
+Important note:				- Set the default message size (64K) to something larger if you want to stream the data.
+
+Code examples:
+	- [ServiceContract]
+	public interface IMyService
+	{
+		[OperationContract]
+		void SaveStreamData(Stream emp);
+
+		[OperationContract]
+		Stream GetStreamData();
+	}
+		* You can save a stream by using it as a parameter or send a stream by using it as a return value.
+	
+	- <bindings>
+		<netTcpBinding>
+			<binding name="MyService.netTcpBinding" transferMode="Streamed" maxReceivedMessageSize="1024000"/>
+		</netTcpBinding>
+    </bindings>
+		* Increasing the maxReceivedMessageSize.
+		
+
+Protocol mapping (https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/wcf/protocolmapping)
+==================================================================================================================================================================================================
+What is it:					- Represents a configuration section for defining a set of default protocol mapping between transport protocol schemes (e.g., http, net.tcp, net.pipe, etc.) and WCF bindings.
+
+Code examples:
+	- <system.serviceModel>
+		<protocolMapping>
+			<add scheme="http" binding="basicHttpBinding" />
+		</protocolMapping>
+	</system.serviceModel>
+		* Adds a new default for the http scheme.
+	
+	- <protocolMapping>  
+		<add scheme="http" binding="basicHttpBinding" bindingConfiguration="shortTimeout" />  
+		<add scheme="https" binding="basicHttpBinding" bindingConfiguration="Secure" />  
+	</protocolMapping>  
+	<bindings>  
+		<basicHttpBinding name="shortTimeout" timeout="00:00:00:01"/>  
+		<basicHttpBinding name="Secure">  
+			<Security mode="Transport" /> 
+		</basicHttpBinding>
+	</bindings>
+		* Using protocolMapping in combination with bindingConfigurations.
+
+
+Interceptors in WCF
+==================================================================================================================================================================================================
+What is it:				- Enables an application to intercept request messages so that you can add custom logic to an operation. You can use this custom logic to validate data in incoming messages. You can also use it to further restrict the scope of a query request, such as to insert a custom authorization policy on a per request basis.
+Query interceptors:		- They are:
+							* Made to query stuff.
+							* Defined on a per-entity set basis.
+							* Cannot accept parameters from the requests like service operations.
+							* Query interceptor methods can only be called with HTTP GET must return a lambda expression to determine the entity result set.
+Change interceptors:	- They are:
+							* Made for non-query stuff.
+							* Don't return stuff.
+							* Has two parameters:
+								+ A parameter of a type that is compatible with the entity type of the entity set. When the data service invokes the change interceptor, the value of this parameter will reflect the entity information that is sent by the request.
+								+ A parameter of type UpdateOperations. When the data service invokes the change interceptor, the value of this parameter will reflect the operation that the request is trying to perform.
+							
+Code examples:
+	- [QueryInterceptor("Orders")]
+	public Expression<Func<Order, bool>> OnQueryOrders()
+		* A basic query interceptor.
+	- [ChangeInterceptor("Products")]
+	public void OnChangeProducts(Product product, UpdateOperations operations)
+		* A basic change interceptor.
+
+
+Inspect and Modify Messages on the Service (https://docs.microsoft.com/en-us/dotnet/framework/wcf/extending/how-to-inspect-and-modify-messages-on-the-service)
+==================================================================================================================================================================================================
+What is it:				- You can inspect or modify the incoming or outgoing messages across a Windows Communication Foundation (WCF) client by implementing a IDispatchMessageInspector and inserting it into the service runtime.
+Types:					- There are two different types of inspectors available:
+							* IClientMessageInspector:	 Defines a message inspector object that can be added to the MessageInspectors collection to view or modify messages:
+								+ BeforeSendRequest():		Enables inspection or modification of a message before a request message is sent to a service.
+								+ AfterReceiveReply():		Enables inspection or modification of a message after a reply message is received but prior to passing it back to the client application.
+							* IDispatchMessageInspector: Defines the methods that enable custom inspection or modification of inbound and outbound application messages in service applications.
+								+ BeforeSendReply():		Called after the operation has returned but before the reply message is sent.
+								+ AfterReceiveRequest():	Called after an inbound message has been received but before the message is dispatched to the intended operation.
+How to do this:			- Follow the following steps:
+							* Implement the IDispatchMessageInspector or IClientMessageInspector interface.
+							* Implement a IServiceBehavior, IEndpointBehavior, or IContractBehavior interface depending upon the scope at which you want to easily insert your service message inspector.
+Using the inspectors:	- Because this is an extension to an existing behavior, it needs to be added add the <behaviorExtensions> element.
+
+
+Code examples:
+	- <behaviors>
+		<serviceBehaviors>
+			<behavior name="metadataSupport">
+				<serviceMetadata httpGetEnabled="true" httpGetUrl=""/>
+				<serviceInterceptors />
+			</behavior>
+		</serviceBehaviors>
+    </behaviors>
+    <extensions>
+		<behaviorExtensions>
+			<add 
+			name="serviceInterceptors" 
+			type="Microsoft.WCF.Documentation.InspectorInserter, HostApplication, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+		</behaviorExtensions>
+    </extensions>
+		* Add an behaviorExtension to the WCF configuration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

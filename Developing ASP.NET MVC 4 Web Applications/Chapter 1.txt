@@ -225,10 +225,8 @@ Identifying startup tasks
 	
 	Code:
 	-	<Startup>
-			<Task commandLine="Startup\ExecWithRetries.exe
-			&quot;/c:Startup\AzureEnableWarmup.cmd&quot;
-			/d:5000 /r:20 /rd:5000 &gt;&gt; c:\enablewarmup.cmd.log
-			2&gt;&gt;&amp;1"          
+			<Task commandLine="Startup\ExecWithRetries.exe &quot;/c:Startup\AzureEnableWarmup.cmd&quot;
+			/d:5000 /r:20 /rd:5000 &gt;&gt; c:\enablewarmup.cmd.log 2&gt;&gt;&amp;1"          
 			executionContext="elevated" taskType="background" />
 		</Startup>
 		* Sets a specific task as a background task.
@@ -271,12 +269,12 @@ Choosing a state management mechanism
 	- The first decision when regarding state should by if you would like to use it.
 	- Web Forms uses ViewState, an ability to carry its state around the web application with it, storing information as needed.
 	- State information can be stored at the following locations:
-		* Cache: Memory pool stored on the server and shared across users.
-		* Session: Stored on server and unique for each user.
-		* Cookies: Stored on the client and passed with each HTTP request to the server.
-		* QueryString: Passed as part of the complete URL string.
-		* Context.Items: Is part of the HttpContext and lasts only the lifetime of that request.
-		* Profile: Stored in database and maintains information across multiple sessions.
+		* Cache: 			Memory pool stored on the server and shared across users.
+		* Session: 			Stored on server and unique for each user.
+		* Cookies: 			Stored on the client and passed with each HTTP request to the server.
+		* QueryString: 		Passed as part of the complete URL string.
+		* Context.Items: 	Is part of the HttpContext and lasts only the lifetime of that request.
+		* Profile: 			Stored in database and maintains information across multiple sessions.
 	- The cache is a key-value pair that should be accessible by any user or page in the application.
 	- Every server in a webfarm should have its own copy of the cache.
 	- Inheriting the SessionStateStoreProviderBase enables you to create your own session provider. If you run for example on an Oracle database, there is no built-in support for managing state that is shared by multiple servers.
@@ -336,7 +334,7 @@ Applying configuration settings in the Web.config file
 Implementing sessionless state
 	Information:
 	- If you want to go sessionless, you will an unique identifier from request to request. MVC offers a few ways of doing this:
-		* Creating an identifier on the server the first time the user visits the site and continue to pass this information from request to reques.
+		* Creating an identifier on the server the first time the user visits the site and continue to pass this information from request to request.
 		* Use a hidden form field to store and pass the information from one request to the next.
 		* Script and unique identifier storage on the razor layout or master page.
 		* Add the unique identifier to the query string.
@@ -377,13 +375,13 @@ Implement page output caching
 			+ VaryByParam: Stores a different version of the output based on a different parameter collection that was sent in for the action call.
 			+ Location: Gives direction to where caching takes place. Using "NoStore" switches it off. Default is "Any" but other options are "Client", "Downstream", "Server" and "ServerAndClient".
 	- [ChildActionOnly][OutputCache(Duration=60)]
-		* Attributes to add donut hole caching to an action. Call this action method with @Html.Action("ProductsChildAction") in the razor parent view.
+		* Attributes to add donut hole caching to an action for a partial view. Call this action method with @Html.Action("ProductsChildAction") in the razor parent view.
 
 
 Implementing data caching
 	Information:
 	- .NET 4 has a new Caching Framework. It uses ObjectCache and MemoryCache objects within the System.Runtime.Caching assembly.
-	- It is recommended to create a CacheProvider class that implements the ICacheProvider interface and is placed between the business and the data access layer.
+	- It is recommended to create a CacheProvider class that implements the ICacheProvider interface and is placed between the business and the data access layer because it decreases the load on the database.
 
 
 Implementing application caching

@@ -327,7 +327,7 @@ Understanding encryption terminology
 	Information:
 	- Encryption refers to the transformation of readable or understandable text into an illegible format that can be decoded only when the appropriate key is provided to the system. 
 	- Hashing is the process of applying a formula to a string of text, which produces a return value of fixed length that cannot be decrypted back into the original value.
-	- Saltingis a process that strengthens file encryption and hashes. It adds a random string to the beginning or end of the input text prior to hashing or encrypting the value
+	- Salting is a process that strengthens file encryption and hashes. It adds a random string to the beginning or end of the input text prior to hashing or encrypting the value
 	- MD5 had a flaw where you could enter a fake password that was hashed the same way as the original one. Nowadays, we use SHA.
 	- Data Encryption Standard (DES) is a symmetric-key algorithm but insecure. Use the successor to DES for better encryption: Advanced Encryption Standard (AES).
 	- SSL uses Rivest, Shamir and Adleman (RSA) asymmetric encryption. 
