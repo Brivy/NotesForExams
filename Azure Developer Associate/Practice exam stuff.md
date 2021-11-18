@@ -172,3 +172,50 @@ In this chapter, I will go through all the practice exam questions and figure ou
       - The *--is-linux* parameter will create an App Service Plan on Linux platform.
       - The *--manual-integration* parameter is used to perform a one time deploy, without enabling automatic sync between source control and App Service.
     - References: [Create an App Service app with deployment from GitHub using Azure CLI](https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-deploy-github)
+17. Create a Dockerfile for a C# project that processes the first build of the application and then deploys it over port 443.
+    - The first part of the dockerfile will set up the image with the aspnetcore runtime environment while also setting the working directory to `/app` en expose port 443:  
+    `FROM microsoft/dotnet:2.2-aspnetcore-runtime-stretch-slim AS base`  
+    `WORKDIR /app`  
+    `EXPOSE 433`
+    - The second part will set up the image that we are going to use while building. The myContainerApp.csproj file needs to be built into myContainerApp.dll before it can be deployed:  
+    `FROM microsoft/dotnet:2.2-sdk-stretch AS build`  
+    `WORKDIR /myAppWorkingDir`  
+    `RUN dotnet build "myContainerApp.csproj" -c Release -o /app`
+    - Now we need to create a publish label for myContainerApp.dll. You can use that as a source to deploy the application:  
+    `FROM build AS publish`  
+    `RUN dotnet publish "myContainerApp.csproj" -c Release -o /app`
+    - After publishing, take the runtime image definition (base) and copy the published version of myContainerApp.dll to the app folder:  
+    `FROM base AS final`  
+    `WORKDIR /app`  
+    `COPY --from=publish /app .`
+    - Finally define the entry point configuration where your docker image should route the requests to:  
+    `ENTRYPOINT ["dotnet", "myContainerApp.dll"]`
+    - References: [Quickstart: Docker in Visual Studio](https://docs.microsoft.com/en-us/visualstudio/containers/container-tools?view=vs-2019)
+18. Run commands to create a Azure App Service Web App for Containers.
+    - First you should create a group: `az group create`.
+    - Then we need to create the App Service Plan: `az appservice plan create`
+    - Finally create the application: `az webapp create`.
+    - Other options were:
+      - `az container create`. We don't need to create a Azure Container Instance.
+      - `az group update`. We don't update the group.
+    - References: [Create an ASP.NET Core app in a Docker container from Docker Hub using Azure CLI](https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-linux-docker-aspnetcore), [az group](https://docs.microsoft.com/en-us/cli/azure/group?view=azure-cli-latest), [az appservice plan](https://docs.microsoft.com/en-us/cli/azure/appservice/plan?view=azure-cli-latest), [az webapp](https://docs.microsoft.com/en-us/cli/azure/webapp?view=azure-cli-latest), [az container](https://docs.microsoft.com/en-us/cli/azure/container?view=azure-cli-latest)
+19. Create a web application that is composed of two containers that are configured using Docker Compose.
+    - First we need to specify over which resource group we are talking with `az webapp create --resource-group blogResourceGroup`.
+    - The plan name is also defined in the text: `--plan blogServicePlan`.
+    - Just like the plan name, the name of the app is also specified: `--name blog`.
+    - Then we need to choose `--multicontainer-config-type compose`, because we are creating a web app that uses a Docker Compose file as the application configuration.
+    - Finally we also need to choose `--multicontainer-config-file docker-compose.yml`, because it has been specified that we need to use that file.
+    - Other options were:
+      - `--multicontainer-config-type kube`. We are not using kubernetes so we don't need this parameter.
+      - `--multicontainer-config-file kube.yml`. There is no specification of this file.
+      - `--docker-custom-image-name php:apache-7`. We have all the specifications inside the Docker File so this is not needed.
+    - References: [Tutorial: Create a multi-container (preview) app in Web App for Containers](https://docs.microsoft.com/en-us/azure/app-service/tutorial-multi-container-app), [az webapp](https://docs.microsoft.com/en-us/cli/azure/webapp?view=azure-cli-latest), [Understanding Kubernetes Objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/)
+20. Create, build, tag and push a web application in a Docker container to a public repository.
+    - The first part is all about matching the correct variables with the correct commands. This should be fairly easy just looking at the commands.
+    - The most important command (`az webapp config container set --docker-custom-image-name $dockerHubContainerPath --name $appName --resource-group myResourceGroup`) is configuring the container image that will pushed to Docker Hub and that will be used by the Web App. The variable `$dockerHubContainerPath` stands for `company1/asp-app`. This is because of the default pattern `<organization/username>/<image>`.
+    - Other options were:
+      - `az webapp config set ...`. This command can be used to configure default web app configuration.
+      - `az webapp config container set --docker-registry-server-url $dockerHubContainerPath ...`. This parameter will reference a custom Docker container registry, but we are just using the default one.
+      - `$dockerHubContainerPath = company1.azurecr.io/asp-app`. This will set the path to an Azure Container Registry (ACR) named company1, but we want to push our image the the Docker Hub registry.
+    - References: [Create an ASP.NET Core app in a Docker container from Docker Hub using Azure CLI](https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-linux-docker-aspnetcore), [az webapp config](https://docs.microsoft.com/en-us/cli/azure/webapp/config?view=azure-cli-latest)
+
