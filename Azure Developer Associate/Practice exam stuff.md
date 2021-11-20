@@ -266,6 +266,7 @@ In this chapter, I will go through all the practice exam questions and figure ou
       - `"0 */3 * * * *`. This stands for every three minutes.
       - `"0 0 3 * * *`. This stands for every day at 3 AM.
       - `"0 0 0 * * 3`. This stands for midnight every Wednesday.
+<<<<<<< HEAD
     - References: [Create a function in the Azure portal that runs on a schedule](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-scheduled-function), [Timer trigger for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp)
 28. Choose Azure function patterns for different scenario's
     - When we have a series of functions that need to be executed in a specific order, we should use the *function chaining application pattern*. This will be implemented as a set of orchestrator functions that orchestrate the execution order of other Durable functions.
@@ -282,3 +283,6 @@ In this chapter, I will go through all the practice exam questions and figure ou
       - *Azure CLI commands*. Doesn't have suffice commands to update the host.json file.
       - *Text editor*. Just do it through the editor.
     - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob), [Azure Functions Java developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-java?tabs=bash%2Cconsumption)
+=======
+    - References: [Create a function in the Azure portal that runs on a schedule](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-scheduled-function), [Timer trigger for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp)
+>>>>>>> 07bbdd1b25757c59ff3edda87d30a351b251c74d
