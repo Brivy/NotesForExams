@@ -59,6 +59,10 @@ In this chapter, I will go through all the practice exam questions and figure ou
 
 ## Normal questions
 
+These questions aren't related to each other.
+
+### Azure compute questions
+
 1. Creating a Dockerfile that will build and publish the container image to an Azure Container Registry (ACR).
     - First you should build the Dockerfile with `docker build`. This will create a new container image with the instructions in it.
     - Secondly, you should tag the image with `{{ACR_name_here}}.azurecr.io/{{App_name_here}}`. This is needed to push a container image to the ACR.
@@ -282,3 +286,24 @@ In this chapter, I will go through all the practice exam questions and figure ou
       - *Azure CLI commands*. Doesn't have suffice commands to update the host.json file.
       - *Text editor*. Just do it through the editor.
     - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob), [Azure Functions Java developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-java?tabs=bash%2Cconsumption)
+30. Running a few Python scripts in s serverless application that reminds states.
+    - You should go for *Durable functions*. These are functions that remind states, can be function chained and can be executed in Python.
+    - Other options were:
+      - *Azure Logic App*. Not suitable for Python scripts.
+      - *WebJobs*. Not serverless.
+      - *Power Automate*. Not suitable for Python scripts.
+    - References: [What are Durable Functions?](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp), [Choose the right integration and automation services in Azure](https://docs.microsoft.com/en-us/azure/azure-functions/functions-compare-logic-apps-ms-flow-webjobs?toc=/azure/azure-functions/durable/toc.json), [What is Azure Logic Apps?](https://docs.microsoft.com/en-gb/azure/logic-apps/logic-apps-overview), [Get started with Power Automate](https://docs.microsoft.com/en-us/power-automate/getting-started), [Run background tasks with WebJobs in Azure App Service](https://docs.microsoft.com/en-us/azure/app-service/webjobs-create)
+31. Function programming questions.
+    - If you code in a language not supported by Azure Functions app, should include a custom handler executable. This can be located anywhere, as long as you specify the *path to the executable in your host.json configuration file*.
+    - The host.json file should *always* be located at the root of your Azure Functions app.
+    - The function.json file is a metadata file that defines your Azure Function, so you *should place it inside a folder with the same name as your Azure Functions name*.
+    - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions custom handlers](https://docs.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers)
+
+### Azure Storage questions
+
+1. Accessing the first item in a Azure Cosmos DB Account
+    - First you should create a `DocumentClient` object that represents a connection to a Cosmos DB account. This can be done with `new DocumentCLient(uri, accessKey)`.
+    - Then we want ot retrieve the databases inside the account. This can be done with `var tasks = dc.CreateDatabaseQuery().Where(x => x.Id == "Test").AsEnumerable().First();`.
+    - Now that we know the database, we want to retrieve a container/collection from the database. This can be done with `var items = dc.CreateDocumentCollectionQuery(tasks.SelfLink).Where(d => d.Id == "TestItems").AsEnumerable().First();`.
+    - To retrieve the item we are looking for from the container/collection, we must query it. This can be done with `var item = dc.CreateDocumentQuery(items.SelfLink).AsEnumerable().First();`.
+    - References: [Azure Cosmos DB.NET V3 SDK (Microsoft.Azure.Cosmos) examples for the SQL API](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-dotnet-v3sdk-samples), [DocumentQueryable.CreateDatabaseQuery Method](https://docs.microsoft.com/en-us/previous-versions/azure/dn850286(v%3dazure.100)), [DocumentQueryable.CreateDocumentCollectionQuery Method](https://docs.microsoft.com/en-us/previous-versions/azure/dn850284(v%3dazure.100)), [DocumentQueryable.CreateDocumentQuery Method](https://docs.microsoft.com/en-us/previous-versions/azure/dn850285(v=azure.100)), [Tutorial: Build a .NET console app to manage data in Azure Cosmos DB SQL API account](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-get-started), [Azure Cosmos DB resource model](https://docs.microsoft.com/en-us/azure/cosmos-db/account-databases-containers-items)
