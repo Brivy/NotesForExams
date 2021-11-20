@@ -267,3 +267,18 @@ In this chapter, I will go through all the practice exam questions and figure ou
       - `"0 0 3 * * *`. This stands for every day at 3 AM.
       - `"0 0 0 * * 3`. This stands for midnight every Wednesday.
     - References: [Create a function in the Azure portal that runs on a schedule](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-scheduled-function), [Timer trigger for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp)
+28. Choose Azure function patterns for different scenario's
+    - When we have a series of functions that need to be executed in a specific order, we should use the *function chaining application pattern*. This will be implemented as a set of orchestrator functions that orchestrate the execution order of other Durable functions.
+    - When we have multiple functions that execute in parallel and wait for result aggregation, we should use the *fan out/fan in application pattern*. Tis is also implemented as orchestrator functions that can call other durable functions with output form called functions saved to local variables.
+    - When we have event data provided in batches by multiple sources over time that should be combined into a single entity, we should use the *aggregation application pattern*. Each function acts like a small services that communicates via messages.
+    - Other options were:
+      - *Async HTTP APIs application pattern*. Only used when coordinating the state of long-running operations with external clients.
+      - *Monitoring application pattern*. Only used to support a flexible, recurring process in a workflow, often with a timer trigger.
+    - References: [What are Durable Functions?](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp), [Durable Functions types and features](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview), [Durable Orchestrations](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), [Entity functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-entities?tabs=csharp)
+29. Modify the host.json file from a function to set runtime-specific configuration information.
+    - You should use the *Azure Portal* to modify the host.json file with the function editor.
+    - Other options were:
+      - *Azure PowerShell cmdlets*. Doesn't have suffice commands to update the host.json file.
+      - *Azure CLI commands*. Doesn't have suffice commands to update the host.json file.
+      - *Text editor*. Just do it through the editor.
+    - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob), [Azure Functions Java developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-java?tabs=bash%2Cconsumption)
