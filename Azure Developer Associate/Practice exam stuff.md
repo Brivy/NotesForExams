@@ -307,3 +307,124 @@ These questions aren't related to each other.
     - Now that we know the database, we want to retrieve a container/collection from the database. This can be done with `var items = dc.CreateDocumentCollectionQuery(tasks.SelfLink).Where(d => d.Id == "TestItems").AsEnumerable().First();`.
     - To retrieve the item we are looking for from the container/collection, we must query it. This can be done with `var item = dc.CreateDocumentQuery(items.SelfLink).AsEnumerable().First();`.
     - References: [Azure Cosmos DB.NET V3 SDK (Microsoft.Azure.Cosmos) examples for the SQL API](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-dotnet-v3sdk-samples), [DocumentQueryable.CreateDatabaseQuery Method](https://docs.microsoft.com/en-us/previous-versions/azure/dn850286(v%3dazure.100)), [DocumentQueryable.CreateDocumentCollectionQuery Method](https://docs.microsoft.com/en-us/previous-versions/azure/dn850284(v%3dazure.100)), [DocumentQueryable.CreateDocumentQuery Method](https://docs.microsoft.com/en-us/previous-versions/azure/dn850285(v=azure.100)), [Tutorial: Build a .NET console app to manage data in Azure Cosmos DB SQL API account](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-get-started), [Azure Cosmos DB resource model](https://docs.microsoft.com/en-us/azure/cosmos-db/account-databases-containers-items)
+2. Ensure that a client never receives a partial write of data when they retrieve data from Cosmos DB.
+    - By using *Strong* consistency level, you ensure that clients never receive a partial write or uncommitted data during a read operation.
+    - Other options were:
+      - *Consistent prefix*. Ensures that reads never see out of order writes, but does not prevent reads from seeing partial writes.
+      - *Eventual*. No read guarantee and clients can potentially receive a partial write or uncommitted data during a read operation.
+      - *Session*. This does not prevent a client from receiving partial writes.
+    - References: [Consistency levels in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
+3. Accessing the first item in a container by using the Query Explorer in Cosmos DB.
+    - You should use `SELECT TOP 1 i.name, i.description FROM i`. This does not have syntax errors in it. But I don't think this is the right answer, but sure.
+    - Other options were:
+      - `SELECT TOP 1 {name, description} FROM Items`. Has syntax errors.
+      - `SELECT TOP 1 name, description FROM Items`. Has syntax errors.
+      - `SELECT TOP 1 {name, description} FROM Tasks/Items`. Has syntax errors.
+    - References: [Getting started with SQL queries](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-query-getting-started), [FROM clause in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-query-from)
+4. Choosing a partition key on an Azure Cosmos DB.
+    - A partition key allows you to group documents into logical partitions. All documents that have the same partition key share the same partition. When you choose a partition, you should choose one that spreads a workload evenly over time. By this logic the partition key should be set on *project*.
+    - Other options were:
+      - *Amount*. Value has a too large of a range.
+      - *Number*. Value is unique, so it will create new partitions every time.
+      - *Date*. Almost correct, but there are still far too many different dates.
+    - References: [Partitioning and horizontal scaling in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/partitioning-overview)
+5. Create a query that returns all receipts, while also being the only database/collection in the Cosmos DB account.
+    - The first option can be `SELECT * FROM receipts r WHERE r.category = "Lodging"`. This is a standard query with collection aliases, which are required when column names are directly referenced in other SQL clauses, including SELECT, WHERE ORDER BY and GROUP BY.
+    - The second option was `SELECT * FROM root r WHERE r.category = "Lodging"`. This queries the default collection (receipts is the only one in the database) with collection aliases, which are required when column names are directly referenced in other SQL clauses, including SELECT, WHERE ORDER BY and GROUP BY.
+    - Other options were:
+      - `SELECT * FROM root WHERE category = "Lodging"`. Collection aliases are required when column names are directly referenced in other SQL clauses, including SELECT, WHERE ORDER BY and GROUP BY.
+      - `SELECT * FROM receipts WHERE category = "Lodging"`. Collection aliases are required when column names are directly referenced in other SQL clauses, including SELECT, WHERE ORDER BY and GROUP BY.
+    - References: [Getting started with SQL queries](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-query-getting-started)
+6. Evenly distribute documents across multiple containers by using a partition key.
+    - By *creating a partition key from concatenating multiple properties*, you create **synthetic keys**. Because the keys are not consistent, such a concatenated key will create randomness to enable proper distribution across various containers.
+    - By *creating a hash value that is appended to the document property*, you will create randomness that properly distributes the documents.
+    - Other options were:
+      - *A property that is present in most of the documents*. With this, most of the documents will just end up in the same container.
+      - *A property for which the value is the same 90 percent of the time*. With this, most of the documents will just end up in the same container.
+    - References: [Partitioning and horizontal scaling in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/partitioning-overview), [Create a synthetic partition key](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/synthetic-partition-keys)
+7. Recommend the most appropriate Cosmos DB API for an application that will gather large amounts of data and uses graph database algorithms for data anlysis.
+    - By using *Gremlin API* (fully-managed data-based solution for graph data) as your data solution, you have native graph support that is widely used in scenarios in which you need to work with large amounts of data.
+    - Other options were:
+      - *Cassandra API*. Mostly used for Apache Casandra stuff and is not designed for graph data.
+      - *MongoDB API*. Used for document, key-value, graph, and columnar data models.
+      - *Core (SQL) API*. Does not support graph queries.
+    - References: [Introduction to Gremlin API in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/graph/graph-introduction), [Understanding the differences between NoSQL and relational databases](https://docs.microsoft.com/en-us/azure/cosmos-db/relational-nosql), [Analyze the decision criteria](https://docs.microsoft.com/en-us/learn/modules/choose-api-for-cosmos-db/3-analyze-the-decision-criteria)
+8. A lot of requirements for choosing a consistency level for Cosmos DB.
+    - By following the requirements, we should implement the *staleness consistency level*. This includes the **consistent prefix**, which guarantees that data writes are returned in order. You can also configure the **staleness**, which determines the data version returned based on either the number of versions ore time delay.
+    - Other options were:
+      - *Consistent prefix*. While it has the consistent prefix, it does not let you configure staleness.
+      - *Session*. While it has the consistent prefix, but only supports a single client session and does not let you configure staleness.
+      - *Eventual*. Does not have the consistent prefix and staleness.
+    - References: [Consistency levels in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
+9. Azure Cosmos DB questions.
+    - You can trigger user-defined functions from code. See also `var iterator = client.GetContainer("database", "container").GetItemQueryIterator<dynamic>("SELECT * FROM Incomes t WHERE udf.Tax(t.income) > 20000");`.
+    - While you *can't* write triggers, stored procedures and user-defined functions (UDFs) in a Cosmos DB database running Table API, you **can** do this by running the SQL API with JavaScript. Other API's wont' work.
+    - Stored procedures must be written with Javascript (and not C#).
+    - References: [Stored procedures, triggers, and user-defined functions](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/stored-procedures-triggers-udfs), [How to register and use stored procedures, triggers, and user-defined functions in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/how-to-use-stored-procedures-triggers-udfs), [JavaScript query API in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/javascript-query-api)
+10. Database scaling with certain spikes on Azure Cosmos DB.
+    - You should use *autoscale throughput* on the database itself. Because of the uncertain spikes, you shouldn't autoscale a specific container.
+    - Other options were:
+      - *Autoscale throughput on the container*. Because of the uncertain spikes, it's better to scale the database itself.
+      - *Standard throughput on the container/database*. There is no steady traffic, so autoscale is better.
+    - References: [Introduction to provisioned throughput in Azure Cosmos DB](https://docs.microsoft.com/en-us//azure/cosmos-db/set-throughput), [Create Azure Cosmos containers and databases with autoscale throughput](https://docs.microsoft.com/en-us//azure/cosmos-db/provision-throughput-autoscale), [How to choose between standard (manual) and autoscale provisioned throughput](https://docs.microsoft.com/en-us//azure/cosmos-db/how-to-choose-offer)
+11. Guarantee the highest possible availability and lowest latency for data reads on Cosmos DB.
+    - By using the *Eventual* consistency level, we can provide the lowest latency and higher availability, but this isn't necessary for a static database that won't receive new writes.
+    - Other options were:
+      - *Consistent prefix*. Is the most consistent, but has more latency and less availability.
+      - *Session*. While it's very cool, it has more latency and less availability.
+      - *Bounded staleness*. Can lag behind writes, but also have more latency and less availability.
+      - *Strong*. While returning the most recent commited version of an item, you have more latency and less availability.
+    - References: [Consistency levels in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels)
+12. The result of executing a SQL query on Cosmos DB.
+    - SELECT queries against a Cosmos SQL database using the SQL API returns data in JSON format.
+    - Other options were:
+      - *XML-formatted data*. None of the Cosmos DB API returns standard XML.
+      - *A table structured as rows and columns*. When using the Table API, you will get this result.
+      - *A syntax error*. It's normal SQL so no syntax errors in this example.
+    - References: [Getting started with SQL queries](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-query-getting-started), [Azure Cosmos DB: Designing your data structure](https://social.technet.microsoft.com/wiki/contents/articles/39421.azure-cosmos-db-designing-your-data-structure.aspx), [Tutorial: Query Azure Cosmos DB by using the Table API](https://docs.microsoft.com/en-us/azure/cosmos-db/table/tutorial-query-table), [Introduction to Azure Cosmos DB database and the SQL API](https://www.mssqltips.com/sqlservertip/5331/introduction-to-azure-cosmos-db-database-and-the-sql-api/)
+13. Cosmos DB change feed questions.
+    - Change feed is enabled in Cosmos DB by default. This is for all Cosmos DB accounts.
+    - While change feed captures inserts and updates, it does *not* capture deletes. You can enable this by creating an additional property in you Cosmos DB items that functions as a marker and update it at the time of deletion.
+    - While the change feed order is the guaranteed within each logical partition key value, it does *not* guarantee the order across the partition key values.
+    - References: [Change feed in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/change-feed), [Change feed design patterns in Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/change-feed-design-patterns), [Reading Azure Cosmos DB change feed](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/read-change-feed)
+14. Access blob by code.
+    - First, we should connect to our storage account by `CloudStorageAccount.TryParse(connectionString, out acct);`.
+    - Then we create a client to communicate with `CloudBlobClient client = acct.CreateCloutBlobClient();`.
+    - With the client we can access the container with `var container = client.GetContainerReference("thumbnails");`.
+    - Now that we have the container, we want the blob with `var blob = container.GetBlobReferenceFromServer("personal/car.png");`.
+    - And we can download that to a file with `blob.DownloadToFile("car.png", System.IO.FileMode.Create);`.
+    - Don't forget that a Blob storage account URL has the following format: `https://{account name}.blob.core.windows.net/{container}/{blob}`.
+    - References: [Naming and Referencing Containers, Blobs, and Metadata](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata), [Quickstart: Azure Blob Storage client library v12 for .NET](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-dotnet)
+15. Adding metadata to a container in an account.
+    - You should always use *PUT* to add metadata to containers and blobs. The metadata for letting something identify as an image looks like `x-ms-meta-Category: Images`.
+    - Other options were:
+      - *GET*. Is used for retrieving metadata attributes.
+      - *HEAD*. Is used for retrieving metadata attributes.
+      - *POST*. Does not allow you to retrieve or set metadata attributes.
+    - References: [Setting and retrieving properties and metadata for Blob service resources](https://docs.microsoft.com/en-us/rest/api/storageservices/setting-and-retrieving-properties-and-metadata-for-blob-resources), [Set Container Metadata](https://docs.microsoft.com/en-us/rest/api/storageservices/set-container-metadata), [Authorize requests to Azure Storage](https://docs.microsoft.com/en-us/rest/api/storageservices/authorize-requests-to-azure-storage), [HTTP Request Methods](https://www.w3schools.com/tags/ref_httpmethods.asp)
+16. Adding metadata to specify a size of an image with Blobs.
+    - First, the HTTP method should be *PUT* to add the metadata.
+    - For actually updating the metadata, you need to use the following URL: `https://webdata.blob.core.windows.net/home/logo.png?comp=metadata`.
+    - To define custom metadata, you must specify the HTTP header in format `x-ms-meta-{user defined name}`. In this example it will be `x-ms-meta-imagesize: Large`.
+    - Other options were:
+      - *GET/HEAD/POST*. HTTP methods that shouldn't be used for updating metadata.
+      - *comp=properties*. Setting this inside the URL specifies that you want to update properties.
+      - *Image-Size*. Using this as header doesn't follow the specific custom metadata format.
+    - References: [Setting and retrieving properties and metadata for Blob service resources](https://docs.microsoft.com/en-us/rest/api/storageservices/setting-and-retrieving-properties-and-metadata-for-blob-resources), [Set Blob Metadata](https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-metadata), [Set Container Metadata](https://docs.microsoft.com/en-us/rest/api/storageservices/set-container-metadata), [Set Blob Properties](https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-properties), [HTTP Request Methods](https://www.w3schools.com/tags/ref_httpmethods.asp)
+17. Determine what a certain HTTP request will do with a blob.
+    - The HTTP request is a *blob leasing* request (can be seen at the `https://...?comp=lease` part). this will prevent the blob from being deleted/overwritten for a specific amount of time. There are three metadata headers that will also confirm this:
+      - `x-ms-lease-action: acquire`. Causes a new lease to be requested or an existing lease to be extended.
+      - `x-ms-proposed-lease-id: <guid here>`. Can be used if a lease is not already extended. The guid ID of the existing lease should be used.
+      - `x-ms-lease-duration: 60`. Stands for 60 seconds.
+    - Other options were:
+      - *It sets properties on a blob that causes the blob to automatically be deleted after one hour*. You must write custom code to delete blobs after certain time period.
+      - *It sets metadata on a blob that causes the blob to be read-write for only one hour*. You must write custom code make the blob modifiable for a specific time period.
+      - *It uploads a blob to the tax returns container and times out after one minute*. To upload a blob, you must specify content in the request body, this scenario has no request body.
+    - REferences: [Lease Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/lease-blob), [Put Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob), [Set Blob Properties](https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-properties), [Set Blob Metadata](https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-metadata)
+18. Retrieving the blob snapshot earlier created.
+    - When you first create a snapshot of a blob, you get back a header `x-ms-snapshot: <guid here>`. This guid must be used in the following url to set the blob back to the snapshot: `https://company1.blob.core.windows.net/books/azure.pdf?snapshot=<guid here>`.
+    - Other options were:
+      - `https://.../<guid here>`. This will retrieve a blob with the guid name.
+      - `https://../x-ms-snapshot/<guid here>`. This will retrieve a blob named x-ms-snapshot/guid.
+      - `https://..?x-ms-snapshot:<guid here>`. This query string is just incorrect.
+    - References: [Snapshot Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/snapshot-blob), [Blob snapshots](https://docs.microsoft.com/en-us/azure/storage/blobs/snapshots-overview)
