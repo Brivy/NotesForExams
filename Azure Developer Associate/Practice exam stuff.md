@@ -56,6 +56,15 @@ In this chapter, I will go through all the practice exam questions and figure ou
 11. Should we use Azure Functions with the Consumption plan configured with an IoT Hub trigger, Cosmos DB as the input binding, and Azure Storage Account as output binding for IoT devices that are streaming data to an IoT Hub?
     - The answer should be *No*, because the *Consumption plan* does not guarantee that a runtime environment will always be available because the cold start could take a while.
     - References: [Azure Functions triggers and bindings concepts](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=csharp), [Azure Functions Premium plan](https://docs.microsoft.com/en-us/azure/azure-functions/functions-premium-plan?tabs=portal)
+12. Configure access for app service to the azure key vault by enabling system generated managed identity with *get* and *list* permissions?
+    - The answer should be *Yes*, because this created identity gets access to the key vault to read and list secrets stored there.
+    - References: [How to use managed identities for App Service and Azure Functions](https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=dotnet), [Azure Key Vault security](https://docs.microsoft.com/en-us/azure/key-vault/general/security-features)
+13. Configure access for app service to the azure key vault by enabling system generated managed identity with *write* and *delete* permissions?
+    - The answer should be *No*, because the created identity gets access to the key vault to write and delete secrets, while this isn't the use case.
+    - References: [How to use managed identities for App Service and Azure Functions](https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=dotnet), [Azure Key Vault security](https://docs.microsoft.com/en-us/azure/key-vault/general/security-features)
+14. Configure access for app service to the azure key vault by configuring an Azure Active Directory application that has get and list permissions, but store the access key and password in the service principal in the application.
+    - The answer should be *No*, because you now give everyone access to the key vault that is using the application.
+    - References: [How to use managed identities for App Service and Azure Functions](https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=dotnet), [Azure Key Vault security](https://docs.microsoft.com/en-us/azure/key-vault/general/security-features)
 
 ## Normal questions
 
@@ -428,3 +437,50 @@ These questions aren't related to each other.
       - `https://../x-ms-snapshot/<guid here>`. This will retrieve a blob named x-ms-snapshot/guid.
       - `https://..?x-ms-snapshot:<guid here>`. This query string is just incorrect.
     - References: [Snapshot Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/snapshot-blob), [Blob snapshots](https://docs.microsoft.com/en-us/azure/storage/blobs/snapshots-overview)
+19. Knowing what a specific blob request does.
+    - By using *PUT*, you can update the metadata. If you want to upload a blob, you should use *POST* with a request body.
+    - The request does not create a snapshot of the blob. This is because the query parameter has `comp=tier` in it and not `comp=snapshot`.
+    - By specifying that it needs to go to the archive tier, it will go offline when the request is finished. It will need rehydration when you want to request it again.
+    - Copying is still possible, but will take some time because of the rehydration process.
+    - References: [Snapshot Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/snapshot-blob), [Set Blob Tier](https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-tier), [Hot, Cool, and Archive access tiers for blob data](https://docs.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview), [Blob rehydration from the Archive tier](https://docs.microsoft.com/en-us/azure/storage/blobs/archive-rehydrate-overview)
+20. Configure a blob client that will retrieve images from a storage account with read access geozone-redundant storage (RA-GZRS) redundancy.
+    - Because you want to first retrieve the data from your primary storage account, you want to choose for `blobClient.DefaultRequestOptions.LocationMode = LocationMode.PrimaryThenSecondary;`. This will only read from the secondary storage when a regional outage is affecting the primary storage.
+    - Other options were:
+      - `... = LocationMode.PrimaryOnly;`. Default blob mode, but doesn't read from the secondary.
+      - `... = LocationMode.SecondaryThenPrimary;`. Should read first from the primary one.
+      - `... = LocationMode.SecondaryOnly;`. Should read first from the primary one.
+    - References: [Use geo-redundancy to design highly available applications](https://docs.microsoft.com/en-us/azure/storage/common/geo-redundant-design?tabs=current), [Shows how to implement the Circuit Breaker pattern for HA apps using RA-GRS Storage](https://github.com/Azure-Samples/storage-dotnet-circuit-breaker-ha-ra-grs), [Azure Storage redundancy](https://docs.microsoft.com/en-us/azure/storage/common/storage-redundancy)
+21. Connect with multiple blob storage accounts questions.
+    - You *can't* select the PrimaryThenSecondary mode without defining the default request option for the location mode. Without the default request location mode, `PrimaryOnly` mode (default) will be used.
+    - You *can* configure the default request location mode as SecondaryThenPrimary for all Blob Storage with read access geo-redundant storage (RA-GRS) replication. The code checks if the blob storage is RA-GRS or RA-GZRS and configures the default request location mode as `SecondaryThenPrimary`.
+    - You *cannot* configure the blob client default request location mode as `PrimaryThenSecondary` for Blob Storage with geo-zone-redundant storage (GZRS) replication. This is only enabled in RA-GRS or RA-GZRS.
+    - References: [Use geo-redundancy to design highly available applications](https://docs.microsoft.com/en-us/azure/storage/common/geo-redundant-design?tabs=current), [Shows how to implement the Circuit Breaker pattern for HA apps using RA-GRS Storage](https://github.com/Azure-Samples/storage-dotnet-circuit-breaker-ha-ra-grs), [Azure Storage redundancy](https://docs.microsoft.com/en-us/azure/storage/common/storage-redundancy), [Get storage account configuration information](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-get-info?tabs=portal)
+22. Configure a data archiving strategy where you focus on the lowest storage cost and some other requirements.
+    - We want to use **Blob storage lifecycle and access tiers**. Because of this, we need to upgrade our GPv1 account to a GPv2 account.
+    - We also want to move receipts older than 90 days to the *archive tier*, because it has the lowest costs.
+    - Other options were:
+      - *Create a new Azure Storage Account with account-level cool tiering*. You can just use the same Storage Account and implement a storage lifecycle that archives.
+      - *Move the receipts older than 90 days to the new storage account using AzCopy*. While `AzCopy` does the job, it does it one time. So this command should be ran every day.
+      - *Move the receipts older than 90 days to the cool tier using the storage lifecycle*. Still expensive.
+    - References: [Hot, Cool, and Archive access tiers for blob data](https://docs.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview), [Optimize costs by automatically managing the data lifecycle](https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview), [Get started with AzCopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10)
+23. Copy a blob asynchronously and if it fails, restart the copy or near the point of failure.
+    - You should use the `AzCopy` command to copy the blob. It can move data into and out of storage in Azure including between storage accounts. When copying, it will leave the original blob in place and if done, it will delete the source blob.
+    - Other options were:
+      - *The `Start-AzureStorageBlobCopy` PowerShell cmdlet*. Can only copy a blob between containers but not between storage accounts.
+      - *The `az storage blob` Azure CLI command*. It only supports synchronous copy and does not support restart at the point of failure.
+      - *The `Start-AzureStorageBlobIncrementalCopy` PowerShell cmdlet*. Used to copy data from a Page blob snapshot to a specified destination Page blob.
+    - References: [Start-AzureStorageBlobCopy](https://docs.microsoft.com/en-us/powershell/module/azure.storage/start-azurestorageblobcopy?view=azurermps-6.13.0), [Start-AzureStorageBlobIncrementalCopy](https://docs.microsoft.com/en-us/powershell/module/azure.storage/start-azurestorageblobincrementalcopy?view=azurermps-6.13.0), [azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-ref-azcopy), [Get started with AzCopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10), [Choose a tool and strategy to copy blobs](https://docs.microsoft.com/en-us/learn/modules/copy-blobs-from-command-line-and-code/2-choosing-a-tool-and-strategy), [Move Azure storage blobs from the command line with the Azure CLI](https://docs.microsoft.com/en-us/learn/modules/copy-blobs-from-command-line-and-code/3-move-blobs-using-cli)
+24. Configure a lifecycle policy of a blob.
+    - First we need the JSON object `baseBlob`. This will contain the rules for enforcing our data storage.
+    - The first rule should be `"tierToArchive" : { "daysAfterModificationGreaterThan": 90 }`. This is to archive blobs after 90 days.
+    - The second rule should be `"delete" : { "daysAfterModificationGreaterThan": 365 }`. This will remove blobs after 365 days.
+    - The last rule should be `"tierToCool" : { "daysAfterModificationGreaterThan": 30 }`. This will put blobs in the cool tier after 30 days.
+    - References: [Optimize costs by automatically managing the data lifecycle](https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview?tabs=azure-portal), [Blob rehydration from the Archive tier](https://docs.microsoft.com/en-us/azure/storage/blobs/archive-rehydrate-overview?tabs=azure-portal)
+25. Select Azure AD app manifest attribute with value so Users can login from an Azure Web app.
+    - You should configure the *groupMembershipClaims* attribute with the value *SecurityGroup*. This will retrieve group membership and Azure AD roles for the group claim.
+    - Other options were:
+      - *appRoles attribute*. This is used to specify a collection of roles that an app may declare.
+      - *signInAudience attribute*. This is used to identify Microsoft accounts that are supported for the app.
+      - *None value*. Will return no user security claims.
+      - *All value*. Includes distribution groups along with group membership and Azure AD roles.
+    - References: [Azure Active Directory app manifest](https://docs.microsoft.com/en-us/azure/active-directory/develop/reference-app-manifest), [Configure group claims for applications with Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims)
