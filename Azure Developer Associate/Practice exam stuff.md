@@ -476,7 +476,10 @@ These questions aren't related to each other.
     - The second rule should be `"delete" : { "daysAfterModificationGreaterThan": 365 }`. This will remove blobs after 365 days.
     - The last rule should be `"tierToCool" : { "daysAfterModificationGreaterThan": 30 }`. This will put blobs in the cool tier after 30 days.
     - References: [Optimize costs by automatically managing the data lifecycle](https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview?tabs=azure-portal), [Blob rehydration from the Archive tier](https://docs.microsoft.com/en-us/azure/storage/blobs/archive-rehydrate-overview?tabs=azure-portal)
-25. Select Azure AD app manifest attribute with value so Users can login from an Azure Web app.
+
+### Implement Azure Security
+
+1. Select Azure AD app manifest attribute with value so Users can login from an Azure Web app.
     - You should configure the *groupMembershipClaims* attribute with the value *SecurityGroup*. This will retrieve group membership and Azure AD roles for the group claim.
     - Other options were:
       - *appRoles attribute*. This is used to specify a collection of roles that an app may declare.
@@ -484,3 +487,86 @@ These questions aren't related to each other.
       - *None value*. Will return no user security claims.
       - *All value*. Includes distribution groups along with group membership and Azure AD roles.
     - References: [Azure Active Directory app manifest](https://docs.microsoft.com/en-us/azure/active-directory/develop/reference-app-manifest), [Configure group claims for applications with Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims)
+2. Configure members of a group as members of the contribute role for a web app.
+    - By using `New-AzRoleAssignment` (or `az role assignment`), you can grant access based on role-based access control (RBAC) to a security principal, including a user or group.
+    - Other options were:
+      - `New-AzRoleDefinition`. Can be used to create a new RBAC role definition.
+      - `Set-AzRoleDefinition`. Configure an existing RBAC role, but does not provide any way of setting the security principals to which the role is assigned.
+      - `New-AzManagedApplicationDefinition`. Has something too do with managed applications.
+    - References: [New-AzRoleAssignment](https://docs.microsoft.com/en-us/powershell/module/az.Resources/New-azRoleAssignment?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [New-AzRoleDefinition](https://docs.microsoft.com/en-us/powershell/module/az.resources/new-azroledefinition?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [Set-AzRoleDefinition](https://docs.microsoft.com/en-us/powershell/module/az.resources/set-azroledefinition?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [New-AzManagedApplicationDefinition](https://docs.microsoft.com/en-us/powershell/module/az.resources/new-azmanagedapplicationdefinition?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [az role assignment](https://docs.microsoft.com/en-us/cli/azure/role/assignment?view=azure-cli-latest#az-roleassignment-create), [Azure managed applications overview](https://docs.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/overview)
+3. Modify Azure AD to allow users to login when they use your app with App Service Authentication.
+    - You should create an *app registration*. This is similar of registering other identity providers such as Google, Facebook or Microsoft. It will define the app that is allowed to authenticate against Azure AD.
+    - Other options were:
+      - *Create an application proxy*. This allows users to access an on-premises application securely through Azure AD.
+      - *Configure Azure AD Connect*. This allows you to synchronize and AD tenant with an on-premises AD domain.
+      - *Create an enterprise application*. Enterprise applications allow you to integrate other applications with Azure AD, including your own apps.
+    - References: [Configure your App Service or Azure Functions app to use Azure AD login](https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad), [Remote access to on-premises applications through Azure AD Application Proxy](https://docs.microsoft.com/en-us/azure/active-directory/app-proxy/application-proxy), [What is hybrid identity with Azure Active Directory?](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/whatis-hybrid-identity), [Quickstart: Add an enterprise application](https://docs.microsoft.com/en-us/azure/active-directory/manage-apps/add-application-portal), [Tutorial: Azure Active Directory single sign-on (SSO) integration with Google Cloud (G Suite) Connector](https://docs.microsoft.com/en-us/azure/active-directory/saas-apps/google-apps-tutorial)
+4. Enabling a system-assigned identity on a new VM and let Managed Service Identity (MSI) allow the VM to access the Azure Resource Manager API.
+    - You should grant the *Reader role* to the identity at the subscription scope. This applies to all resource groups in the subscription, which ensures that the VM can access resources in all resource groups.
+    - Other options were:
+      - *Grant the VM Contributor role to your personal Azure Active Directory (Azure AD) account at each resource group scope*. We have already permission because we created the VM, but we should also enable it for the system-assigned identity.
+      - *Create an identity by running the az identity create Azure CLI command*. Run this command to set the name of a user identity, not a system identity.
+      - *Retrieve an access token by running the Invoke-WebRequest PowerShell cmdlet*. You should run this after granting the Reader role, otherwise the access token can't be retrieved.
+    - References: [What are managed identities for Azure resources?](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview), [Use a Windows VM system-assigned managed identity to access Resource Manager](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/tutorial-windows-vm-access-arm), [Configure managed identities for Azure resources on an Azure VM using Azure CLI](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/qs-configure-cli-windows-vm), [Tutorial: Use a Windows VM system-assigned managed identity to access Azure Storage via a SAS credential](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/tutorial-windows-vm-access-storage-sas)
+5. Protect a web API by using OAuth 2.0 authentication with your company's Azure Active Directory (AD) tenant.
+    - First, you should create an *API Managed instance*. This will allow a client application to use OAuth 2.0 authentication with an Azure AD tenant when accessing your web API.
+    - You should also create an *app registration*. This is similar of registering other identity providers such as Google, Facebook or Microsoft. It will define the app that is allowed to authenticate against Azure AD.
+    - Other options were:
+      - *Create an application proxy*. This allows users to access an on-premises application securely through Azure AD.
+      - *Create an Application Gateway*. This allows you to use routing to create a load balancer to backend web applications.
+    - References: [Protect a web API backend in Azure API Management using OAuth 2.0 authorization with Azure Active Directory](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad), [What is Azure Application Gateway?](https://docs.microsoft.com/en-us/azure/application-gateway/overview), [Remote access to on-premises applications through Azure AD Application Proxy](https://docs.microsoft.com/en-us/azure/active-directory/app-proxy/application-proxy), [Configure your App Service or Azure Functions app to use Azure AD login](https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad)
+6. Developing a daemon application with .NET Core that uses Microsoft Authentication Library (MSAL).
+    - Because a daemon application does not interact with users and you want to acquire tokens from the Microsoft identity platform, it needs to use the OAuth 2.0 client credential grant flow. This flow requires a *confidential client*: `IConfidentialClientApplication client;`.
+    - In other code, we set up the configuration. Now we are retrieving the `config.clientId` from here.
+    - We also need to specify the previously registered client secret in the Azure AD App registration. Without this, you cannot create a configdential client application: `.WithClientSecret(config.clientSecret);`.
+    - Full client builder: `IConfidentialClientApplication client = ConfidentialClientApplicationBuilder.Create(config.clientId).WithClientSecret(config.clientSecret).WithAuthority(new Uri(authority)).Build();`
+    - Other options were:
+      - *Public client application*. Not trusted to safely keep application secrets, so they can only access Microsoft Graph API on behalf of the user.
+      - *config.tenantId*. This information is already provided to the IConfidentialClientApplication.
+      - *.WithCertificate(config.certificateName)*. It's possible to use a certificate, but in the description, it is not stated that there is one.
+    - References: [Overview of the Microsoft Authentication Library (MSAL)](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview), [Scenario: Daemon application that calls web APIs](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-overview), [Microsoft identity platform and the OAuth 2.0 client credentials flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow), [Public client and confidential client applications](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-applications), [Exercise - Daemon and non-interactive apps](https://docs.microsoft.com/en-us/learn/modules/identity-application-types/7-exercise-daemon-non-interactive-apps)
+7. Adding attributes to MVC controllers and actions.
+    - On the controller, there should be two attributes: `[Authorize (Role="SubscriptionOwner")]` and `[Authorize (Role="SubscriptionUser)]`. Now only users with both roles can access the controller.
+    - On the action, there should be one attribute: `[Authorize (Policy="Subscribers", Role="SubscriptionOwner")]`. This will ensure that a user is validated against the policy defining the acceptable UserTier property to fall either in tier2 or tier3.
+    - Other options were:
+      - `[Authorize (Role="SubscriptionOwner", "SubscriptionUser")]`. This will allow a user that has one of the two roles to execute actions.
+      - `[Authorize (Policy="Subscribers")] [Authorize (Role="SubscriptionOwner")]`. We want to have the claims only to be validated to execute the Administrators action.
+    - References: [Policy-based authorization in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-3.1), [Role-based authorization in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/roles?view=aspnetcore-3.1), [Claims-based authorization in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/claims?view=aspnetcore-3.1)
+8. Create a shared access signature (SAS) token for a partner application respecting the principle of least privilege.
+    - First, you should create the credentials with `StorageSharedKeyCredential key = new StorageSharedKeyCredential(accountName, accountKey);`.
+    - Then we will build the SAS with `BlobSasBuilder sasBuilder = new BlobSasBuilder() { BlobContainerName = "container1", Resource = "c", StartsOn = DateTimeOffset.UtcNow, ExpiresOn = DateTimeOffset.UtcNow.AddHours(8) };`. This has one important property called `Resource = "c"`. This will scope the token to a blob **container level**, so that the partner application has the necessary permissions.
+    - With that build, we can set permission on the builder with `sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);`. Now the SAS token is scoped correctly to only reading.
+    - And at last, we can create the token with `string sasToken = sasBuilder.ToSasQueryParameters(key).ToString();`.
+    - Other options were:
+      - `AccountSasBuilder` and `AccountSasPermissions.Read`. This will give too much permission than only scoping it to the blob container.
+      - `Resource = "b"`. This will scope the SAS to single blob level.
+    - References: [Grant limited access to Azure Storage resources using shared access signatures (SAS)](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview), [Create an account SAS with .NET](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-sas-create-dotnet?tabs=dotnet), [BlobSasBuilder Class](https://docs.microsoft.com/en-us/dotnet/api/azure.storage.sas.blobsasbuilder?view=azure-dotnet)
+9. Enabling multi-factor authentication (MFA) for an internal website that uses Azure Active Directory Basic licenses.
+    - It is a must to have an Azure AD Premium P1 license to implement MFA.
+    - Furthermore, you should also create a new conditional access policy in Azure AD. This policy can be used to allow, deny, or require MFA authentication given specific conditions.
+    - Other options were:
+      - *Configure the website to use Azure AD business-to-business (B2B)*. This allows to share your applications with guest users from external organizations, while this is only for intern use.
+      - *Create an application proxy*. This allows users to access an on-premises application securely through Azure AD.
+      - *Enable security defaults in Azure AD*. This sets for all users pre-configured security settings, while we want it to be only for a group.
+    - References: [Tutorial: Secure user sign-in events with Azure AD Multi-Factor Authentication](https://docs.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-azure-mfa), [Azure Active Directory (Azure AD) pricing](https://azure.microsoft.com/en-us/pricing/details/active-directory/), [What is guest user access in Azure Active Directory B2B?](https://docs.microsoft.com/en-us/azure/active-directory/external-identities/what-is-b2b), [Using Azure AD Application Proxy to publish on-premises apps for remote users](https://docs.microsoft.com/en-us/azure/active-directory/app-proxy/what-is-application-proxy), [What are security defaults?](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults)
+10. Implement new Azure API Management policy where all calls should be secure based on access tokens from Azure Active Directory, while not passing credentials to the API.
+    - You should use *managed identity* as the authentication mechanism. They will provide secure access required without passing credentials. It will use the managed identity to obtain an access token from Azure AD.
+    - Other options were:
+      - *Basic*. This will require to pass credentials and that is not what we want here.
+      - *Client certificate*. This method uses a certificate that has been installed in API Management for authentication.
+      - *Anonymous*. While supported in some scenario's, it is not supported as an API authentication mechanism policy.
+    - References: [API Management authentication policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-authentication-policies), [Anonymous Authentication <anonymousAuthentication>](https://docs.microsoft.com/en-us/iis/configuration/system.webserver/security/authentication/anonymousauthentication), [Authentication and authorization in Azure App Service and Azure Functions](https://docs.microsoft.com/en-us/azure/app-service/overview-authentication-authorization)
+11. Implement API Management access restriction policy that can be passed as a request query parameter.
+    - You should use the *validate JWT* Management access restriction policy. It can be retrieved and validated from Header or query parameter and can secure the entire API through Azure AD authentication.
+    - Other options were:
+      - *Check HTTP header*. Checks for an HTTP header, but that's it.
+      - *Limit call rate by key*. While it can be used to limit the application somewhat in volume, it provides no authentication.
+      - *JSONP*. It's used to add JSON with padding support to an operation or an API to allow cross-domain calls from JavaScript browser-based clients.
+    - References: [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [JSON Web Tokens](https://aadguide.azurewebsites.net/integration/jwts/), [API Management cross domain policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-cross-domain-policies)
+12. Give a developer a new role that allows to work on a resource, but not add new members.
+    - Give him the *Contributer* role, so hey can work without the ability to add new members.
+    - Other options were:
+      - *Owner*. This will give him full access.
+      - *Reader*. Now he can't work on the resource.
+      - *User Access Administrator*. Gives him the ability to grant resource access to other users.
+    - References: [What is Azure role-based access control (Azure RBAC)?](https://docs.microsoft.com/en-us/azure/role-based-access-control/overview)
