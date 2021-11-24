@@ -564,9 +564,85 @@ These questions aren't related to each other.
       - *JSONP*. It's used to add JSON with padding support to an operation or an API to allow cross-domain calls from JavaScript browser-based clients.
     - References: [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [JSON Web Tokens](https://aadguide.azurewebsites.net/integration/jwts/), [API Management cross domain policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-cross-domain-policies)
 12. Give a developer a new role that allows to work on a resource, but not add new members.
-    - Give him the *Contributer* role, so hey can work without the ability to add new members.
+    - Give him the *Contributor* role, so hey can work without the ability to add new members.
     - Other options were:
       - *Owner*. This will give him full access.
       - *Reader*. Now he can't work on the resource.
       - *User Access Administrator*. Gives him the ability to grant resource access to other users.
     - References: [What is Azure role-based access control (Azure RBAC)?](https://docs.microsoft.com/en-us/azure/role-based-access-control/overview)
+13. Using Azure Active Directory to authenticate app users with automatic registration.
+    - To register your app for the AAD authentication automatically, you must:
+      - Open Azure Portal and navigate to your app.
+      - Select Authentication and click Add identity provider.
+      - Set the identity provider to Microsoft.
+      - Click the Add button.
+    - Other options were:
+      - *Open Azure Portal and navigate to Security Center*. While this can help you with the security, it won't help you with automatic AAD registration.
+      - *Select Identity and set System assigned to On*. This is not designed to authenticate your web end users.
+      - *Set the identity provider to Google*. We want Microsoft.
+      - *Provide the CLient ID and secret*. If we selected Google, we need to assign these extra values.
+    - References: [Configure your App Service or Azure Functions app to use Azure AD login](https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad), [What is Microsoft Defender for Cloud?](https://docs.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction), [What are managed identities for Azure resources?](https://docs.microsoft.com/en-gb/azure/active-directory/managed-identities-azure-resources/overview), [Configure your App Service or Azure Functions app to use Google login](https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-google)
+14. Generate a service shared access signature (SAS) programmatically, using the storage account key.
+    - The complete SAS URL is as follows: `https://myWeb.blob.core.windows.net/reports2021/may.txt?sv=2019-02-02&se=2021-05031T23%3A59%3A59Z&s=b&sp=r&sig=abc%DEFG%hijk%123`.
+    - The first part of the URL is simple, it's just a blob that we are accessing to.
+    - The second part contains of some cryptic shortcuts:
+      - `sv` (signedVersion) contains the service version of the shared access signature.
+      - `sr` (signedResource) must be set to **b**, to indicate that you grant access to the content and metadata of your blob.
+      - `sp` (signedPermission) must be set to **r**, to indicate that user permission is restricted to the read operation.
+    - Other options were:
+      - `sr = c`. Gives access to the content and metadata of all the blobs in the container.
+      - `sp = c`. No information.
+    - References: [Grant limited access to Azure Storage resources using shared access signatures (SAS)](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview), [Create a service SAS](https://docs.microsoft.com/en-us/rest/api/storageservices/create-service-sas)
+15. Retrieving a key stored in the Azure Key Vault.
+    - First define the url: `string keyVaultUrl = "https://companyA.vault.azure.net/";`
+    - Then define the object: `KeyClient client = new KeyClient(vaultUri: new Uri(keyVaultUrl), credential: new DefaultAzureCredential());`. This will set the url and the credentials for Azure. Because we used `new DefaultAzureCredential()`, it will use the environment variables `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` and `AZURE_TENANT_ID`.
+    - You can then retrieve the key with: `KeyVaultKey key = await client.GetKeyAsync("encryptionKey");`. Be careful that you only specify the key name when trying to retrieve the key and nothing else (like an url).
+    - Other options were:
+      - `CryptographyClient`. Only use this when we are doing some crypto stuff.
+      - `keyVaultUrl + "encryptionKey"`. The parameter expects to only have the name of the key itself and not the url.
+    - References: [Azure Key Vault key client library for .NET](https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/keyvault/Azure.Security.KeyVault.Keys), [Azure Identity client library for .NET](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/identity/Azure.Identity/README.md)
+16. Using Azure App Configuration questions.
+    - Azure App Configuration is **not** designed as a more secure replacement for Azure Key Vault. While the data is encrypted, Azure Key Vault provides a more secure place through hardware-level encryption, granular access policies and management operations.
+    - You **can** import configuration information directly from separate configuration files into Azure App Configuration. You can also export configuration information out from Azure App Configuration to separate configuration files.
+    - You **can** configure separate configuration stores to support different environments including development, test and production.
+    - References: [What is Azure App Configuration?](https://docs.microsoft.com/en-us/azure/azure-app-configuration/overview), [Azure App Configuration FAQ](https://docs.microsoft.com/en-us/azure/azure-app-configuration/faq)
+17. Enabling the key vault to recognize and grant access to your application.
+    - You should use the command: `Set-AzKeyVaultAccessPolicy -VaultName MyKeyVault -ServicePrincipalName <clientIDfromAzureAD> -PermissionsToSecrets Get`. This command consists out a few parts:
+      - *Set-AzKeyVaultAccessPolicy* grants or modifies permissions for a user, application or security group to perform operations with a key vault.
+      - *Get* grants the permission to enable the application to access the key value.
+    - Other options were:
+      - *New-AzKeyVaultNetworkRuleSetObject*. Creates an object representing the network rule settings that can be used when creating a vault.
+      - *Set-AzKeyVaultSecret*. Modifies the existing key vault secret, but not the permission.
+      - *Update-AzKeyVaultKey*. Modifies editable attributes of a key vault.
+      - *Recover*. Recovers a deleted secret.
+      - *Restore*. Restores a backed-up secret.
+      - *Set*. Create or modify a secret.
+    - References: [Automate the rotation of a secret for resources that have two sets of authentication credentials](https://docs.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual?tabs=azure-cli), [About Azure Key Vault secrets](https://docs.microsoft.com/en-us/azure/key-vault/secrets/about-secrets), [Set-AzKeyVaultAccessPolicy](https://docs.microsoft.com/en-us/powershell/module/az.keyvault/Set-AzKeyVaultAccessPolicy?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [Set-AzKeyVaultSecret](https://docs.microsoft.com/en-us/powershell/module/az.keyvault/Set-AzKeyVaultSecret?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [Update-AzKeyVaultKey](https://docs.microsoft.com/en-us/powershell/module/az.keyvault/Update-AzKeyVaultKey?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0), [New-AzKeyVaultNetworkRuleSetObject](https://docs.microsoft.com/en-us/powershell/module/az.keyvault/New-AzKeyVaultNetworkRuleSetObject?view=azps-6.6.0&viewFallbackFrom=azps-4.2.0)
+18. Configure disk encryption for a vm using an encryption key from a Key Vault created for that purpose.
+    - You should first create the Key Vault with `az keyvault create --name "myKeyVault" --resource-group "myRG" --location "eastus"`.
+    - Then update the Key Vault to support disk encryption with `az keyvault update --name "myKeyVault" --resource-group "myRG" --enabled-for-disk-encryption "true"`.
+    - Next we want to create an key encryption key (KEK). This can be done with `az keyvault key create --name "myKEK" --vault-name "myKeyVault" --kty RSA-HSM`. Be warned that you should use an RSA key type because other options are not supported for disk encryption.
+    - Finally, we can enable the encryption with `az vm encryption enable -g "myRG" --name "myLinuxVM" --disk-encryption-keyvault "myKeyVault" --key-encryption-key "myKEK"`.
+    - References: [Creating and configuring a key vault for Azure Disk Encryption](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-key-vault), [Quickstart: Create and encrypt a Linux VM with the Azure CLI](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-cli-quickstart)
+19. Copy data from the App Configuration store to a local JSON file.
+    - You should use the `az appconfig kv export`. This will copy key-value pairs from the specified App Configuration file to a local file. A more complete command looks like this: `az appconfig kv export --name myDevAppConfigStore --file ~/DevFix.json`.
+    - Other options were:
+      - `az appconfig kv import`. This is used to import the configuration, not export.
+      - `az keyvault key import`. Used for Key Vault to import a private key.
+      - `az keyvault key backup`. Used for Key Vault to backup a private key.
+      - `az keyvault secret`. Used for Key Vault to manage Key Vault secrets.
+    - References: [az appconfig kv](https://docs.microsoft.com/en-us/cli/azure/appconfig/kv?view=azure-cli-latest), [az keyvault](https://docs.microsoft.com/en-us/cli/azure/keyvault?view=azure-cli-latest), [What is Azure App Configuration?](https://docs.microsoft.com/en-us/azure/azure-app-configuration/overview)
+20. What does the code do that retrieves some secrets from the Key Vault.
+    - It returns the secret without the label *Production*. This is because of some configuration that happened in the `CreateHostBuilder`. We are settings `.Select(KeyFilter.Any, "Production").Select(KeyFilter.Any, LabelFilter.Null)` and note that the Production filter is selected first. But because the `LabelFilter.Null` is second, it will overwrite the first select. This is why we are retrieving the secret without the label *Production*.
+    - Other options were:
+      - `{"uri":"https://vault1.vault.azure.net/secrets/DbPasswordProd"}`. This is the secret that will be referenced when App1 loads this configuration.
+      - *The secret value of DbPasswordProd secret*. Because of the order of label setting, this isn't returned.
+      - *myserver.database.windows.net*. If we load `App1:Database:Host`, this will be returned.
+    - References: [Tutorial: Use Key Vault references in an ASP.NET Core app](https://docs.microsoft.com/en-us/azure/azure-app-configuration/use-key-vault-references-dotnet-core?tabs=core5x), [Use labels to provide per-environment configuration values.](https://docs.microsoft.com/en-us/azure/azure-app-configuration/howto-labels-aspnet-core?tabs=core5x), [Keys and values](https://docs.microsoft.com/en-us/azure/azure-app-configuration/concept-key-value)
+21. Retrieving an existing certificate from an Azure Key Vault using the .Net client library.
+    - By using the `GetCertificateAsync` method, ew are returning the latest version of the specified certificate from an Azure Key Vault. It will also  retrieve the current policy of the requested certificate.
+    - Other options were:
+      - `GetCertificatePolicyAsync`. It will retrieve the current policy of the certificate, but not the certificate itself.
+      - `StartCreateCertificateAsync`. Creates a new certificate, but does not retrieve an existing one.
+      - `UpdateCertificatePolicyAsync`. Updates the policy of the specified certificate.
+    - References: [Quickstart: Azure Key Vault certificate client library for .NET (SDK v4)](https://docs.microsoft.com/en-us/azure/key-vault/certificates/quick-create-net), [CertificateClient.GetCertificateAsync(String, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.getcertificateasync?view=azure-dotnet), [CertificateClient.GetCertificatePolicyAsync(String, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.getcertificatepolicyasync?view=azure-dotnet), [CertificateClient.StartCreateCertificateAsync(String, CertificatePolicy, Nullable<Boolean>, IDictionary<String,String>, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.startcreatecertificateasync?view=azure-dotnet), [CertificateClient.UpdateCertificatePolicyAsync(String, CertificatePolicy, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.updatecertificatepolicyasync?view=azure-dotnet)
