@@ -646,3 +646,87 @@ These questions aren't related to each other.
       - `StartCreateCertificateAsync`. Creates a new certificate, but does not retrieve an existing one.
       - `UpdateCertificatePolicyAsync`. Updates the policy of the specified certificate.
     - References: [Quickstart: Azure Key Vault certificate client library for .NET (SDK v4)](https://docs.microsoft.com/en-us/azure/key-vault/certificates/quick-create-net), [CertificateClient.GetCertificateAsync(String, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.getcertificateasync?view=azure-dotnet), [CertificateClient.GetCertificatePolicyAsync(String, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.getcertificatepolicyasync?view=azure-dotnet), [CertificateClient.StartCreateCertificateAsync(String, CertificatePolicy, Nullable<Boolean>, IDictionary<String,String>, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.startcreatecertificateasync?view=azure-dotnet), [CertificateClient.UpdateCertificatePolicyAsync(String, CertificatePolicy, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.updatecertificatepolicyasync?view=azure-dotnet)
+22. Regulate a web app that has access to Microsoft Graph that accesses Microsoft 365 core services.
+    - You should leave the constraint that will handle this empty. This is because you don't need to do it as constraint will be automatically locked on the resources owned by the signed-in user.
+    - Other options were:
+      - *Use the All constraint*. This will enable operations on all the specified types.
+      - *Use the AppFolder constraint*. This permission is used in the `Files.ReadWrite.AppFolder` permission to read, create, update and delete files in the OneDrive application folder.
+      - *Use the Shared constraint*. This will enable operations on the resources shared by other users with the signed-in user, like contacts or calenders in Outlook.
+    - References: [Microsoft Graph auth overview](https://docs.microsoft.com/en-us/graph/auth/), [Microsoft Graph permissions reference](https://docs.microsoft.com/en-us/graph/permissions-reference)
+23. Create a Microsoft Graph API query to retrieve a photo of each signed-in user.
+    - The query should look like this: `GET https://graph.microsoft.com/v1.0/me/photo/$value`. This query consists out of several parts:
+      - First, we should use the `graph.microsoft.com`. This is the web address of the Microsoft Graph API service.
+      - Then we should use the `/me` endpoint, because it used the delegated permission of the signed-in user.
+      - At last we should use the `$value` URL to retrieve the binary value of the user photo.
+    - Other options were:
+      - *portal.azure.com*. This is the URL to Azure Portal.
+      - *compliance.microsoft.com*. This is the url fo the Microsoft 365 compliance center.
+      - */users or /groups*. While these can be used, it will require additional parameters with an ID or user Principal Name.
+      - *$format*. Specifies the format in which you want to retrieve the output.
+      - *$count*. Counts matching resources.
+    - References: [Get photo](https://docs.microsoft.com/en-us/graph/api/profilephoto-get?view=graph-rest-1.0), [Use the Microsoft Graph API](https://docs.microsoft.com/en-us/graph/use-the-api), [Get a user](https://docs.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http), [Azure portal overview](https://docs.microsoft.com/en-us/azure/azure-portal/azure-portal-overview), [Microsoft 365 compliance center](https://docs.microsoft.com/en-us/microsoft-365/compliance/microsoft-365-compliance-center?view=o365-worldwide)
+24. Determine what this connection code does.
+    - The code looked like this: `var obj = ConnectionMultiplexer.Connect(connectionString); var database = obj.GetDatabase(); var tables = database.StringGet("Tables");`.
+    - It's a setup for *Azure Redis Cache* and it will retrieve some data.
+    - Other options were:
+      - *Table names from an Azure table storage account*. If it did, it should be using the `CloudTableClient client = new CloudTableClient();`.
+      - *Documents from an Azure Cosmos DB database*. If it did, it should be using the `DocumentClient client = new DocumentClient();`. 
+      - *Rows from an easy table of an Azure Mobile Service*. If it did, it should be using the `MobileServiceClient client = new MobileServiceClient();`.
+    - References: [Tutorial: Build a .NET console app to manage data in Azure Cosmos DB SQL API account](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-get-started), [Quickstart: Build a Table API app with .NET SDK and Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/table/create-table-dotnet?tabs=azure-portal%2Cvisual-studio), [Use Azure Easy Tables and the Mobile Apps SDK with Unity](https://docs.microsoft.com/en-us/previous-versions/sandbox/gamedev/unity/samples/azure-mobile-apps-unity-racer), [Quickstart: Use Azure Cache for Redis in .NET Core](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart)
+25. Create an Azure Content Delivery Network (CDN) that caches content from `http://www.measureup.com`.
+    - For the name of the CDN to *measureup*. This will create an endpoint at `http://measureup.azureedge.net` and here lays the Azure caches content.
+    - For the Origin type, you should choose *Custom Origin*. This will allow you to specify a custom domain name from where content should be retrieved. When selecting another value, Azure automatically chooses the domain name for you based on the Azure resources you have deployed.
+    - The Origin hostname option should be `http://www.measureup.com`, because it must be set to the domain name from which content should be retrieved.
+    - Other options were:
+      - *Any other name*. That will not be correct.
+      - *Any other Origin source*. Otherwise Azure will automatically handle that for you.
+      - *Any other Origin hostname*. It should be pointing at the domain name were the content should be retrieved.
+    - References: [Tutorial: Add Azure CDN to an Azure App Service web app](https://docs.microsoft.com/en-us/azure/cdn/cdn-add-to-web-app), [What is a content delivery network on Azure?](https://docs.microsoft.com/en-us/azure/cdn/cdn-overview)
+26. Increasing the time-to-live (TTL) of a page from seven days to 30 days with Azure Content Delivery Network
+    - The first method should be `Response.Cache.SetExpires(DateTime.Now.AddDays(30));`. This sets the time when the cache should expire.
+    - The second method should be `Reponse.Cache.SetCacheability(HttCacheability.Public);` This specifies where the content is cached.
+    - THe last method should be `Response.Cache.SetLastModified(DateTime.Now);`. This specifies the date when the content was last modified.
+    - Other options were:
+      - *DateTime.Now*. It will expire every time the page is loaded.
+      - *HttpCacheability.NoCache*. This prevents the content from being cached.
+      - *DateTime.Now.AddDays(30)*. This specified a future data to be used to calculate when content should be refreshed.
+    - References: [Manage expiration of web content in Azure CDN](https://docs.microsoft.com/en-us/azure/cdn/cdn-manage-expiration-of-cloud-service-content), [HttpCacheability Enum](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpcacheability?view=netframework-4.8)
+27. What does happen when you run some database code?
+    - The code is `IDatabase database = ConnectionMultiplexer.Connect(connectionString).GetDatabase(); var result = database.Execute("PING").ToString()`.
+    - This will verify a connection to an Azure Redis Cache. It will receive a `"PONG"` when the connection succeeds.
+    - Other options were:
+      - *It determines wheter an Azure virtual machine (VM) allows Internet Control Message Protocol (ICMP) connections*. The `IDatabase` interface represents a connection to an Azure Redis Cache, not a connection to a VM.
+      - *It creates a connection to an Azure Cosmos DB account*. Yeah, it doesn't do that.
+      - *It ensures that an Azure SQL Database is available*. Yeah, it doesn't do that.
+    - References: [Quickstart: Use Azure Cache for Redis in .NET Core](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart), [Azure Cache for Redis libraries for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/redis-cache?view=azure-dotnet)
+28. Configure Azure Content Delivery Network caching rules to implement some requirements.
+    - The caching behavior should be *Override*. This will ignore the duration provided in the request header and use the duration configuration settings.
+    - The cache expiration duration should be set to *18:00*, because we want it to expire every 18 hours.
+    - The query string caching behavior should *Cache every unique URL*. This is because we want to cache different video qualities to be served to different devices and that quality is part of the query string.
+    - Other options were:
+      - *Set if missing cache option*. Would use the duration, but would use the header setting if its provided in the header.
+      - *Bypass cache option*. Ignores the CDN cache.
+      - *Ignore query strings*. All devices would be served in the same quality.
+      - *Bypass caching for query strings*. Would disable servicing from the cache.
+    - References: [Tutorial: Set Azure CDN caching rules](https://docs.microsoft.com/en-us/azure/cdn/cdn-caching-rules-tutorial), [Quickstart: Create an Azure CDN profile and endpoint](https://docs.microsoft.com/en-us/azure/cdn/cdn-create-new-endpoint), [Control Azure CDN caching behavior with query strings - standard tier](https://docs.microsoft.com/en-us/azure/cdn/cdn-query-string)
+29. Store a response in Azure Cache for Redis.
+    - Use the `SETEX` command. This will store a value in a key and their expiration in seconds within one operation. The command from the example will look like this: `SETEX myKey 1800 "some-value"`.
+    - Other options were:
+      - `SET`. Will set a key-value, but does not expire.
+      - `EXPIRE`. Will make an existing key-value expire.
+      - `EXISTS`. Checks if a key exists in Redis without returning its value.
+    - References: [Quickstart: Use Azure Cache for Redis in .NET Core](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart), [SETEX key seconds value](https://redis.io/commands/setex), [SET key value [EX seconds|PX milliseconds|EXAT timestamp|PXAT milliseconds-timestamp|KEEPTTL] [NX|XX] [GET]](https://redis.io/commands/set), [EXPIRE key seconds [NX|XX|GT|LT]](https://redis.io/commands/expire), [EXISTS key [key ...]](https://redis.io/commands/exists)
+30. Optimize performance with Azure Content Delivery Network of a support website for players of a large game.
+    - The best **Optimized for option** is *Dynamic site acceleration (DSA)*. This is best suited to scenarios where data is changing and you would receive no benefit from caching data from the website.
+    - Other options were:
+      - *General media streaming*. This is best suited for live streaming and video-on-demand streaming.
+      - *General web delivery*. Mostly the best for serving static websites and can leverage from caching.
+      - *Video-on-demand streaming*. This is specifically optimized when you use an endpoint for video-on-demand streaming.
+    - References: [What is a content delivery network on Azure?](https://docs.microsoft.com/en-us/azure/cdn/cdn-overview), [Optimize Azure CDN for the type of content delivery](https://docs.microsoft.com/en-us/azure/cdn/cdn-optimization-overview), [Dynamic site acceleration via Azure CDN](https://docs.microsoft.com/en-us/azure/cdn/cdn-dynamic-site-acceleration), [What are the comparisons between Azure CDN product features?](https://docs.microsoft.com/en-us/azure/cdn/cdn-features)
+31. Evict the least recently used (LRU) keys from Redis by using an eviction policy for the maxmemory-policy directive.
+    - You should use the *volatile-lru eviction policy*. This policy dictates that Redis should make space for the new data by removing the LRU keys, but only from the set of keys that have their expiry values defined.
+    - Other options were:
+      - *allkeys-lru*. It will evict LRU keys, but it doesn't mind if it has the expiry values defined.
+      - *allkeys-random*. It will evict keys randomly.
+      - *noeviction*. This will return an error instead.
+    - References: [Access keys](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-configure#access-keys), [Using Redis as an LRU cache](https://redis.io/topics/lru-cache)
