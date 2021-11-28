@@ -646,14 +646,17 @@ These questions aren't related to each other.
       - `StartCreateCertificateAsync`. Creates a new certificate, but does not retrieve an existing one.
       - `UpdateCertificatePolicyAsync`. Updates the policy of the specified certificate.
     - References: [Quickstart: Azure Key Vault certificate client library for .NET (SDK v4)](https://docs.microsoft.com/en-us/azure/key-vault/certificates/quick-create-net), [CertificateClient.GetCertificateAsync(String, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.getcertificateasync?view=azure-dotnet), [CertificateClient.GetCertificatePolicyAsync(String, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.getcertificatepolicyasync?view=azure-dotnet), [CertificateClient.StartCreateCertificateAsync(String, CertificatePolicy, Nullable<Boolean>, IDictionary<String,String>, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.startcreatecertificateasync?view=azure-dotnet), [CertificateClient.UpdateCertificatePolicyAsync(String, CertificatePolicy, CancellationToken) Method](https://docs.microsoft.com/en-us/dotnet/api/azure.security.keyvault.certificates.certificateclient.updatecertificatepolicyasync?view=azure-dotnet)
-22. Regulate a web app that has access to Microsoft Graph that accesses Microsoft 365 core services.
+
+## Connect to and consume Azure services and third-party services
+
+1. Regulate a web app that has access to Microsoft Graph that accesses Microsoft 365 core services.
     - You should leave the constraint that will handle this empty. This is because you don't need to do it as constraint will be automatically locked on the resources owned by the signed-in user.
     - Other options were:
       - *Use the All constraint*. This will enable operations on all the specified types.
       - *Use the AppFolder constraint*. This permission is used in the `Files.ReadWrite.AppFolder` permission to read, create, update and delete files in the OneDrive application folder.
       - *Use the Shared constraint*. This will enable operations on the resources shared by other users with the signed-in user, like contacts or calenders in Outlook.
     - References: [Microsoft Graph auth overview](https://docs.microsoft.com/en-us/graph/auth/), [Microsoft Graph permissions reference](https://docs.microsoft.com/en-us/graph/permissions-reference)
-23. Create a Microsoft Graph API query to retrieve a photo of each signed-in user.
+2. Create a Microsoft Graph API query to retrieve a photo of each signed-in user.
     - The query should look like this: `GET https://graph.microsoft.com/v1.0/me/photo/$value`. This query consists out of several parts:
       - First, we should use the `graph.microsoft.com`. This is the web address of the Microsoft Graph API service.
       - Then we should use the `/me` endpoint, because it used the delegated permission of the signed-in user.
@@ -665,7 +668,7 @@ These questions aren't related to each other.
       - *$format*. Specifies the format in which you want to retrieve the output.
       - *$count*. Counts matching resources.
     - References: [Get photo](https://docs.microsoft.com/en-us/graph/api/profilephoto-get?view=graph-rest-1.0), [Use the Microsoft Graph API](https://docs.microsoft.com/en-us/graph/use-the-api), [Get a user](https://docs.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http), [Azure portal overview](https://docs.microsoft.com/en-us/azure/azure-portal/azure-portal-overview), [Microsoft 365 compliance center](https://docs.microsoft.com/en-us/microsoft-365/compliance/microsoft-365-compliance-center?view=o365-worldwide)
-24. Determine what this connection code does.
+3. Determine what this connection code does.
     - The code looked like this: `var obj = ConnectionMultiplexer.Connect(connectionString); var database = obj.GetDatabase(); var tables = database.StringGet("Tables");`.
     - It's a setup for *Azure Redis Cache* and it will retrieve some data.
     - Other options were:
@@ -673,7 +676,7 @@ These questions aren't related to each other.
       - *Documents from an Azure Cosmos DB database*. If it did, it should be using the `DocumentClient client = new DocumentClient();`. 
       - *Rows from an easy table of an Azure Mobile Service*. If it did, it should be using the `MobileServiceClient client = new MobileServiceClient();`.
     - References: [Tutorial: Build a .NET console app to manage data in Azure Cosmos DB SQL API account](https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-get-started), [Quickstart: Build a Table API app with .NET SDK and Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/table/create-table-dotnet?tabs=azure-portal%2Cvisual-studio), [Use Azure Easy Tables and the Mobile Apps SDK with Unity](https://docs.microsoft.com/en-us/previous-versions/sandbox/gamedev/unity/samples/azure-mobile-apps-unity-racer), [Quickstart: Use Azure Cache for Redis in .NET Core](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart)
-25. Create an Azure Content Delivery Network (CDN) that caches content from `http://www.measureup.com`.
+4. Create an Azure Content Delivery Network (CDN) that caches content from `http://www.measureup.com`.
     - For the name of the CDN to *measureup*. This will create an endpoint at `http://measureup.azureedge.net` and here lays the Azure caches content.
     - For the Origin type, you should choose *Custom Origin*. This will allow you to specify a custom domain name from where content should be retrieved. When selecting another value, Azure automatically chooses the domain name for you based on the Azure resources you have deployed.
     - The Origin hostname option should be `http://www.measureup.com`, because it must be set to the domain name from which content should be retrieved.
@@ -682,7 +685,7 @@ These questions aren't related to each other.
       - *Any other Origin source*. Otherwise Azure will automatically handle that for you.
       - *Any other Origin hostname*. It should be pointing at the domain name were the content should be retrieved.
     - References: [Tutorial: Add Azure CDN to an Azure App Service web app](https://docs.microsoft.com/en-us/azure/cdn/cdn-add-to-web-app), [What is a content delivery network on Azure?](https://docs.microsoft.com/en-us/azure/cdn/cdn-overview)
-26. Increasing the time-to-live (TTL) of a page from seven days to 30 days with Azure Content Delivery Network
+5. Increasing the time-to-live (TTL) of a page from seven days to 30 days with Azure Content Delivery Network
     - The first method should be `Response.Cache.SetExpires(DateTime.Now.AddDays(30));`. This sets the time when the cache should expire.
     - The second method should be `Reponse.Cache.SetCacheability(HttCacheability.Public);` This specifies where the content is cached.
     - THe last method should be `Response.Cache.SetLastModified(DateTime.Now);`. This specifies the date when the content was last modified.
@@ -691,7 +694,7 @@ These questions aren't related to each other.
       - *HttpCacheability.NoCache*. This prevents the content from being cached.
       - *DateTime.Now.AddDays(30)*. This specified a future data to be used to calculate when content should be refreshed.
     - References: [Manage expiration of web content in Azure CDN](https://docs.microsoft.com/en-us/azure/cdn/cdn-manage-expiration-of-cloud-service-content), [HttpCacheability Enum](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpcacheability?view=netframework-4.8)
-27. What does happen when you run some database code?
+6. What does happen when you run some database code?
     - The code is `IDatabase database = ConnectionMultiplexer.Connect(connectionString).GetDatabase(); var result = database.Execute("PING").ToString()`.
     - This will verify a connection to an Azure Redis Cache. It will receive a `"PONG"` when the connection succeeds.
     - Other options were:
@@ -699,7 +702,7 @@ These questions aren't related to each other.
       - *It creates a connection to an Azure Cosmos DB account*. Yeah, it doesn't do that.
       - *It ensures that an Azure SQL Database is available*. Yeah, it doesn't do that.
     - References: [Quickstart: Use Azure Cache for Redis in .NET Core](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart), [Azure Cache for Redis libraries for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/redis-cache?view=azure-dotnet)
-28. Configure Azure Content Delivery Network caching rules to implement some requirements.
+7. Configure Azure Content Delivery Network caching rules to implement some requirements.
     - The caching behavior should be *Override*. This will ignore the duration provided in the request header and use the duration configuration settings.
     - The cache expiration duration should be set to *18:00*, because we want it to expire every 18 hours.
     - The query string caching behavior should *Cache every unique URL*. This is because we want to cache different video qualities to be served to different devices and that quality is part of the query string.
@@ -709,24 +712,107 @@ These questions aren't related to each other.
       - *Ignore query strings*. All devices would be served in the same quality.
       - *Bypass caching for query strings*. Would disable servicing from the cache.
     - References: [Tutorial: Set Azure CDN caching rules](https://docs.microsoft.com/en-us/azure/cdn/cdn-caching-rules-tutorial), [Quickstart: Create an Azure CDN profile and endpoint](https://docs.microsoft.com/en-us/azure/cdn/cdn-create-new-endpoint), [Control Azure CDN caching behavior with query strings - standard tier](https://docs.microsoft.com/en-us/azure/cdn/cdn-query-string)
-29. Store a response in Azure Cache for Redis.
+8. Store a response in Azure Cache for Redis.
     - Use the `SETEX` command. This will store a value in a key and their expiration in seconds within one operation. The command from the example will look like this: `SETEX myKey 1800 "some-value"`.
     - Other options were:
       - `SET`. Will set a key-value, but does not expire.
       - `EXPIRE`. Will make an existing key-value expire.
       - `EXISTS`. Checks if a key exists in Redis without returning its value.
     - References: [Quickstart: Use Azure Cache for Redis in .NET Core](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart), [SETEX key seconds value](https://redis.io/commands/setex), [SET key value [EX seconds|PX milliseconds|EXAT timestamp|PXAT milliseconds-timestamp|KEEPTTL] [NX|XX] [GET]](https://redis.io/commands/set), [EXPIRE key seconds [NX|XX|GT|LT]](https://redis.io/commands/expire), [EXISTS key [key ...]](https://redis.io/commands/exists)
-30. Optimize performance with Azure Content Delivery Network of a support website for players of a large game.
+9. Optimize performance with Azure Content Delivery Network of a support website for players of a large game.
     - The best **Optimized for option** is *Dynamic site acceleration (DSA)*. This is best suited to scenarios where data is changing and you would receive no benefit from caching data from the website.
     - Other options were:
       - *General media streaming*. This is best suited for live streaming and video-on-demand streaming.
       - *General web delivery*. Mostly the best for serving static websites and can leverage from caching.
       - *Video-on-demand streaming*. This is specifically optimized when you use an endpoint for video-on-demand streaming.
     - References: [What is a content delivery network on Azure?](https://docs.microsoft.com/en-us/azure/cdn/cdn-overview), [Optimize Azure CDN for the type of content delivery](https://docs.microsoft.com/en-us/azure/cdn/cdn-optimization-overview), [Dynamic site acceleration via Azure CDN](https://docs.microsoft.com/en-us/azure/cdn/cdn-dynamic-site-acceleration), [What are the comparisons between Azure CDN product features?](https://docs.microsoft.com/en-us/azure/cdn/cdn-features)
-31. Evict the least recently used (LRU) keys from Redis by using an eviction policy for the maxmemory-policy directive.
+10. Evict the least recently used (LRU) keys from Redis by using an eviction policy for the maxmemory-policy directive.
     - You should use the *volatile-lru eviction policy*. This policy dictates that Redis should make space for the new data by removing the LRU keys, but only from the set of keys that have their expiry values defined.
     - Other options were:
       - *allkeys-lru*. It will evict LRU keys, but it doesn't mind if it has the expiry values defined.
       - *allkeys-random*. It will evict keys randomly.
       - *noeviction*. This will return an error instead.
     - References: [Access keys](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-configure#access-keys), [Using Redis as an LRU cache](https://redis.io/topics/lru-cache)
+11. Increase the Redis cache size by cmdlet.
+    - You should use the following cmdlet: `Set-AzRedisCache -ResourceGroupName RG1 -Name RedisCache1 -Size 2.5GB`.
+    - Other options were:
+      - *Reset-AzRedisCache*. This can be used to reboot the nodes of a cache, but it's only available for Premium tier Azure Cache for Redis.
+      - *Import-AzRedisCache*. This can be used to import data into Azure Cache for Redis from blobs, but it's only available for Premium tier Azure Cache for Redis.
+    - References: [Manage Azure Cache for Redis with Azure PowerShell](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-how-to-manage-redis-cache-powershell), [Az.RedisCache](https://docs.microsoft.com/en-us/powershell/module/az.rediscache/?view=azps-6.6.0&viewFallbackFrom=azps-5.8.0)
+12. Azure Cache questions.
+    - Shared caching is *not* faster than private caching. This is because with private caching, data is held locally to each application instance and can therefore be accessed faster. With shared caching, data is held in a separate centralized location, which slows the access from different instances.
+    - Private caching does *not* guarantee that all application instances see the same view of cached data. This is because each application instance can hold different data.
+    - Shared caching *does* provide better scalability than private caching. If you have a centralized location for caching, you only have to scale that one instead of each application instance when private caching is enabled.
+    - References: [Azure videos](https://azure.microsoft.com/en-gb/resources/videos/), [Caching](https://docs.microsoft.com/en-us/azure/architecture/best-practices/caching)
+13. Evict oldest data from cache by policy.
+    - You should enable the FIFO eviction policy, because it will monitor the order in which items are added and will evict the oldest data first.
+    - Other options were:
+      - *Least-recently-used (LRU)*. It removes the one that is not recently used, that doesn't mean it's the oldest one.
+      - *Explicit item removal triggered by its modification in the main database*. This will update the cache with the most updated versions from the main database.
+      - *Most-recently-used (MRU)*. Removes the most recently used items, but ignores the age of the items in the cache.
+    - References: [Caching](https://docs.microsoft.com/en-us/azure/architecture/best-practices/caching), [Azure Cache for Redis Documentation](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/)
+14. Determine where the exception gets logged.
+    - You have the following code: `try { ... } catch(Exception ex) { var client = new TelemetryClient(); client.TrackException(ex); }`, and you need to determine where the exception is logged.
+    - This will be going to the *Application Insights*. TelemetryClient allows you to log different types of Telemetry data, including exceptions.
+    - Other options were:
+      - *Event Log*. If you want to write here, you need to use the `Write()` method of the `EventSource` class.
+      - *Diagnostic trace listener*. The `Trace.Error()` method allows you to log exceptions to a diagnostic trace listener.
+      - *The Trace.aspx page*. To write here, you must call `Trace.Write`.
+    - References: [Diagnose exceptions in web apps with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-exceptions), [Explore .NET/.NET Core and Python trace logs in Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-trace-logs), [How to Capture ASP.NET Page Trace Events in IIS 7.0 Tracing](https://docs.microsoft.com/en-us/iis/application-frameworks/building-and-running-aspnet-applications/how-to-capture-aspnet-page-trace-events-in-iis-tracing)
+15. Enabling Application Insights for an Azure Function app.
+    - First you should store the name of the instrumentation key in an app setting named `APPINSIGHTS_INSTRUMENTATIONKEY`. This is required so that Azure knows which Application Insights resource to use for logging telemetry data.
+    - Then you should call the `LogInformation()` on the `ILogger` instance. This allows you to log informational messages.
+    - Other options were:
+      - *Call the `TrackEvent()` on the `TelemetryClient`*. This should only be used on ASP.NET or console applications.
+      - *Store the key as a secret named applicationinsights in an Azure Key Vault*. Azure Functions read from the app settings and not from the Azure Key Vault.
+    - References: [Monitor Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-monitoring), [Logging](https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library?tabs=v2%2Ccmd#logging), [Diagnose exceptions in web apps with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-exceptions), [Azure Key Vault basic concepts](https://docs.microsoft.com/en-us/azure/key-vault/general/basic-concepts)
+16. Capture performance metrics from multiple geographies with an ASP.NET web application.
+    - You should create a URL ping test in Application Insights. This allows you to test the performance of your web application from multiple geographical locations (atm 17).
+    - Other options were:
+      - *Create HTTP redirection with Application Gateway*. Application Gateway is a firewall that provides other stuff.
+      - *Configure endpoint monitoring on a Traffic Manager profile*. It allows you to create endpoints that are nearest to the user and this improves performance by ensuring that requests do not have to travel far geographically.
+      - *Configure a Load Balancer with multiple availability zones*. It allows you to distribute inbound TCP and UDP traffic to different virtual machines.
+    - References: [Monitor availability with URL ping tests](https://docs.microsoft.com/en-us/azure/azure-monitor/app/monitor-web-app-availability), [What is Azure Application Gateway?](https://docs.microsoft.com/en-us/azure/application-gateway/overview), [Application Gateway redirect overview](https://docs.microsoft.com/en-us/azure/application-gateway/redirect-overview), [Traffic Manager endpoint monitoring](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-monitoring), [What is Traffic Manager?](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview), [What is Azure Load Balancer?](https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-overview)
+17. View a message that is written by TelemetryClient.
+    - You should open Application Insights in Azure. This service allows you to view telemetry data collected by Azure or from external applications that use the TelemetryClient class.
+    - Other options were:
+      - *User Remote Desktop to connect to an Azure Virtual Machine and then open Task Manager*. Telemetry data will not be found over here.
+      - *From an Azure command shell, type `az monitor activity-log list`*. Telemetry data will not be found over here.
+      - *Create an Azure Traffic Manager profile to allow connections from Application Insights*. Allows you to deliver web content from Azure regions that are nearest to the user.
+    - References: [Best practices for monitoring cloud applications](https://docs.microsoft.com/en-us/azure/architecture/best-practices/monitoring), [Application Insights for .NET console applications](https://docs.microsoft.com/en-us/azure/azure-monitor/app/console), [az monitor activity-log](https://docs.microsoft.com/en-us/cli/azure/monitor/activity-log?view=azure-cli-latest)
+18. Construct a Log Analytics query.
+    - The query will be looking something like this: `Heartbeat | where TimeGenerated > ago(2d) | summarize LastHeartbeat = max(TimeGenerated) by Computer | where isnotempty(computer) | where LastHeartbeat < ago(4h)`. This is constructed in the following way because:
+      - The query first searches the Heartbeat table for all events that were generated more than two days ago, as specified by the `TimeGenerated > ago(2d)`.
+      - It summarizes those evens by the maximum time a VM sent a heartbeat, as indicated by `summarize LastHeartbeat = max(TimeGenerated) by Computer`.
+      - It then filters empty results, as indicated by the `where isnotempty(computer)`.
+      - At last, it filters those events where the maximum time generated is less than four hours, as indicated by the `where LastHeartbeat < ago(4h)`.
+    - References: [Samples for Kusto Queries](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/samples?pivots=azuremonitor#find-stale-computer), [Log queries in Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview)
+19. Determine what a query does.
+    - The query `app("measureup").requests | where timestamp > ago(30m)` will display all HTTP requests to an Azure Web App named measureup that occurred within the past 30 minutes.
+    - This is because the `app("measureup").requests` stands for the Azure Web App name.
+    - Other options were:
+      - *It displays all HTTP requests to an Azure Web App named measureup that occurred longer than 30 minutes ago*. For this to occur, the last part should have been `... > ago(30m)`.
+      - *It displays all API requests to an Application Insight resource named measureup that occurred longer than 30 minutes ago*. There are no tables available in Log Analytics that allow you to capture API requests to Application Insights. This needs to be done manually.
+      - *It displays all API requests to an Application Insight resource named measureup that occurred within the past 30 minutes*. There are no tables available in Log Analytics that allow you to capture API requests to Application Insights. This needs to be done manually.
+    - References: [Log queries in Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview), [Application Insights for web pages](https://docs.microsoft.com/en-us/azure/azure-monitor/app/javascript), [app() expression in Azure Monitor query](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/app-expression), [ago()](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/agofunction)
+20. Render pageViews inside a Log Analytics query.
+    - The query `pageViews | summarize count() by cloud_RoleName | render piechart` will not render `pageViews`, because you need to add the Application Insight Javascript code to the pages that you are browsing. This is required for Application Insight to capture page-view data as telemetry data. By default, requests are captured, but page views are not.
+    - Other options were:
+      - *Replace cloud_RoleName with appName in the query*. The name cloud_RoleName represents the name of the web app, while appName represents the name of the Application Insights resource.
+      - *Enable Application Logging for each of the four web apps*. It allows web apps to log data to file system or blob storage, but it does not allow telemetry data to be sent to Application Insights.
+      - *Create a Notification Hub*. This allows applications to send push notifications to multiple mobile devices through Azure.
+    - References: [Application Insights for web pages](https://docs.microsoft.com/en-us/azure/azure-monitor/app/javascript), [Log queries in Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview), [What is Azure Notification Hubs?](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-push-notification-overview), [Enable diagnostics logging for apps in Azure App Service](https://docs.microsoft.com/en-us/azure/app-service/troubleshoot-diagnostic-logs)
+21. Determine what telemetry data to capture to provide behavior analytics to your sales team.
+    - You should capture `Session Id` and `User Id`. For this to work, you should set the telemetry context on the initialization of the user session and capture the session and user id. Any usage during that session will log information tied back to the session id and user id.
+    - Other options were:
+      - *Exceptions*. We want user behavior analytics and not information about exceptions.
+      - *Events*. We want user behavior analytics and not information about types of events being raised.
+    - References: [Usage analysis with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-overview)
+22. Using Application Insight features for trend analytics.
+    - The trends in questions were:
+      - *How many users were impacted by a marketing campaign website page?*: You should use **users analytics**. Users are counted by using anonymous IDs stored in browser cookies.
+      - *How does the load time of a web affect product sales?*: You should use **impact analytics**. By using this, you can determine how load times and other properties influence conversion rates, like clicking the purchase button.
+      - *Which events most influence users to return to your website?*: You should use **retention analytics**. By doing this, you'll know how many users return to your app and how often then perform particular tasks, like visiting a sales campaign or the homepage.
+    - Other options were:
+      - *Funnels analytics*. Can be used to determine the dropout rate in an user journey until they perform a specific action, like purchasing a product.
+    - References: [Usage analysis with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-overview), [Users, sessions, and events analysis in Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-segmentation), [Discover how customers are using your application with Application Insights Funnels](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-funnels), [Impact analysis with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-impact), [User retention analysis for web applications with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-retention)
