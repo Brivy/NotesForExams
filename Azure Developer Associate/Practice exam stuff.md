@@ -65,6 +65,15 @@ In this chapter, I will go through all the practice exam questions and figure ou
 14. Configure access for app service to the azure key vault by configuring an Azure Active Directory application that has get and list permissions, but store the access key and password in the service principal in the application.
     - The answer should be *No*, because you now give everyone access to the key vault that is using the application.
     - References: [How to use managed identities for App Service and Azure Functions](https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=dotnet), [Azure Key Vault security](https://docs.microsoft.com/en-us/azure/key-vault/general/security-features)
+15. Configure an Event Grid trigger with the blob storage account as a publisher and a blob upload as an event for immediate file processing?
+    - The answer should be *Yes*, because this will enable you to process incoming media files as they are uploaded.
+    - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob), [Azure Functions triggers and bindings concepts](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=csharp), [Azure Blob storage trigger for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob-trigger?tabs=csharp), [Azure Event Grid bindings for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid)
+16. Configure a blob storage trigger (with always on) that is triggered from blob upload for immediate file processing?
+    - The answer should be *Yes*, because this will trigger as new files are uploaded.
+    - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob), [Azure Functions triggers and bindings concepts](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=csharp), [Azure Blob storage trigger for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob-trigger?tabs=csharp), [Azure Event Grid bindings for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid)
+17. Configure a timer trigger to process uploaded files on a set schedule?
+    - The answer should be *No*, because this can result in an increased delay for processing or increased processing overhead when the function is triggered with no additional processing needed.
+    - References: [Introduction to Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview), [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob), [Azure Functions triggers and bindings concepts](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=csharp), [Azure Blob storage trigger for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob-trigger?tabs=csharp), [Azure Event Grid bindings for Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid)
 
 ## Normal questions
 
@@ -809,10 +818,122 @@ These questions aren't related to each other.
       - *Events*. We want user behavior analytics and not information about types of events being raised.
     - References: [Usage analysis with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-overview)
 22. Using Application Insight features for trend analytics.
-    - The trends in questions were:
+    - The trends in question were:
       - *How many users were impacted by a marketing campaign website page?*: You should use **users analytics**. Users are counted by using anonymous IDs stored in browser cookies.
       - *How does the load time of a web affect product sales?*: You should use **impact analytics**. By using this, you can determine how load times and other properties influence conversion rates, like clicking the purchase button.
       - *Which events most influence users to return to your website?*: You should use **retention analytics**. By doing this, you'll know how many users return to your app and how often then perform particular tasks, like visiting a sales campaign or the homepage.
     - Other options were:
       - *Funnels analytics*. Can be used to determine the dropout rate in an user journey until they perform a specific action, like purchasing a product.
     - References: [Usage analysis with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-overview), [Users, sessions, and events analysis in Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-segmentation), [Discover how customers are using your application with Application Insights Funnels](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-funnels), [Impact analysis with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-impact), [User retention analysis for web applications with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-retention)
+23. Identify trends based on specific requirements.
+    - The trends in question were:
+      - *You need to analyze how many users return to your app, and how often they perform certain tasks within the application*. You should use **retention analytics**. It will show all users who did anything on your site and then came back and did anything else over a period as default.
+      - *You need to analyze how users navigate between the pages and between features of your web app*. You should use **user flows analytics**. It will analyze how users navigate between the pages and features of your website, like when users are doing the same action over and over on one page.
+      - *You need to analyze whether most customers are progressing through the entire ordering process, or if they are leaving the process at some point*. You should use **funnels analytics**. It can be used to analyze if most customers are progressing through the entire ordering process, or if they are ending the process at some point.
+    - References: [What is monitored by Azure Monitor?](https://docs.microsoft.com/en-us/azure/azure-monitor/monitor-reference), [Users, sessions, and events analysis in Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-segmentation), [User retention analysis for web applications with Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-retention), [Analyze user navigation patterns with User Flows in Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-flows), [Discover how customers are using your application with Application Insights Funnels](https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-funnels)
+24. Set up an availability alert in Azure Application INsights to get an e-mail notification when the web app is not responding without telemetry data.
+    - The correct order should be:
+      - Open your existing Application Insights resource in Azure Portal.
+      - Open the Availability pane.
+      - Use the Add Test option to create a new test. This will test a specific URL to your web app and what geographical locations its availability needs to tested from.
+      - Select the Open Rules (Alerts) page form the new entry's details. You can create a an alert here.
+      - Set the action group for the generated availability alert. Here you can also specify who should be notified and how.
+    - Other options were:
+      - *Open the Smart Detection pane*. This will analyze telemetry data, and our application does not send it.
+      - *Open your existing Network Watcher resource in Azure Portal*. While this can monitor and troubleshoot network issues with IaaS and not with PaaS.
+      - *Use the Time Range to set up your custom interval*. Because we need telemetry data for this, it will not work.
+    - References: [Application Insights availability tests](https://docs.microsoft.com/en-us/azure/azure-monitor/app/availability-overview), [Monitor availability with URL ping tests](https://docs.microsoft.com/en-us/azure/azure-monitor/app/monitor-web-app-availability), [Availability alerts](https://docs.microsoft.com/en-us/azure/azure-monitor/app/availability-alerts), [What is Azure Network Watcher?](https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-monitoring-overview), [Smart detection in Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/proactive-diagnostics)
+25. Expose new operations on the Azure API Management gateway, without having to provide a different host name to the users.
+    - You should create a *revision*. This will allow you to add non-breaking changes to a web API, such as the addition of operations. This can be accessed by using a different query string in the URL.
+    - Other options were:
+      - *Create a version*. A version allows you to expose breaking changes for a web API, but it requires publishing, what we don't want.
+      - *Create a separate APIM gateway*. This forces users to access a different endpoint.
+      - *Create a separate web API*. This would force users to access a different endpoint.
+    - References: [How to save and configure your API Management service configuration using Git](https://docs.microsoft.com/en-us/azure/api-management/api-management-configuration-repository-git), [Modify the content and layout of pages on the developer portal in Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-modify-content-layout), [Tutorial: Create and publish a product](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-add-products?tabs=azure-portal)
+26. Determine what API Management statements do.
+    - The statements were as follows: `<rate-limit-by-key calls="10" renewal-period="60" counter-key="@(context.Request.IpAddress)>` and `<quota-by-key calls="2000" bandwidth="10000" renewal-period="2629800" counter-key="@(context.Request.IpAddress)>`.
+    - The statements allow 10 calls per minute with up to 2000 calls or 10000 KB per month. The `rate-limit-by-key` element allows you to control usage spikes by limiting the number of calls from a specified key during a specific number of seconds. The `quota-by-key` element allows you to enforce a renewable or lifetime call volume or bandwidth.
+    - Other options were:
+      - *10 calls per 60 days with up to 2000 calls or 10000 MB per month*. Yea, this isn't true.
+      - *10 calls per 60 days with up to 2000 calls or 10000 KB per month*. Yea, this isn't true.
+      - *10 calls per second with up to 2000 calls or 10000 MB per month*. Yea, this isn't true.
+    - References: [Advanced request throttling with Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling), [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies)
+27. Limit the number of requests to the API to 2000 calls to the API every 5 minutes with the API Management gateway.
+    - You should use the policy statement `<rate-limit calls="2000" renewal-period="300" />`. This will restricts calls to the API to 2000 calls every 300 seconds for a specific key.
+    - Other options were:
+      - `<quota-by-key calls="2000" renewal-period="5" />`. Restricts the total number of API calls for a given time period and not within a renewal period.
+      - `<quota-by-key calls="2000" renewal-period="300" />`. Restricts the total number of API calls for a given time period and not within a renewal period.
+      - `<rate-limit-by-key calls="2000" renewal-period="5" />`. This is 5 seconds instead of 5 minutes.
+    - References: [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [Advanced request throttling with Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling), [Tutorial: Transform and protect your API](https://docs.microsoft.com/en-us/azure/api-management/transform-api)
+28. Access key denied from the Developer Portal in API Management gateway.
+    - First you should add the API to a product in Azure Portal. This is because every API must be part of a product before it can be consumed through APIM.
+    - Then you should include the Ocp-Apim-Subscription-Key header in the HTTP request. This header must specify the subscription key assigned to you when you subscribe to the product. This allows APIM to determine whether or not the subscriber has permission.
+    - Other options were:
+      - *Include the SubscriptionKey query string with the HTTP request*. APIM does not check the query string for permissions.
+      - *Add the check-header policy statement for the Authorization header*. While this policy statement allows you to check for specific HTTP headers, this isn't needed.
+    - References: [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [About API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-key-concepts), [Tutorial: Create and publish a product](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-add-products?tabs=azure-portal), [Tutorial: Import and publish your first API](https://docs.microsoft.com/en-us/azure/api-management/import-and-publish)
+29. Reduce the load on servers by caching in API Management gateway.
+    - You should enable operation caching and do not enter a value for the Vary by query string parameters field, allowing the entire URL to be used to cache responses. Now, when the URL is used to return data, subsequent responses for that same URL return data from the cache.
+    - Other options were:
+      - *Enable operation caching and enter the following value for the Vary by query string parameters `field: {parcel}`*. This won't work because the url doesn't have query parameters.
+      - *Add the following configuration to an operation policy definition: `<cache-lookup-value key="" />`*. This uses the key attribute to look up a specific key in the cache.
+      - *Add the following configuration to an operation policy definition: `<cache-lookup-value variable-name="parcel" />`*. This uses the key attribute to look up a specific key in the cache.
+    - References: [Tutorial: Mock API responses](https://docs.microsoft.com/en-us/azure/api-management/mock-api-responses?tabs=azure-portal), [Add caching to improve performance in Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-cache), [Custom caching in Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-sample-cache-by-key)
+30. Allow beta developers to test new operations by using the existing URL in Azure API Management gateway.
+    - You should create a version in APIM and use the Header versioning scheme. This allows developers to use the same URL, but also allows developers to access the beta version.
+    - Other options were:
+      - *Create a revision for the existing API*. While you can create a new revision, this requires you to change the URL with `;rev=2`.
+      - *Create a new API and import it into the existing gateway*. Each API must have a unique endpoint and this will change the URL.
+      - *Create a new APIM gateway and import a new API into that gateway*. Each API must have a unique endpoint and this will change the URL.
+    - References: [Tutorial: Publish multiple versions of your API](https://docs.microsoft.com/en-us/azure/api-management/api-management-get-started-publish-versions), [Tutorial: Use revisions to make non-breaking API changes safely](https://docs.microsoft.com/en-us/azure/api-management/api-management-get-started-revise-api?tabs=azure-portal), [About API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-key-concepts)
+31. Create policies so that every user can make a maximum of 1000 calls per hour in Azure API Management gateway.
+    - The first policy you can make is `<quota-by-key calls="1000" renewal-period="3600" counter-key="@(context.Subscription.Id)"/>`. It will restrict the total number of calls to the API based on a specific key.
+    - The second policy you can make is `<rate-limit-by-key calls="1000" renewal-period="3600" counter-key="@(context.Subscription.Id"/>`. It will implement throttling based on a specific key.
+    - Other options were:
+      - `<quota calls="1000" renewal-period="60" counter-key="@(context.Subscription.Id)"/>`. It has the wrong renewal period and the element should be called `quota-by-key`.
+      - `<quota calls="1000" renewal-period="3600"`. This does not differentiate between users.
+    - References: [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [Advanced request throttling with Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling), [Tutorial: Transform and protect your API](https://docs.microsoft.com/en-us/azure/api-management/transform-api)
+32. API Management gateway policy questions.
+    - When you have the policy `<rate-limit-by-key calls="50" renewal-period="60" counter-key="@(context.Request.IpAddress)"/>`, you have the following statements:
+      - Each IP address **can** call the API 30 times within 60 minutes.
+      - Each IP address **can not** call the API 60 times within 60 seconds.
+      - Each IP address **can** call the API 40 times within one hour.
+    - References: [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [Advanced request throttling with Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling), [Tutorial: Transform and protect your API](https://docs.microsoft.com/en-us/azure/api-management/transform-api)
+33. Implement an access control policy with claims-based backed authorization that will work with Azure API Management.
+    - You should use the *Validate JWT (validate-jwt)* policy. This can be used to pre-authorize requests in API Management by validating the access tokens for each incoming request. The tokes carry claims that provide authorization to the incoming API requests.
+    - Other options were:
+      - *Authenticate with managed identity (authentication-managed-identity)*. This policy will use the managed identity to obtain an access token from Azure Directory for accessing the specified resource and cannot be used for user access control.
+      - *Check HTTP header (check-header)*. While you can check if there is some value in here, you don't have any claims information about the user from an HTTP header.
+      - *Restrict caller Ips (ip-filter)*. This can allow/block users by IP but you can't authorize by claims.
+    - References: [API Management policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-policies), [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [Protect a web API backend in Azure API Management using OAuth 2.0 authorization with Azure Active Directory](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad), [API Management authentication policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-authentication-policies)
+34. Implement Azure API Management policies for an application that sends and wants XML.
+    - For the *Inbound policies*, you should select the *ip-filter* and the *xml-to-json* policies. This is so we can filter on IP (because specific application) and we can convert XML we send to JSON.
+    - For the *Backend policies*, you shouldn't select anything.
+    - For the *Outbound policies*, you should select the *json-to-xml* policy. This is so the application will receive it's XML response.
+    - Other options were:
+      - *set-header*. It's not really needed to set a header.
+      - *set-query-parameters*. It's not really needed to modify the query parameters.
+      - *json-to-xml in inbound*. This isn't required.
+      - *xml-to-json in outbound*. This isn't required.
+    - References: [Policies in Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-policies), [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [API Management transformation policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-transformation-policies)
+35. Implement Azure API Management policy for services that require an OpenID Connect protocol for authentication and prevent anonymous usage.
+    - You should use the *validate-jwt* policy. This requires a JSON Web Token to be present in a header or query parameter. This is than used for authenticating with OIDC.
+    - Other options were:
+      - *jsonp*. This will add JSON with padding (JSONP) support to allow cross-domain calls from JavaScript browser-based clients to an API.
+      - *authentication-certificate*. This is used to authenticate with a back-end service using a client certificate pre-installed in API Management.
+      - *rate-limit-by-key*. This will prevent API usage on a per-key basis by limiting the call rate to a specified number in a specified time period.
+    - References: [Protect a web API backend in Azure API Management using OAuth 2.0 authorization with Azure Active Directory](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad), [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [API Management cross domain policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-cross-domain-policies), [API Management authentication policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-authentication-policies), [Microsoft identity platform and OpenID Connect protocol](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc)
+36. Create an API Management (APIM) instance.
+    - You should use the cmdlet `New-AzApiManagement` to create a new APIM instance.
+    - Other options were:
+      - `New-AzApiManagementIdentityProvider`. Creates an Identity Provider on the Developer Portal of the APIM service.
+      - `New-AzApiManagementApi`. Creates an API in an APIM instance based on a source API.
+      - `New-AzApiManagementBackend`. Creates a new back-end entity in an existing APIM instance.
+    - References: [About API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-key-concepts), [Quickstart: Create a new Azure API Management service instance by using PowerShell](https://docs.microsoft.com/en-us/azure/api-management/powershell-create-service-instance), [New-AzApiManagement](https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/new-azapimanagement?view=azps-6.6.0&viewFallbackFrom=azps-4.1.0), [New-AzApiManagementIdentityProvider](https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/new-azapimanagementidentityprovider?view=azps-6.6.0&viewFallbackFrom=azps-4.1.0), [New-AzApiManagementApi](https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/new-azapimanagementapi?view=azps-6.6.0&viewFallbackFrom=azps-4.1.0), [New-AzApiManagementBackend](https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/new-azapimanagementbackend?view=azps-6.6.0&viewFallbackFrom=azps-4.1.0)
+37. Check the policy that gives you a 403 Forbidden in Azure API Management.
+    - You should check the *Set usage quota by key* policy. When this policy is exceeded, you get back an `403 Forbidden`.
+    - Other options were:
+      - *Restrict caller IPs*. This is used to allow or restrict access for individual IP addresses or a range of addresses.
+      - *Limit call rate by key*. This can be used to prevent traffic spikes by limiting call rate. If access is blocked by this, you get back a `429 Too Many Requests`.
+      - *Validate JWT policy*. This will enforce the existence and validity of a JSON Web Token (JWT).
+    - References: [API Management policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-policies), [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [Policies in Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-policies)
