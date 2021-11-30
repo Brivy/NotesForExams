@@ -937,3 +937,86 @@ These questions aren't related to each other.
       - *Limit call rate by key*. This can be used to prevent traffic spikes by limiting call rate. If access is blocked by this, you get back a `429 Too Many Requests`.
       - *Validate JWT policy*. This will enforce the existence and validity of a JSON Web Token (JWT).
     - References: [API Management policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-policies), [API Management access restriction policies](https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies), [Policies in Azure API Management](https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-policies)
+38. Set the connectionString variable for Azure Event Hubs
+    - You should use the following URL: `Endpoint=sb://measureup.servicebus.windows.net/;EntityPath=services;`. This contains the following:
+      - The protocol used is `sb`.
+      - The host name is the name of the namespace (`measureup` in this case)
+      - The remainder of the URL is `servicebus.windows.net`.
+      - The `EntityPath` property specifies the name of the actual Event Hubs hub, which is `services` in this case.
+    - Other options were:
+      - `https://measureup.azurewebsites.net/services`. Represents the endpoint for an Azure App Service app.
+      - `Endpoint=https://measureup.azurewebsites.net?EntityPath-services`. It uses `http` as protocol instead of `sb`.
+      - `sb://measureup.servicebus.windows.net/services`. This does not specify Endpoint and EntityPath, which are required.
+    - References: [.NET Programming guide for Azure Event Hubs (legacy Microsoft.Azure.EventHubs package)](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-programming-guide)
+39. Determine what some notification code does.
+    - The following code will send a push notification to all mobile platforms: `NotificationHubClient hub = new NotificationHubClient(connectionString, "updateHub"); Dictionary<string, string> dictionary = new Dictionary<string, string> {{ "message", "Update available" }}; hub.SendTemplateNotificationAsync(dictionary);`
+    - This works because the `SendTemplateNotificationAsync` method of the `NotificationHubClient` class allows you to send push notifications without having to specify the correct payload for each platform.
+    - Other options were:
+      - *It sends an e-mail alert to all users in your subscription*. No further info needed.
+      - *It sends a test notification message to Azure Event Hubs*. No further info needed.
+      - *It sends a message to Azure Log Analytics*. No further info needed.
+    - References: [Send cross-platform notifications with Azure Notification Hubs](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-aspnet-cross-platform-notification), [Notification Hubs Overview](https://docs.microsoft.com/en-us/previous-versions/azure/azure-services/jj927170(v=azure.100))
+40. Determine what some EventHubClient code does and make it send a message.
+    - By using the following code, you will send a message to the event hub: `EventHubClient client = EventHubClient.CreateFromConnectionString(connectionString); var message = "This is a test"; await client.SendAsync(new EventData(Encoding.UTF8.GetBytes(message)));`.
+    - This works because the `SendAsync` method accepts an `EventData` instance (with an constructor that accepts a byte array) that represents the data to be submitted.
+    - Other options were:
+      - `await client.SendAsync(message);`. You must pass an EventData instance.
+      - `await client.SendAsync(Encoding.UTF8.GetBytes(message));`. You must pass an EventData instance.
+      - `await client.SendAsync(new EventData(message));`. You must pass a byte array to the constructor.
+    - References: [Send cross-platform notifications with Azure Notification Hubs](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-aspnet-cross-platform-notification), [Notification Hubs Overview](https://docs.microsoft.com/en-us/previous-versions/azure/azure-services/jj927170(v=azure.100))
+41. Create a console application to retrieve all events from a specific partition.
+    - You should implement the IEventProcessor interface. This has a method defined named `ProcessEventAsync` that passes a collection of `EventData` instances representing the messages in the Event Hub.
+    - Other options were:
+      - *Inherit the EventHubClient class*. This class allows you to send message to an Event Hub.
+      - *Implement the IEvent interface*. This interface represents a Windows Management Instrumentation (WMI) event.
+      - *Inherit the PartitionSender class*. This class allows you to send messages to a specific partition in an Event Hub.
+    - References: [Send events to and receive events from Azure Event Hubs - .NET (Azure.Messaging.EventHubs)](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-dotnet-standard-getstarted-send), [PartitionSender.SendAsync Method](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.eventhubs.partitionsender.sendasync?view=azure-dotnet), [IEvent Interface](https://docs.microsoft.com/en-us/dotnet/api/system.management.instrumentation.ievent?view=netframework-4.8)
+42. Enable your Azure subscription to send events to Event Grid by Azure CLI command.
+    - You should use the following command: `az provider register --namespace Microsoft.EventGrid`. It registers the Event Grid resource provider for use with your subscription. This allows resources in your subscription to send events to Event Grid.
+    - Other options were:
+      - `az group deployment create --parameters Microsoft.EventGrid`. This will deploy a template to a resource group.
+      - `az group create --name Microsoft.EventGrid`. This will create a resource group.
+      - `az eventgrid topic create --name "ServiceBus, BlobStorage"`. This will create a Event Grid topic to which you can send events.
+    - References: [Quickstart: Route custom events to web endpoint with Azure CLI and Event Grid](https://docs.microsoft.com/en-us/azure/event-grid/custom-event-quickstart)
+43. Ensure that messages delivered to Event Hub are in a correct order.
+    - To do this, you should use the same partition key. This will ensure that message that are delivered to the same hub and the same partition are delivered in order.
+    - Other options were:
+      - *Connect the Event Hub to a queue data storage account*. This has no effect on delivering messages to an Event Hub.
+      - *Connect the Event Hub to a blob data storage account*. This has no effect on delivering messages to an Event Hub.
+      - *Use the same EventHubClient instance*. Each device runs .NET Core, so the code on each device must have its own copy of EvenHubClient.
+    - References: [Features and terminology in Azure Event Hubs](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-features), [Introduction to the core Azure Storage services](https://docs.microsoft.com/en-us/azure/storage/common/storage-introduction)
+44. Implement a solution to receive device data that should be stored in Azure Data Lake V2 storage and must be organized by a device identifier.
+    - You should first provision an Azure Event Hub. This is a managed streaming platform and event ingestion service with the capacity to process millions of events per second. You can use Event Hub to receive the data from IoT devices.
+    - Then you should configure the partition key using the device identifier. This is used inside Event Hub and allows you to organize and store events in a specific partition.
+    - Finally, you should enable data capture. This allows you to deliver streaming data in Event Hubs to Azure Blob storage or Azure Data Lake Storage.
+    - Other options were:
+      - *Register all devices with the hub*. This must be used when sending push notifications to mobile devices.
+      - *Provision an Azure Notification hub*. This is for mobile devices.
+    - References: [Azure Event Hubs — A big data streaming platform and event ingestion service](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-about), [Features and terminology in Azure Event Hubs](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-features), [Enable capturing of events streaming through Azure Event Hubs](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-capture-enable-through-portal), [What is Azure Notification Hubs?](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-push-notification-overview), [Registration management](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-push-notification-registration-management)
+45. Finish code that allows multiple applications to be notified whenever a new order is placed.
+    - You should use the following code: `await using var client = new ServiceBusClient(connectionString); var sender = client.CreateSender(topicName); await sender.SendMessageAsync(new ServiceBusMessage(message));`. It contains the following information:
+      - It creates a `ServiceBusClient(connectionString)` to connect with the ServiceBus.
+      - It allows to send a message to multiple application using topics with `client.CreateSender(topicName);`.
+      - At last, it will send the message to the ServiceBus with an `new ServiceBusMessage(message)`.
+    - Other options were:
+      - `QueueClient`. Queues don't support topics.
+      - `EvenHubClient`. This should be created using the `CreateFromConnectionString` method and not the class constructor.
+      - `EventData`. This should be used with an Event Hub.
+    - References: [Service Bus queues, topics, and subscriptions](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions), [Get started with Azure Service Bus topics and subscriptions](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-how-to-use-topics-subscriptions), [Features and terminology in Azure Event Hubs](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-features), [.NET Programming guide for Azure Event Hubs (legacy Microsoft.Azure.EventHubs package)](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-programming-guide)
+46. Finish code that allows to send a message whenever a new order is placed.
+    - You should use the following code: `await using var client = new ServiceBusClient(connectionString) { var sender = client.CreateSender("ordersTopic"); await sender.SendMessageAsync(new ServiceBusMessage(message)); }`. It contains the following information:
+      - It creates a `ServiceBusClient(connectionString)` to connect with the ServiceBus.
+      - It allows to send a message to multiple application using topics with `client.CreateSender("ordersTopic");`.
+      - At last, it will send the message to the ServiceBus with an `new ServiceBusMessage(message)`.
+    - Other options were:
+      - `EventHubProducerClient`. This is an Event Hub that will not remove messages from the queue after they are processed successfully.
+      - `sender.SendMessageAsync(message)`. You should wrap the message in a `ServiceBusMessage()`.
+      - `EventData`. This should be used with an Event Hub.
+    - References: [Service Bus queues, topics, and subscriptions](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions), [Features and terminology in Azure Event Hubs](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-features), [.NET Programming guide for Azure Event Hubs (legacy Microsoft.Azure.EventHubs package)](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-programming-guide)
+47. Send events to a Service Bus queue.
+    - You should use the `await client.SendAsync(new Message(Encoding.UTF8.GetBytes(message)));`. This is because the `SendAsync` only accepts a Message instance and it has a byte constructor.
+    - Other options were:
+      - `await client.SendAsync(Encoding.UTF8.GetBytes(message));` You should pass a `Message` instance.
+      - `await client.SendAsync(message);`. You should pass `Message` instance.
+      - `await client.SendAsync(new Message(message));`. You should pass a byte array to the constructor.
+    - References: [Get started with Azure Service Bus queues (.NET)](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)
