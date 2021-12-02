@@ -1020,3 +1020,59 @@ These questions aren't related to each other.
       - `await client.SendAsync(message);`. You should pass `Message` instance.
       - `await client.SendAsync(new Message(message));`. You should pass a byte array to the constructor.
     - References: [Get started with Azure Service Bus queues (.NET)](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)
+48. Retrieve something from the queue so that no other client can retrieve that same order.
+    - The code segment is: `CloudStorageAccount account = CloudStorageAccount.Parse(connectionString); CloudQueueClient client = account.CreateQueueClient(); CloudQueue queue = client.GetQueueReference("orders"); CloudQueueMessage message = null;` and you should append the following: `queue.DeleteMessage(message = queue.GetMessage());`.
+    - This code will do two things:
+      - It will read the message and make it invisible for 30 seconds (by default), so it can still be picked up in case of a hardware failure of some sort.
+      - But it will immediately remove it from the queue, when it's read now.
+    - Other options were:
+      - `queue.DeleteMessage(message = queue.PeekMessage());`. Because `.PeekMessage()` will not de-queue the message, it stays available for other clients.
+      - `message = queue.GetMessage();`. This will only retrieve the message but not delete it.
+      - `message = queue.PeekMessage();` This will only peek the message and not even dequeue it.
+    - References: [Get started with Azure Queue Storage using .NET](https://docs.microsoft.com/en-us/azure/storage/queues/storage-dotnet-how-to-use-queues?tabs=dotnet)
+49. What does some queue code do.
+    - The code in question is: `CloudStorageAccount account = CloudStorageAccount.Parse(connectionString); CloudQueueClient client = account.CreateQueueClient(); CloudQueue queue = client.GetQueueReference("orders"); var message = queue.GetMessages(20, TimeSpan.FromMinutes(5));`
+    - It de-queues 20 messages from the queue and causes the messages to be invisible for five minutes. This can be seen by the last method and the TimeSpan.FromMinutes(5).
+    - Other options were:
+      - *The code waits five minutes before it de-queues 20 messages from the queue.*. There is no such specification in the code.
+      - *The code de-queues as many messages as it can within a five-minute period but not more that 20*. There is no such specification in the code.
+      - *The code attempts to de-queue 20 messages from the queue and fails if not all messages can be de-queued*. There is no such specification in the code.
+      - *The code peeks at the next 20 messages, causing them to be invisible for 20 minutes*. There is no such specification in the code.
+      - *The code hides the next 20 messages for 20 minutes, preventing other clients from peeking, retrieving, or deleting them*. There is no such specification in the code.
+    - References: [CloudQueue.GetMessages(Int32, Nullable<TimeSpan>, QueueRequestOptions, OperationContext) Method](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.getmessages?view=azure-dotnet-legacy&viewFallbackFrom=azure-dotnet), [Get started with Azure Queue Storage using .NET](https://docs.microsoft.com/en-us/azure/storage/queues/storage-dotnet-how-to-use-queues?tabs=dotnet)
+50. Create an instance of Azure Service Bus by Azure CLI.
+    - To complete the code, you should:
+      - `rgName = "myResourceGroup"`  
+      `az group create --name $rgName --location eastus`
+      - `nsName = myNS$RANDOM`  
+      `az servicebus namespace create --resource-group $rgName --name $nsName --location eastus`
+      - `queueName = "myQueue"`  
+      `az servicebus queue create --resource-group $rgName --namespace-name $nsName --name $queueName`
+    - This will first create a resource group. With this, a namespace can be build and from this namespace a servicebus can be created.
+    - Other options were:
+      - `... az storage queue create ...`. This is used to create a queue inside a storage account, but we don't want that.
+      - `... az eventhubs namespace create ...`. This is used to create namespaces for eventhubs.
+    - References: [Use the Azure CLI to create a Service Bus namespace and a queue](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-cli), [az eventhubs namespace](https://docs.microsoft.com/en-us/cli/azure/eventhubs/namespace?view=azure-cli-latest)
+51. Determine which Azure service would best fit for an order processing system that follows FIFO basis.
+    - According to the requirements, you should use the *Azure Service Bus*. This is because it can ensure a FIFO basis and as long as the size of the data doesn't exceed 80GB, you're all good.
+    - Other options were:
+      - *Azure Storage Queues*. This doesn't guarantee ordering for messages and will not provide FIFO logic.
+      - *Azure Storage Blobs*. Ideal for storing large volumes of messages, but are not designed for queues.
+      - *Azure Event Hubs*. Can be used as queues, but are not designed for large volumes of data and do not guarantee the sequence of processing for FIFO logic.
+    - References: [Storage queues and Service Bus queues - compared and contrasted](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-azure-and-service-bus-queues-compared-contrasted)
+52. Determine the best filter type for each topic subscription to maximize message throughput.
+    - There are three topic subscriptions:
+      - *HighPriorityOrders: Handle all high priority orders*. This should use the **CorrelationFilter**, because the topics have the label property *CorrelationId (a priority indicator for the order)*. By using this label, we can make a lightweight filter that will check on the priority.
+      - *InternationalOrders: Handle orders in which the country is not the United States*. This should use the **SqlFilter**, because the topcis have the label property *ShipDestination (the country where the order will be shiped)*. You must use a SQL-like conditional expression to filter these messages.
+      - *AuditOrders: Receive all orders and store a copy in a Blob Storage for auditing purposes*. This should be using **No filters**. This will just receive all messages and shouldn't have a filter.
+    - Other options were:
+      - *TrueFilter*. You can use this filter to filter messages based on Boolean condition in the message properties.
+      - *FalseFilter*. You can use this filter to filter messages based on Boolean condition in the message properties.
+    - References: [Topic filters and actions](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters)
+53. Determine which Azure service would best fit for an point-to-point distributed system with large messages.
+    - You should use the *Azure Queue Storage*. This is because it supports point-to-point conenctions, HTTPS protocol and can handle up to 500 TB in volume of data messages.
+    - Other options were:
+      - *Azure Files*. This enables cloud file shares using SMB (Server Message Block) protocol, but does not designed for data exchanges between app components.
+      - *Azure Service Bus topics*. Is one-to-many and can't support more than 80 GB of messages.
+      - *Azure Service Bus queue*. Can't support more than 80 GB of messages.
+    - References: [What is Azure Queue Storage?](https://docs.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction), [What is Azure Service Bus?](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview), [Storage queues and Service Bus queues - compared and contrasted](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-azure-and-service-bus-queues-compared-contrasted), [What is Azure Files?](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction)
