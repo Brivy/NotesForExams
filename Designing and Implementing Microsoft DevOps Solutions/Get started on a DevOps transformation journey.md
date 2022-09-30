@@ -121,3 +121,106 @@ Culture:
 
 * **Employee morale**. Are employees happy with the transformation and where the organization is heading? Are they still willing to respond to further changes? This metric can be challenging to measure but is often done by periodic, anonymous employee surveys.
 * **Retention rates**. Is the organization losing staff?
+
+## Describe team structures
+
+Starting to apply Agile practices in your company is not easy. It demands collaboration from your teams, stakeholder support, and training.
+
+### Explore agile development practices
+
+For traditional software development, you would use the **waterfall** method. This follows a sequential order where the team only moves to the next phase if the previous step is completed. Usually, the project takes a long time, and the outcome may no longer match the customer's needs.
+
+On the other end, the **agile** method constantly emphasizes adaptive planning and early delivery with continual improvement. It is based on releases and iterations:
+
+* One release might consist of several iterations.
+* Each iteration is like a small independent project.
+* After being estimated and prioritization:
+  * Features, bug fixes, enhancements, and refactoring width are assigned to a release.
+  * And then assigned again to a specific iteration within the release, generally on a priority basis.
+* At the end of each iteration, there should be tested working code.
+* In each iteration, the team must focus on the outcomes of the previous iteration and learn from them.
+
+| Waterfall                                                                                  | Agile                                                                                      |
+|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| Divided into distinct phases.                                                              | Separates the project development lifecycle into sprints.                                  |
+| It can be rigid.                                                                           | Known for flexibility.                                                                     |
+| All project development phases, such as design, development, and test, are completed once. | It follows an iterative development approach so that each phase may appear more than once. |
+| Define requirements at the start of the project with little change expected.               | Requirements are expected to change and evolve.                                            |
+| Focus on completing the project.                                                           | Focus on meeting customers' demands.                                                       |
+
+### Explore principles of agile development
+
+The agile principals are:
+
+* Our highest priority is to satisfy the customer through early and continuous delivery of valuable software.
+* Welcome changing requirements, even late in development. Agile processes harness change for the customer's competitive advantage.
+* Deliver working software frequently, from a couple of weeks to a couple of months, with a preference to the shorter timescale.
+* Business people and developers must work together daily throughout the project.
+* Build projects around motivated individuals. Give them the environment and support they need and trust them to get the job done.
+* The most efficient and effective method of conveying information to and within a development team is face-to-face conversation.
+* Working software is the primary measure of progress.
+* Agile processes promote sustainable development. The sponsors, developers, and users should be able to maintain a constant pace indefinitely.
+* Continuous attention to technical excellence and good design enhances agility.
+* Simplicity - the art of maximizing the amount of work not done - is essential.
+* The best architectures, requirements, and designs emerge from self-organizing teams.
+* At regular intervals, the team reflects on how to become more effective, then tunes and adjusts its behavior accordingly.
+
+### Team stuff for agile development
+
+You have **horizontal** and **vertical** teams. Vertical teams have been shown to provide more good outcomes in Agile projects and you can scale it by adding more vertial teams. Each product must have an identified owner.
+
+Horizontal:
+
+![Cool Picture](Pictures/devops-ds-image-101-cd10ac81.png)
+
+Vertical:
+
+![Cool Picture](Pictures/devops-ds-image-103-b26487ac.png)
+
+A good team requires both *cultural changes*, *cross-function team collaboration* and *tooling*.
+
+## Choose the DevOps tools
+
+Do you currently use tools to manage daily work and plan for the future? It is essential when implementing DevOps if you want to increase your maturity level.
+
+### What is Azure DevOps?
+
+This is a Software as a Service (SaaS) platform that provides the following:
+
+* *Azure Boards*: agile planning, work item tracking, visualization, and reporting tool.
+* *Azure Pipelines*: a language, platform, and cloud-agnostic CI/CD platform-supporting containers or Kubernetes.
+* *Azure Repos*: provides cloud-hosted private git repos.
+* *Azure Artifacts*: provides integrated package management with support for Maven, npm, Python, and NuGet package feeds from public or private sources.
+* *Azure Test Plans*: provides an integrated planned and exploratory testing solution.
+
+### What is GitHub?
+
+This is also a Software as a Service (SaaS) platform and more code focused that Azure DevOps. It  provides the following:
+
+* *Codespaces*: Provides a cloud-hosted development environment (based on Visual Studio Code) that can be operated from within a browser or external tools. Eases cross-platform development.
+* *Repos*: Public and private repositories based upon industry-standard Git commands.
+* *Actions*: Allows for the creation of automation workflows. These workflows can include environment variables and customized scripts.
+* *Packages*: The majority of the world's open-source projects are already contained in GitHub repositories. GitHub makes it easy to integrate with this code and with other third-party offerings.
+* *Security*: Provides detailed code scanning and review features, including automated code review assignment.
+
+### Explore an authorization and access strategy
+
+Microsoft products (like Azure DevOps), you can use your Microsoft, GitHub or Azure Active Directory account. But for services that don't directly support Microsoft accounts, you can use **Personal Access Tokens (PAT)**. This can be used for example in Git-based repositories, NuGet or Xcode.
+
+Azure DevOps is pre-configured with **default security groups**. There you can configure different **access levels**, **access policies** and **Conditional Access policies**. Also conditional access policies can configure *Multi-factor authentication (MFA)*.
+
+### Migrating existing stuff to Azure DevOps or GitHub
+
+Before you start, check if your existing work and test tools can be imported to Azure DevOps.
+
+### Design a license management strategy
+
+It's important to consider the licensing strategy. Not everything is free and one of these examples is running parallel pipelines. You should consider:
+
+* What phase are you in?
+* How many people are using the feature?
+* How long are you willing to wait if in the queue for pipelines? Is this urgent? Is this a validation only?
+* Should all users access all features? Are they Stakeholders? Basic users? Do they already have a Visual Studio license?
+* Do you have an advanced Package Management strategy? Maybe you need more space for Artifacts.
+
+## Plan Agile with GitHub Projects and Azure Boards
