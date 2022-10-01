@@ -224,3 +224,193 @@ It's important to consider the licensing strategy. Not everything is free and on
 * Do you have an advanced Package Management strategy? Maybe you need more space for Artifacts.
 
 ## Plan Agile with GitHub Projects and Azure Boards
+
+Did you know you could combine GitHub and Azure?
+
+### Introduction to GitHub Projects and Project boards
+
+GitHub has a Project Board. It is made up of issues, pull requests, and notes categorized as cards that you can drag and drop into your chosen columns. The cards contain relevant metadata for issues and pull requests, like labels, assignees, the status, and who opened it.
+
+There are three types of project boards:
+
+* **User-owned project boards**: Can contain issues and pull requests from any personal repository.
+* **Organization-wide project boards**: Can contain issues and pull requests from any repository that belongs to an organization.
+* **Repository project boards**: Are scoped to issues and pull requests within a single repository.
+
+There are also three different types of templates you can already chose from:
+
+* **Basic kanban**: Track your tasks with: To do, In progress, and Done columns.
+* **Automated kanban**: Cards automatically move between: To do, In progress, and Done columns.
+* **Automated kanban with review**: Cards automatically moves between: To do, In progress, and Done columns, with extra triggers for pull request review status.
+* **Bug triage**: Triage and prioritize bugs with: To do, High priority, Low priority, and Closed columns.
+
+You'll also got GitHub projects. A project is a customizable spreadsheet that you can configure the layout by filtering, sorting, and grouping your issues and PRs, and adding custom fields to track metadata.
+
+![Cool Picture](Pictures/github-projects-beta-f72f1d6a.png)
+
+### Introduction to Azure Boards
+
+Azure Boards is a customizable tool to manage software projects supporting Agile, Scrum, and Kanban processes by default. Track work, issues, and code defects associated with your project.
+
+![Cool Picture](Pictures/azure-boards-board-view-78b3f04e.png)
+
+By using *queries*, you can create a list of custom work items. Queries contain the following tasks:
+
+* Find groups of work items with something in common.
+* Triage work to assign to a team member or sprint and set priorities.
+* Perform bulk updates.
+* View dependencies or relationships between work items.
+* Create status and trend charts that you can optionally add to dashboards.
+
+It's possible to create another view with deliverables and track dependencies across several teams in a calendar view using **Delivery Plans**.
+
+![Cool Picture](Pictures/azure-boards-delivery-plan-11462b8e.png)
+
+They support the following tasks:
+
+* View up to 15 team backlogs, including a mix of backlogs and teams from different projects.
+* View custom portfolio backlogs and epics.
+* View work that spans several iterations.
+* Add backlog items from a plan.
+* View rollup progress of features, epics, and other portfolio items.
+* View dependencies that exist between work items.
+
+### Link GitHub to Azure Boards
+
+Connect Azure Boards with GitHub repositories, enabling linking GitHub commits, pull requests, and issues to work items in Boards. The integration is created using the **Azure Boards App**, acting as a bridge between Azure Boards and GitHub. You can connect by using:
+
+* Username/Password
+* Personal Access Token (PAT)
+
+There are a couple of cool things you can do with it:
+
+* Create links between work items and GitHub commits, pull requests, and issues based on GitHub mentions.
+* Support state transition of work items to a Done or Completed state when using GitHub mention by using fix, fixes, or fixed.
+* Support full traceability by posting a discussion comment to GitHub when linking from a work item to a GitHub commit, pull request, or issue.
+* Show linked to GitHub code artifacts within the work item Development section.
+* Show linked to GitHub artifacts as annotations on Kanban board cards.
+* Support status badges of Kanban board columns added to GitHub repositories.
+
+### Configure and manage GitHub Projects
+
+A few important takeaways:
+
+* You can create an iteration to:
+  * Associate items with specific repeating blocks of time.
+  * Set to any length of time.
+  * Include breaks.
+* Opening the project command palette by pressing Command + K (Mac) or Ctrl + K (Windows/Linux) to:
+  * Switch layout: Table.
+  * Show: Milestone.
+  * Sort by: Assignees, asc.
+
+### Collaborate using team discussions
+
+GitHub discussions can help make your team plan together, update one another, or talk about any topic you'd like in discussion posts on your team's page in an organization. You can:
+
+* Post on your team's page or participate in a public discussion.
+* Link to any team discussion to reference it elsewhere.
+* Pin important posts to your team's page.
+* Receive email or web notifications.
+
+## Introduction to source control
+
+You can think of source control as an essential everyday practice. Versioning is a standard part of the developer's routine and, if used correctly, can save organizations enormous costs and resources.
+
+### Explore DevOps foundational practices
+
+Source control is important. See also the DevOps foundational practices and how often the source control is mentioned:
+
+![Cool Picture](Pictures/foundational-practices-five-stages-zero-two-5bd71abb.png)
+
+![Cool Picture](Pictures/foundational-practices-five-stages-tree-five-00bc5230.png)
+
+### What is source control?
+
+A Source control system (or version control system) allows developers to collaborate on code and track changes. Use version control to save your work and coordinate code changes across your team. Source control is an essential tool for multi-developer projects.
+
+It has some advantages as well:
+
+* **Create workflows**. Version control workflows prevent the chaos of everyone using their development process with different and incompatible tools. Version control systems provide process enforcement and permissions, so everyone stays on the same page.
+* **Work with versions**. Every version has a description in the form of a comment. These descriptions help you follow changes in your code by version instead of by individual file changes. Code stored in versions can be viewed and restored from version control at any time as needed. It makes it easy to base new work on any version of code.
+* **Collaboration**. Version control synchronizes versions and makes sure that your changes do not conflict with other changes from your team. Your team relies on version control to help resolve and prevent conflicts, even when people make changes simultaneously.
+* **Maintains history of changes**. Version control keeps a record of changes as your team saves new versions of your code. This history can be reviewed to find out who, why, and when changes were made. The history gives you the confidence to experiment since you can roll back to a previous good version at any time. The history lets your base work from any code version, such as fixing a bug in an earlier release.
+* **Automate tasks**. Version control automation features save your team time and generate consistent results. Automate testing, code analysis, and deployment when new versions are saved to version control.
+
+Some *software developments values* that are also specified:
+
+* Reusability.
+* Traceability.
+* Manageability.
+* Efficiency.
+* Collaboration.
+* Learning.
+
+Remember to keep thinking about the following best practices:
+
+* **Make small changes**. In other words, commit early and commit often. Be careful not to commit any unfinished work that could break the build.
+* **Do not commit personal files**. It could include application settings or SSH keys. Often personal files are committed accidentally but cause problems later when other team members work on the same code.
+* **Update often and right** before pushing to avoid merge conflicts.
+* **Verify your code change before pushing it to a repository**; ensure it compiles and tests are passing.
+* **Pay close attention to commit messages**, as it will tell you why a change was made. Consider committing messages as a mini form of documentation for the change.
+* **Link code changes to work items**. It will concretely link what was created to why it was created—or modified by providing traceability across requirements and code changes.
+* **No matter your background or preferences**, be a team player and follow agreed conventions and workflows. Consistency is essential and helps ensure quality, making it easier for team members to pick up where you left off, review your code, debug, and so on.
+
+## Describe types of source control systems
+
+Did you know there are multiple source control systems other than Git?
+
+### Understand centralized and decentralized source control
+
+The most common **centralized version control systems** you may have heard of or used are Team Foundation Version Control (TFVC), CVS, Subversion (or SVN), and Perforce.
+
+![Cool Picture](Pictures/centralized-strengths-best-used-2b567258.png)
+
+On the other hand, the most common distributed version control systems are Git, Mercurial, and Bazaar.
+
+![Cool Picture](Pictures/distributed-strengths-best-used-143d1739.png)
+
+Distributed systems have more advantages over centralized systems for several reasons:
+
+* Doing actions other than pushing and pulling changesets is fast because the tool only needs to access the hard drive, not a remote server.
+* Committing new changesets can be done locally without anyone else seeing them. Once you have a group of changesets ready, you can push all of them at once.
+* Everything but pushing and pulling can be done without an internet connection. So, you can work on a plane, and you will not be forced to commit several bug fixes as one large changeset.
+* Since each programmer has a full copy of the project repository, they can share changes with one or two other people to get some feedback before showing the changes to everyone.
+
+Centralized systems have also some advantages:
+
+* If your project contains many large, binary files that cannot be efficiently compressed, the space needed to store all versions of these files can accumulate quickly.
+* If your project has a long history (50,000 changesets or more), downloading the entire history can take an impractical amount of time and disk space.
+
+### Explore Git and Team Foundation Version Control
+
+Git is a distributed version control system. Each developer has a copy of the source repository on their development system. Developers can commit each set of changes on their dev machine. Branches are lightweight and can also be local.
+
+Typically, TFVC team members have only one version of each file on their dev machines. Historical data is maintained only on the server. Branches are path-based and created on the server. It has two workflows:
+
+* **Server workspaces** Before making changes, team members publicly check out files. Most operations require developers to be connected to the server. This system helps lock workflows. Other software that works this way includes Visual Source Safe, Perforce, and CVS. You can scale up to huge codebases with millions of files per branch—also, large binary files with server workspaces.
+* **Local workspaces** Each team member copies the latest codebase version with them and works offline as needed. Developers check in their changes and resolve conflicts as necessary.
+
+Some points the documentation calls out on why you should use Git:
+
+* Community is good.
+* It uses distributed development.
+* Trunk-based development (lightweight branches)
+* Pull requests.
+* Faster release cycle.
+
+### Understand objections to using Git
+
+There are three common objections often heard to migrating to Git:
+
+* **I can overwrite history**. You should not do this. If you are synchronizing to Azure Repos, you can also add a security rule that prevents developers from overwriting history by using the explicit "Force Push" permissions.
+* **I have large files**. Every time you (or your build machines) clone the repo, they get the entire repo with its history from the first commit. It is great for most situations but can be frustrating if you have large files. Binary files are even worse because Git cannot optimize how they are stored. That is why **Git LFS** was created. It lets you separate large files of your repos and still has all the benefits of versioning and comparing. Use **Azure Artifacts** or some other package management tool to store binaries for which you have source code.
+* **There is a steep learning curve**. There is always a learning curve.
+
+## Work with Azure Repos and GitHub
+
+You can migrate from TFVC to Git and work with GitHub Codespaces for development.
+
+### Introduction to Azure Repos
+
+tbc
