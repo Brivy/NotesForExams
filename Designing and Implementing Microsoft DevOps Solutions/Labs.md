@@ -6,3 +6,7 @@ AZ-400: Get started on a DevOps transformation journey:
 
 * [Plan Agile with GitHub Projects and Azure Boards - Agile plan and portfolio management with Azure Boards](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M01_L01_Agile_Planning_and_Portfolio_Management_with_Azure_Boards.html)
 * [Work with Azure Repos and GitHub - Version Control with Git in Azure Repos](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M01_L02_Version_Controlling_with_Git_in_Azure_Repos.html)
+
+ AZ-400: Development for enterprise DevOps:
+
+* [Manage Git branches and workflows - Version control with Git in Azure repos](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M02_L03_Version_Controlling_with_Git_in_Azure_Repos.html)
