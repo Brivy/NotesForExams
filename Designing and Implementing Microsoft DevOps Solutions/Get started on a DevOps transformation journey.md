@@ -411,6 +411,24 @@ There are three common objections often heard to migrating to Git:
 
 You can migrate from TFVC to Git and work with GitHub Codespaces for development.
 
-### Introduction to Azure Repos
+### Migrate from TFVC to Git
 
-tbc
+Migrate from TFVC to Git with the following steps:
+
+* Create an empty Git repo (or multiple empty repos).
+* Get-latest from TFS.
+* Copy/reorganize the code into the empty Git repos.
+* Commit and push, and you are there!
+
+You also have the option for **single branch import** within Azure DevOps. This process can be used for either existing Git repositories or TFVC stuff. There are some limitations here (that apply only when migrating source type TFVC): a single branch and only 180 days of history.
+
+### Migrate from TFVC to Git with GIT-TFS
+
+What if you need to migrate more than a single branch and keep branch relationships? Or are you going to drag all the history with you? In that case, you're going to have to use **GIT-TFS**. It's an open-source project built to synchronize Git and TFVC repositories. GIT-TFS has the advantage that it can migrate multiple branches and preserve the relationships to merge branches in Git after you migrate. Be warned that it can take a while to do this conversion - especially for large or long history repositories.
+
+Use Chocolatey to install it on your PC by running `run choco install gittfs`. Then you need to add it to your windows path with `set PATH=%PATH%;%cd%\GitTfs\bin\Debug`. And tada, the conversion can take place with `git tfs clone http://tfs:8080/tfs/DefaultCollection $/some_project`.
+
+### Develop online with GitHub Codespaces
+
+Codespaces is a cloud-based development environment that GitHub hosts. It is essentially an online implementation of Visual Studio Code. Codespaces allows developers to work entirely in the cloud and even will enable developers to contribute from tablets and Chromebooks. Developers can create a codespace (or multiple codespaces) for a repository. Each of these codespaces is associated with a specific branch of a repository.
+
