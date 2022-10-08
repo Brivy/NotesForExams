@@ -10,3 +10,7 @@ AZ-400: Get started on a DevOps transformation journey:
  AZ-400: Development for enterprise DevOps:
 
 * [Manage Git branches and workflows - Version control with Git in Azure repos](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M02_L03_Version_Controlling_with_Git_in_Azure_Repos.html)
+
+AZ-400: Implement CI with Azure Pipelines and GitHub Actions:
+
+* [Manage Azure Pipeline agents and pools](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L04_Configuring_Agent_Pools_and_Understanding_Pipeline_Styles.html)
