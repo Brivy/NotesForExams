@@ -15,3 +15,4 @@ AZ-400: Implement CI with Azure Pipelines and GitHub Actions:
 
 * [Manage Azure Pipeline agents and pools](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L04_Configuring_Agent_Pools_and_Understanding_Pipeline_Styles.html)
 * [Explore continuous integration](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L05_Enabling_Continuous_Integration_with_Azure_Pipelines.html)
+* [Integrate external source control with Azure Pipelines](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L06_Integrating_External_Source_Control_with_Azure_Pipelines.html)
