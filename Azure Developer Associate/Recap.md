@@ -402,3 +402,365 @@ az appconfig identity assign --name myTestAppConfigStore \
     --resource-group myResourceGroup \ 
     --identities /subscriptions/[subscription id]/resourcegroups/myResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/myUserAssignedIdentity
 ```
+
+## Monitor app performance
+
+High level overview of Azure monitor:
+
+![Cool Picture](Pictures/azure-monitor-overview-2022-08-25-change-analysis-opt.svg)
+
+* At the center of the diagram, you'll find the data stores for metrics and logs and changes. These data stores are the fundamental types of data used by Azure Monitor.
+* On the left are the sources of monitoring data that populate the data stores.
+* On the right are the different functions that Azure Monitor performs with this collected data. This diagram includes such actions as analysis, alerting, and integration such as streaming to external systems.
+
+It collects the following data:
+
+* **Metrics**: Metrics are numerical values that describe some aspect of a system at a particular point in time. They're collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
+* **Logs**: Logs are events that occurred within the system. They can contain different kinds of data and may be structured or free-form text with a timestamp.
+* **Distributed traces**: Traces are series of related events that follow a user request through a distributed system.
+* **Changes**: Changes are a series of events that occur in your Azure application and resources. Change Analysis tracks changes and is a subscription-level observability tool that's built on the power of Azure Resource Graph.
+
+**Application Insights** is an extension of Azure Monitor and provides Application Performance Monitoring (also known as “APM”) features. It includes:
+
+* **Live Metrics**: Observe activity from your deployed application in real time with no effect on the host environment.
+* **Availability**: Probe your applications external endpoint(s) to test the overall availability and responsiveness over time.
+* **GitHub or Azure DevOps integration**: Create GitHub or Azure DevOps work items in context of Application Insights data.
+* **Usage**: Reveals which features are popular with users and how users interact and use your application.
+* **Smart Detection**: Provides automatic failure and anomaly detection through proactive telemetry analysis.
+* **Application Map**: Allows a high level top-down view of the application architecture and at-a-glance visual references to component health and responsiveness.
+* **Distributed Tracing**: Search and visualize an end-to-end flow of a given execution or transaction.
+
+But what does it monitor:
+
+* **Request rates, response times, and failure rates** - Find out which pages are most popular, at what times of day, and where your users are. See which pages perform best. If your response times and failure rates go high when there are more requests, then perhaps you have a resourcing problem.
+* **Dependency rates, response times, and failure rates** - Find out whether external services are slowing you down.
+* **Exceptions** - Analyze the aggregated statistics, or pick specific instances and drill into the stack trace and related requests. Both server and browser exceptions are reported.
+* **Page views and load performance** - reported by your users' browsers.
+* **AJAX calls from web pages** - rates, response times, and failure rates.
+* **User and session counts**.
+* **Performance counters** from your Windows or Linux server machines, such as CPU, memory, and network usage.
+* **Host diagnostics** from Docker or Azure.
+* **Diagnostic trace logs from your app** - so that you can correlate trace events with requests.
+* **Custom events and metrics** that you write yourself in the client or server code, to track business events such as items sold or games won.
+
+But how do I start with it?
+
+* **At run time**: instrument your web app on the server. Ideal for applications already deployed. Avoids any update to the code.
+* **At development time**: add Application Insights to your code. Allows you to customize telemetry collection and send more telemetry.
+* **Instrument your web pages** for page view, AJAX, and other client-side telemetry.
+* **Analyze mobile app usage** by integrating with Visual Studio App Center.
+* **Availability tests** - ping your website regularly from our servers.
+
+The **Application Insights log-based metrics** have two kinds of metrics:
+
+* **Log-based metrics** behind the scene are translated into Kusto queries from stored events. They have more dimensions, which makes them the superior option for data analysis and ad-hoc diagnostics
+* **Standard metrics** are stored as pre-aggregated time series. They are pre-aggregated during collection, they have better performance at query time. This makes them a better choice for dashboarding and in real-time alerting.
+
+Collecting a complete set of events may be impractical (or even impossible) for applications that generate a **large volume of telemetry**. For situations when the volume of events is too high, Application Insights implements several telemetry volume reduction techniques, such as sampling and filtering that reduce the number of collected and stored events.
+
+The **pre-aggregated metrics** are not stored as individual events with lots of properties. Instead, they are stored as pre-aggregated time series, and only with key dimensions. This makes the new metrics superior at query time: retrieving data happens much faster and requires less compute power. This consequently enables new scenarios such as near real-time alerting on dimensions of metrics, more responsive dashboards, and more.
+
+Application Insights is _enabled_ through either:
+
+* **Auto-instrumentation**: This is the preferred instrumentation method. It requires no developer investment and eliminates future overhead related to updating the SDK. It's also the only way to instrument an application in which you don't have access to the source code. In essence, all you have to do is enable and - in some cases - configure the agent, which will collect the telemetry automatically.
+* **Application Insights SDK**: You only need to install the SDK in the following circumstances:
+  * You require custom events and metrics
+  * You require control over the flow of telemetry
+  * Auto-Instrumentation isn't available (typically due to language or platform limitations, like you don't need to host the app on Azure)
+
+Application Insights can create **availability tests** for any HTTP or HTTPS endpoint that's accessible from the public internet. You don't have to make any changes to the website you're testing. In fact, it doesn't even have to be a site that you own. It can hold up to 100 availability tests per resource, and there are four kinds of tests:
+
+* **URL ping test (classic)**: You can create this simple test through the portal to validate whether an endpoint is responding and measure performance associated with that response. You can also set custom success criteria coupled with more advanced features, like parsing dependent requests and allowing for retries.
+* **Standard test (Preview)**: This single request test is similar to the URL ping test. It includes SSL certificate validity, proactive lifetime check, HTTP request verb (for example GET, HEAD, or POST), custom headers, and custom data associated with your HTTP request.
+* **Custom TrackAvailability test**: If you decide to create a custom application to run availability tests, you can use the `TrackAvailability()` method to send the results to Application Insights.
+* **Multi-step test** is a fourth type of availability test, however that is only available through Visual Studio 2019.
+
+**Application Map** helps you spot performance bottlenecks or failure hotspots across all components of your distributed application. Components are independently deployable parts of your distributed/microservices application. Developers and operations teams have code-level visibility or access to telemetry generated by these application components.
+
+* Components are different from "observed" external dependencies such as SQL, Event Hubs, etc. which your team/organization may not have access to (code or telemetry).
+* Components run on any number of server/role/container instances.
+* Components can be separate Application Insights instrumentation keys (even if subscriptions are different) or different roles reporting to a single Application Insights instrumentation key. The preview map experience shows the components regardless of how they are set up.
+
+![Cool Picture](Pictures/application-map-component.png)
+
+Application Map uses the cloud role name property to identify the components on the map. You can manually set or override the cloud role name and change what gets displayed on the Application Map.
+
+## Explore Azure Event Grid
+
+**Azure Event Grid** is an eventing backplane that enables event-driven, reactive programming. It uses the publish-subscribe model. Publishers emit events, but have no expectation about how the events are handled. Subscribers decide on which events they want to handle.
+
+![Cool Picture](Pictures/functional-model.png)
+
+There are five concepts in event grid:
+
+* **Events** - What happened. It has specific information that is only relevant to the specific type of event, like the file that was created. An event of size up to 64 KB is covered by General Availability (GA) Service Level Agreement (SLA). The support for an event of size up to 1 MB is currently in preview. Events over 64 KB are charged in 64-KB increments.
+* **Event sources** - Where the event took place. For example, Azure Storage is the event source for blob created events.
+* **Topics** - The endpoint where publishers send events. It is used for a collection of related events. _System topics_ are built-in topics provided by Azure services. _Custom topics_ are application and third-party topics.
+* **Event subscriptions** - The endpoint or built-in mechanism to route events, sometimes to more than one handler. Subscriptions are also used by handlers to intelligently filter incoming events.
+* **Event handlers** - The app or service reacting to the event. For HTTP webhook event handlers, the event is retried until the handler returns a status code of 200 – OK. For Azure Storage Queue, the events are retried until the Queue service successfully processes the message push into the queue.
+
+The following example shows the properties that are used by all event publishers:
+
+```JSON
+[
+  {
+    "topic": string,
+    "subject": string,
+    "id": string,
+    "eventType": string,
+    "eventTime": string,
+    "data":{
+      object-unique-to-each-publisher
+    },
+    "dataVersion": string,
+    "metadataVersion": string
+  }
+]
+```
+
+Description of this:
+
+* **topic**: Full resource path to the event source. This field isn't writeable. Event Grid provides this value.
+* **subject**: Publisher-defined path to the event subject.
+* **eventType**: One of the registered event types for this event source.
+* **eventTime**: The time the event is generated based on the provider's UTC time.
+* **id**: Unique identifier for the event.
+* **data**: Event data specific to the resource provider.
+* **dataVersion**: The schema version of the data object. The publisher defines the schema version.
+* **metadataVersion**: The schema version of the event metadata. Event Grid defines the schema of the top-level properties. Event Grid provides this value.
+
+When publishing events to custom topics, create subjects for your events that make it easy for subscribers to know whether they're interested in the event. For example, if you provide a three segment path like `/A/B/C` in the subject, subscribers can filter by the first segment `/A` to get a broad set of events. Those subscribers get events with subjects like `/A/B/C` or `/A/D/E`. Other subscribers can filter by `/A/B` to get a narrower set of events.
+
+In addition to its default event schema, Azure Event Grid natively supports events in the JSON implementation of **CloudEvents v1.0** and HTTP protocol binding. CloudEvents is an open specification for describing event data. With a common schema, you can more easily integrate work across platforms:
+
+```JSON
+{
+    "specversion": "1.0",
+    "type": "Microsoft.Storage.BlobCreated",  
+    "source": "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Storage/storageAccounts/{storage-account}",
+    "id": "9aeb0fdf-c01e-0131-0922-9eb54906e209",
+    "time": "2019-11-18T15:13:39.4589254Z",
+    "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
+    "dataschema": "#",
+    "data": {
+        "api": "PutBlockList",
+        "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a",
+        "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000",
+        "eTag": "0x8D76C39E4407333",
+        "contentType": "image/png",
+        "contentLength": 30699,
+        "blobType": "BlockBlob",
+        "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}",
+        "sequencer": "000000000000000000000000000099240000000000c41c18",
+        "storageDiagnostics": {
+            "batchId": "681fe319-3006-00a8-0022-9e7cde000000"
+        }
+    }
+}
+```
+
+When Event Grid receives an error for an event delivery attempt, Event Grid decides whether it should **retry** the delivery, **dead-letter** the event, or **drop** the event based on the type of the error. It will wait for 30 seconds for a response after delivering a message. After 30 seconds, if the endpoint hasn’t responded, the message is queued for retry. Event Grid uses an exponential backoff retry policy for event delivery. Retries _don't_ happen for:
+
+* Azure Resources: 400 Bad Request, 413 Request Entity Too Large, 403 Forbidden
+* Webhook: 400 Bad Request, 413 Request Entity Too Large, 403 Forbidden, 404 Not Found, 401 Unauthorized
+
+There is some configuration for this:
+
+* **Maximum number of attempts** - The value must be an integer between 1 and 30. The default value is 30.
+* **Event time-to-live (TTL)** - The value must be an integer between 1 and 1440. The default value is 1440 minutes
+
+Batching is also supported:
+
+* **Max events per batch** - Maximum number of events Event Grid will deliver per batch. This number will never be exceeded, however fewer events may be delivered if no other events are available at the time of publish. Event Grid doesn't delay events to create a batch if fewer events are available. Must be between 1 and 5,000.
+* **Preferred batch size in kilobytes** - Target ceiling for batch size in kilobytes.
+
+When Event Grid can't deliver an event within a certain time period or after trying to deliver the event a certain number of times, it can send the undelivered event to a storage account. This process is known as **dead-lettering**. Event Grid dead-letters an event when one of the following conditions is met.
+
+* Event isn't delivered within the time-to-live period.
+* The number of tries to deliver the event exceeds the limit.
+* A response is returned that can not be handled (see the 400 errors above)
+
+To enable it, you must _specify a storage account_ to hold undelivered events when creating the event subscription. You pull events from this storage account to resolve deliveries.
+
+Event subscriptions allow you to set up **HTTP headers** that are included in delivered events. You can set up to **10** headers when creating an event subscription. Each header value shouldn't be greater than **4,096 bytes**. You can set custom headers on the events that are delivered to the following destinations:
+
+* Webhooks
+* Azure Service Bus topics and queues
+* Azure Event Hubs
+* Relay Hybrid Connections
+
+RBAC is also supported in this. Some pre-defined roles:
+
+* **Event Grid Subscription Reader**: Lets you read Event Grid event subscriptions.
+* **Event Grid Subscription Contributor**: Lets you manage Event Grid event subscription operations.
+* **Event Grid Contributor**: Lets you create and manage Event Grid resources.
+* **Event Grid Data Sender**: Lets you send events to Event Grid topics.
+
+If you're using an event handler _that isn't a WebHook_ (such as an event hub or queue storage), you need write access to that resource (`Microsoft.EventGrid/EventSubscriptions/Write` permission). This permissions check prevents an unauthorized user from sending events to your resource. This differs from system and custom topics:
+
+* System topics need permission to write a new event subscription at the scope of the resource publishing the event. The format of the resource is: `/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/{resource-provider}/{resource-type}/{resource-name}`
+* Custom topics need permission to write a new event subscription at the scope of the event grid topic. The format of the resource is: `/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.EventGrid/topics/{topic-name}`
+
+Event Grid requires you to _prove ownership_ of your Webhook endpoint before it starts delivering events to that endpoint. These apps automatically handle validation:
+
+* Azure Logic Apps with Event Grid Connector
+* Azure Automation via webhook
+* Azure Functions with Event Grid Trigger
+
+If you're using any other type of endpoint, such as an HTTP trigger based Azure function, your endpoint code needs to participate in a validation handshake with Event Grid. Event Grid supports two ways of validating the subscription.
+
+* **Synchronous handshake**: At the time of event subscription creation, Event Grid sends a subscription validation event to your endpoint. The schema of this event is similar to any other Event Grid event. The data portion of this event includes a `validationCode` property. Your application verifies that the validation request is for an expected event subscription, and returns the validation code in the response synchronously. This handshake mechanism is supported in all Event Grid versions.
+* **Asynchronous handshake**: In certain cases, you can't return the ValidationCode in response synchronously. For example, if you use a third-party service (like Zapier or IFTTT), you can't programmatically respond with the validation code.
+
+Nowadays, Event Grid sends a `validationUrl` property in the data portion of the subscription validation event. To complete the handshake, find that URL in the event data and do a GET request to it. You can use either a REST client or your web browser. You have 5 minutes to find it.
+
+By default, all event types for the event source are sent to the endpoint. You can **decide to send only certain event types** to your endpoint. For example, you can get notified of updates to your resources, but not notified for other operations like deletions. This looks like:
+
+```JSON
+"filter": {
+  "includedEventTypes": [
+    "Microsoft.Resources.ResourceWriteFailure",
+    "Microsoft.Resources.ResourceWriteSuccess"
+  ]
+}
+```
+
+You can also filter on the subject:
+
+```JSON
+"filter": {
+  "subjectBeginsWith": "/blobServices/default/containers/mycontainer/log",
+  "subjectEndsWith": ".jpg"
+}
+```
+
+To filter by values in the data fields and specify the comparison operator, use the advanced filtering option. In advanced filtering, you specify the:
+
+* **operator type** - The type of comparison.
+* **key** - The field in the event data that you're using for filtering. It can be a number, boolean, or string.
+* **value or values** - The value or values to compare to the key.
+
+```JSON
+"filter": {
+  "advancedFilters": [
+    {
+      "operatorType": "NumberGreaterThanOrEquals",
+      "key": "Data.Key1",
+      "value": 5
+    },
+    {
+      "operatorType": "StringContains",
+      "key": "Subject",
+      "values": ["container1", "container2"]
+    }
+  ]
+}
+```
+
+## Explore Azure Event Hubs
+
+**Azure Event Hubs** represents the "front door" for an event pipeline, often called an _event ingestor_ in solution architectures. An event ingestor is a component or service that sits between event publishers and event consumers to decouple the production of an event stream from the consumption of those events. Event Hubs provides a unified streaming platform with time retention buffer, decoupling event producers from event consumers. Some cool stuff:
+
+* **Fully managed PaaS**: Event Hubs is a fully managed Platform-as-a-Service (PaaS) with little configuration or management overhead, so you focus on your business solutions. Event Hubs for Apache Kafka ecosystems gives you the PaaS Kafka experience without having to manage, configure, or run your clusters.
+* **Real-time and batch processing**: Event Hubs uses a partitioned consumer model, enabling multiple applications to process the stream concurrently and letting you control the speed of processing.
+* **Scalable**: Scaling options, like Auto-inflate, scale the number of throughput units to meet your usage needs.
+* **Rich ecosystem**: Event Hubs for Apache Kafka ecosystems enables Apache Kafka (1.0 and later) clients and applications to talk to Event Hubs. You do not need to set up, configure, and manage your own Kafka clusters.
+
+Event Hubs contains the following key components:
+
+* An **Event Hub client** is the primary interface for developers interacting with the Event Hubs client library. There are several different Event Hub clients, each dedicated to a specific use of Event Hubs, such as publishing or consuming events.
+* An **Event Hub producer** is a type of client that serves as a source of telemetry data, diagnostics information, usage logs, or other log data, as part of an embedded device solution, a mobile device application, a game title running on a console or other device, some client or server based business solution, or a web site.
+* An **Event Hub consumer** is a type of client which reads information from the Event Hub and allows processing of it. Processing may involve aggregation, complex computation and filtering. Processing may also involve distribution or storage of the information in a raw or transformed fashion. Event Hub consumers are often robust and high-scale platform infrastructure parts with built-in analytics capabilities, like Azure Stream Analytics, Apache Spark, or Apache Storm.
+* A **partition** is an ordered sequence of events that is held in an Event Hub. Partitions are a means of data organization associated with the parallelism required by event consumers. Azure Event Hubs provides message streaming through a partitioned consumer pattern in which each consumer only reads a specific subset, or partition, of the message stream. As newer events arrive, they are added to the end of this sequence. The number of partitions is specified at the time an Event Hub is created and cannot be changed.
+* A **consumer group** is a view of an entire Event Hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and from their own position. There can be at most 5 concurrent readers on a partition per consumer group; however it is recommended that there is only one active consumer for a given partition and consumer group pairing. Each active reader receives all of the events from its partition; if there are multiple readers on the same partition, then they will receive duplicate events.
+* **Event receivers**: Any entity that reads event data from an event hub. All Event Hubs consumers connect via the AMQP 1.0 session. The Event Hubs service delivers events through a session as they become available. All Kafka consumers connect via the Kafka protocol 1.0 and later.
+* **Throughput units or processing units**: Pre-purchased units of capacity that control the throughput capacity of Event Hubs.
+
+![Cool Picture](Pictures/event-hubs-stream-processing.png)
+
+Azure Event Hubs enables you to automatically **capture** the streaming data in Event Hubs in an Azure Blob storage or Azure Data Lake Storage account of your choice, with the added flexibility of specifying a time or size interval. It enables you to process real-time and batch-based pipelines on the same stream.
+
+![Cool Picture](Pictures/event-hubs-capture.png)
+
+Event Hubs is a **time-retention durable buffer** for telemetry ingress, similar to a distributed log. The key to scaling in Event Hubs is the partitioned consumer model. Each partition is an independent segment of data and is consumed independently. Over time this data ages off, based on the configurable retention period. As a result, a given event hub never gets "too full". Event Hubs Capture enables you to specify your own Azure Blob storage account and container, or Azure Data Lake Store account, which are used to store the captured data.
+
+Event Hubs Capture enables you to set up a **window to control capturing**. This window is a minimum size and time configuration with a "first wins policy," meaning that the first trigger encountered causes a capture operation. Each partition captures independently and writes a completed block blob at the time of capture, named for the time at which the capture interval was encountered. The storage naming convention is as follows:
+
+```Text
+{Namespace}/{EventHub}/{PartitionId}/{Year}/{Month}/{Day}/{Hour}/{Minute}/{Second}
+```
+
+Event Hubs traffic is controlled by throughput units. A single throughput unit allows 1 MB per second or 1000 events per second of ingress and twice that amount of egress. Standard Event Hubs can be configured with 1-20 throughput units, and you can purchase more with a quota increase support request.
+
+The key to **scale for Event Hubs** is the idea of partitioned consumers. In contrast to the competing consumers pattern, the partitioned consumer pattern enables high scale by removing the contention bottleneck and facilitating end to end parallelism.
+
+An event processor instance typically owns and processes events from one or more partitions. **Ownership of partitions** is evenly distributed among all the active event processor instances associated with an event hub and consumer group combination. Each event processor is given a unique identifier and claims ownership of partitions by adding or updating an entry in a checkpoint store.
+
+When you create an **event processor**, you specify the functions that will process events and errors. Each call to the function that processes events delivers a single event from a specific partition. It's your responsibility to handle this event. If you want to make sure the consumer processes every message at least once, you need to write your own code with retry logic.
+
+**Checkpointing** is a process by which an event processor marks or commits the position of the last successfully processed event within a partition. Marking a checkpoint is typically done within the function that processes the events and occurs on a per-partition basis within a consumer group.
+
+By default, the function that processes the events is called **sequentially** for a given partition. Subsequent events and calls to this function from the same partition queue up behind the scenes as the event pump continues to run in the background on other threads. Events from different partitions can be processed concurrently and any shared state that is accessed across partitions have to be synchronized.
+
+Azure Event Hubs supports both Azure **Active Directory** and **shared access signatures (SAS)** to handle both authentication and authorization. Azure provides the following Azure built-in roles for authorizing access to Event Hubs data using Azure Active Directory and OAuth:
+
+* **Azure Event Hubs Data Owner**: Use this role to give complete access to Event Hubs resources.
+* **Azure Event Hubs Data Sender**: Use this role to give send access to Event Hubs resources.
+* **Azure Event Hubs Data Receiver**: Use this role to give receiving access to Event Hubs resources.
+
+To authorize a request to Event Hubs service from a managed identity in your application, you need to configure Azure role-based access control settings for that managed identity.
+
+A key advantage of using Azure AD with Event Hubs is that your credentials no longer need to be stored in your code. Instead, you can request an OAuth 2.0 access token from Microsoft identity platform. Azure AD authenticates the security principal (a user, a group, or service principal) running the application. If authentication succeeds, Azure AD returns the access token to the application, and the application can then use the access token to authorize requests to Azure Event Hubs.
+
+To authenticate back-end applications that consume from the data generated by Event Hubs producers, Event Hubs token authentication requires its clients to either have the manage rights or the listen privileges assigned to its Event Hubs namespace or event hub instance or topic.
+
+Inspecting an event hub:
+
+```C#
+var connectionString = "<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>";
+var eventHubName = "<< NAME OF THE EVENT HUB >>";
+
+await using (var producer = new EventHubProducerClient(connectionString, eventHubName))
+{
+    string[] partitionIds = await producer.GetPartitionIdsAsync();
+}
+```
+
+Publishing events:
+
+```C#
+var connectionString = "<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>";
+var eventHubName = "<< NAME OF THE EVENT HUB >>";
+
+await using (var producer = new EventHubProducerClient(connectionString, eventHubName))
+{
+    using EventDataBatch eventBatch = await producer.CreateBatchAsync();
+    eventBatch.TryAdd(new EventData(new BinaryData("First")));
+    eventBatch.TryAdd(new EventData(new BinaryData("Second")));
+
+    await producer.SendAsync(eventBatch);
+}
+```
+
+Read events:
+
+```C#
+var connectionString = "<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>";
+var eventHubName = "<< NAME OF THE EVENT HUB >>";
+
+string consumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;
+
+await using (var consumer = new EventHubConsumerClient(consumerGroup, connectionString, eventHubName))
+{
+    using var cancellationSource = new CancellationTokenSource();
+    cancellationSource.CancelAfter(TimeSpan.FromSeconds(45));
+
+    await foreach (PartitionEvent receivedEvent in consumer.ReadEventsAsync(cancellationSource.Token))
+    {
+        // At this point, the loop will wait for events to be available in the Event Hub.  When an event
+        // is available, the loop will iterate with the event that was received.  Because we did not
+        // specify a maximum wait time, the loop will wait forever unless cancellation is requested using
+        // the cancellation token.
+    }
+}
+```
