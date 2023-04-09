@@ -18,3 +18,8 @@ AZ-400: Implement CI with Azure Pipelines and GitHub Actions:
 * [Integrate external source control with Azure Pipelines](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L06_Integrating_External_Source_Control_with_Azure_Pipelines.html)
 * [Implementing GitHub Actions for CI/CD](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L07_Implementing_GitHub_Actions_for_CI_CD.html)
 * [Deploying Docker containers to Azure App Service web apps](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M03_L08_Deploying_Docker_containers_to_Azure_App_Service_web_apps.html)
+
+AZ-400: 4. Design and implement a release strategy:
+
+* [Configuring Pipelines as Code with YAML](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L11_Configuring_Pipelines_as_Code_with_YAML.html)
+* [Controlling Deployments using Classic Release Gates](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M04_L09_Controlling_Deployments_using_Release_Gates.html)
