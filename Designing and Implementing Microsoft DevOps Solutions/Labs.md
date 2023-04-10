@@ -23,3 +23,4 @@ AZ-400: 4. Design and implement a release strategy:
 
 * [Configuring Pipelines as Code with YAML](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L11_Configuring_Pipelines_as_Code_with_YAML.html)
 * [Controlling Deployments using Classic Release Gates](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M04_L09_Controlling_Deployments_using_Release_Gates.html)
+* [Setting Up and Running Functional Tests](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L12_Setting_Up_and_Running_Functional_Tests.html)
