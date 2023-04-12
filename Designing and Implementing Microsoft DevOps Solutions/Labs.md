@@ -25,3 +25,5 @@ AZ-400: 4. Design and implement a release strategy:
 * [Controlling Deployments using Classic Release Gates](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M04_L09_Controlling_Deployments_using_Release_Gates.html)
 * [Setting Up and Running Functional Tests](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L12_Setting_Up_and_Running_Functional_Tests.html)
 * [Creating a Release Dashboard](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M04_L10_Creating_a_Release_Dashboard.html)
+* [Integrating Azure Key Vault with Azure DevOps](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L13_Integrating_Azure_Key_Vault_with_Azure_DevOps.html)
+* [Enable Dynamic Configuration and Feature Flags](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L14_Enable_Dynamic_Configuration_and_Feature_Flags.html)
