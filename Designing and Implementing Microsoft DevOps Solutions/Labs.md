@@ -31,3 +31,4 @@ AZ-400: 4. Design and implement a release strategy:
 AZ-400: Manage infrastructure as code using Azure and DSC:
 
 * [Deployments using Azure Bicep templates](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M06_L15_Azure_Deployments_Using_Resource_Manager_Templates.html)
+* [Package Management with Azure Artifacts](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M08_L18_Package_Management_with_Azure_Artifacts.html)
