@@ -36,3 +36,4 @@ AZ-400: Manage infrastructure as code using Azure and DSC:
 AZ-400: Implement continuous feedback:
 
 * [Monitor application performance with Application Insights](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M09_L19_Monitoring_Application_Performance_with_Application_Insights.html)
+* [Share team knowledge using Azure Project Wiki](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M09_L21_Sharing_Team_Knowledge_using_Azure_Project_Wikis.html)
