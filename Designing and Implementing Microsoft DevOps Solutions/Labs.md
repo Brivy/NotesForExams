@@ -32,3 +32,7 @@ AZ-400: Manage infrastructure as code using Azure and DSC:
 
 * [Deployments using Azure Bicep templates](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M06_L15_Azure_Deployments_Using_Resource_Manager_Templates.html)
 * [Package Management with Azure Artifacts](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M08_L18_Package_Management_with_Azure_Artifacts.html)
+
+AZ-400: Implement continuous feedback:
+
+* [Monitor application performance with Application Insights](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M09_L19_Monitoring_Application_Performance_with_Application_Insights.html)
