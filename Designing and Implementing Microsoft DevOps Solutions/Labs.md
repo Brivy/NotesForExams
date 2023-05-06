@@ -37,3 +37,7 @@ AZ-400: Implement continuous feedback:
 
 * [Monitor application performance with Application Insights](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M09_L19_Monitoring_Application_Performance_with_Application_Insights.html)
 * [Share team knowledge using Azure Project Wiki](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M09_L21_Sharing_Team_Knowledge_using_Azure_Project_Wikis.html)
+
+AZ-400: Implement security and validate code bases for compliance:
+
+* [Implement Security and Compliance in an Azure Pipeline](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M07_L16_Implement_Security_and_Compliance_in_an_Azure_Pipeline.html)
