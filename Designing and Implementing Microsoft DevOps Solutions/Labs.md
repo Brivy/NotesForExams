@@ -41,3 +41,4 @@ AZ-400: Implement continuous feedback:
 AZ-400: Implement security and validate code bases for compliance:
 
 * [Implement Security and Compliance in an Azure Pipeline](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M07_L16_Implement_Security_and_Compliance_in_an_Azure_Pipeline.html)
+* [Manage technical debt with SonarCloud and Azure DevOps](https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M07_L17_Managing_technical_debt_with_SonarQube_and_Azure_DevOps.html)
