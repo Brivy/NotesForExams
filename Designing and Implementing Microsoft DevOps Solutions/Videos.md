@@ -66,3 +66,61 @@ And the recap:
 - Organize the repository with git-tags.
 - Plan for content recovery in all repository states.
 - Purge data from source control.
+
+## Preparing for AZ-400 - Design and implement build and release pipelines (3 of 5)
+
+TODO
+
+## Preparing for AZ-400 - Develop a security and compliance plan (4 of 5)
+
+The following timestamps have exam information on them:
+
+- `0:33-1:56`: Service connections store urls and credentials of external resources. You can determine which users/pipelines/projects can use them. Then you can use it by it's name in the YAML pipeline file.
+- `1:57-2:37`: If you need external resources, you probably use PAT (Personal Access Tokes). You can limit the permissions on them very granularly.
+- `2:38-4:48`: Secrets in pipelines can store secrets in **variable groups with secrets that no one can read back**. You can also limit the permissions on them very granularly. Secrets can also be stored in Azure Key Vault. You can use them in your variable group (used when used in multiple pipelines) or in the pipelines by using the `$(secretName)` syntax (used for one-offs).
+- `4:49-5:20`: Grant permissions to the service connection, for example for the key vault, you typically use the Get and List permissions.
+- `5:21-5:47`: Certificates/SSH keys can be stored in Secure files for your pipelines. You can also store them in key vault.
+- `5:48-8:17`: Prevent leakage of sensitive information by: not providing secrets in fork build, manually triggering fork build and use Microsoft-hosted agents for fork builds.
+- `8:18-9:31`: For source code security, you can use **git hooks** on the client, use **GitHub security features like dependabot/vulnerability scanning**, use pipeline scanning with **WhiteSource Bolt/Mend** or **Checkmarx** and use **SonarQube** for code quality.
+- `9:32-10:37`: Dependency scanning can be done in version control, in the build pipeline, or in the source code.
+- `10:38-11:20`: You can use **WhiteSource Bolt/Mend** to scan your dependencies in your build pipeline. And DependaBot to update your dependencies and it can creates PRs automatically.
+
+And the recap:
+
+- Implement and manage service connections.
+- Implement and manage personal access tokens (PATs).
+- Implement and manage secrets, keys and certificates.
+- Design a secrets storage and retrieval strategy.
+- Design and implement a strategy for managing sensitive files during deployment.
+- Design pipelines to prevent leakage of sensitive information.
+- Design a source code complicance strategy.
+- Automate dependencies scanning for security and compliance.
+- Automate analysis of licensing, vulnerabilities, and versioning of open-source components.
+
+## Preparing for AZ-400 - Implement an instrumentation strategy (5 of 5)
+
+The following timestamps have exam information on them:
+
+- `0:32-1:52`: APM's are Application Performance Monitoring tools. They can be installed on multiple levels, like on the agent or without an agent (and without code). Microservices can also be monitored with Prometheus or something in Kubernetes. Azure monitor can then be used to monitor the hardware and the application.
+- `1:53-3:24`: Where is this information going to go? You want to integrate it in your feedback loop, for example create alerts from them or create some dashboards.
+- `3:25-4:08`: They are generating a lot of data, so know about insuring the safety of the information. For example using storage accounts and locking them down.
+- `4:09-5:14`: Configure alerts and notifications for pipelines. You can use the `@mention` syntax to mention someone in a pipeline. But you can also create events based on the pipeline, for example, creating an alert for something through a logic app that puts it inside Microsoft Teams.
+- `5:15-6:51`: With Application Insights, we can have distributed tracing. We can see the whole flow of the application. We can also use it to monitor the performance of the application. If a language isn't supported, we can use OpenTelemetry/OpenCensus to send data to Application Insights.
+- `6:52-8:00`: For Application Insights, there are three instrumentation options to receive telemetry from your app: **Runtime** (we don't set it up, we only check a checkbox in Azure), **Build-time** (including the SDK in the application) and **Client-side** (including a javascript library).
+- `8:01-8:51`: When you have the data, you can inspect it with the performace indicators. It's Azure Monitor which is generated your metrics and logs (text based events). This information is often published to a Log Analytics workspace.
+- `8:52-9:59`: Which metrics do we want to use? Success vs Failure metrics (200 vs 400 requests), Timing metrics (how long did it take?), Throughput metrics (how many requests per second?), and Quality metrics (how many errors?).
+- `10:00-11:05`: Integrating the user analytics. What pages do a user check? What features do they use? This can all be tracked with Application Insights.
+- `11:06-12:45`: You can use basic **Kusto queries (KQL)** to query your data. Know the keywords for the exam. It can render charts and tables.
+
+And the recap:
+
+- Configure and integrate with monitoring tools.
+- Create feedback loop from platform monitoring tools.
+- Manage access control to the monitoring platform.
+- Configure alerts for pipeline events.
+- Inspect distributed tracing by using Application Insights.
+- Inspect application performance indicators.
+- Inspect infrastructure performance indicators.
+- Identify and monitor metrics for business value.
+- Integrate user analytics.
+- Interrogate logs using basic Kusto (KQL) queries.
