@@ -69,7 +69,72 @@ And the recap:
 
 ## Preparing for AZ-400 - Design and implement build and release pipelines (3 of 5)
 
-TODO
+The following timestamps have exam information on them:
+
+- `0:51-2:27`: Take a look at Microsoft DevOps pipelines. You have pipelines, that have stages, that have multiple jobs, that have multiple steps. In GitHub, you don't have stages, but you have the rest. And just learn the YAML side of things.
+- `2:28-3:52`: Check out tasks, the **Task Index**. If they don't have the stuff you need, you can go to the **Marketplace**. But at last, you can also create your own tasks (just learn the process, not the code). Be aware of agents and agent pools.
+- `3:53-5:52`: Check out **Quality gates**. Mostly used on the post-deployment to tell if the deployment went fine, but it can also be a pre-deployment. Some gates are: *Invoking an Azure Function*, *Invoking a REST API*, *Invoking a Logic App*, *Invoking an Azure Monitor Alert*, *Invoking an Azure DevOps Pipeline* and *Invoking a Jenkins Job*.
+- `5:53-7:11`: Testing strategies. You can use **smoke tests** to check if the application is working. You can use **Unit tests** to test the smallest unit of code. You can use **Integration tests** to test the integration between multiple components. You can use **Regression tests** to test if the new code breaks the old code. You can use **UI tests** to test the UI of the application. You can use **Usability tests** to test if the application is usable. Etc. Ec.
+- `7:12-7:50`: Integrate those tests to Azure Pipelines.
+- `7:51-8:16`: You'll be creating Artifacts. Have a little of experience of creating/building/pushing artifacts to Azure Artifacts and GitHub Packages.
+- `8:17-9:09`: Designing and implementing package feeds (public feeds and private feeds).
+- `9:10-10:54`: We need immutable version numbers. We can use **Semantic Versioning**. It's a versioning system that consists of MAJOR.MINOR.PATCH. MAJOR is for breaking changes, MINOR is for new features, and PATCH is for bug fixes. You can also use **Semantic Versioning with Pre-release**. It's the same as Semantic Versioning, but you can add a pre-release tag. You can also use **Date-based Versioning**. It's a versioning system that consists of YYYY.MM.DD. You can also use **Build Number**. It's a versioning system that consists of YYYYMMDD.RRRR. You can also use **Build Number with Pre-release**. It's the same as Build Number, but you can add a pre-release tag.
+- `10:55-11:43`: Be aware of the various triggers that can start pipelines. Think of the internal ones, but you also have external ones like the REST API.
+- `11:44-14:04`: Agents (Azure Devops) and Runners (GitHub). You can use **Microsoft-hosted agents** (Azure DevOps) or **GitHub-hosted runners** (GitHub). You can also use **Self-hosted agents** (Azure DevOps) or **Self-hosted runners** (GitHub). Know the process. And know that on a Microsoft-hosted agent, you have 10 GB, 10 free parallel jobs and jobs that can run up to 360 minutes if you have a public project. If you don't have one, you get one free parallel job and jobs that can run up to 60 minutes (after a request process). They also run as an administrator on Windows and as a passwordless sudo user on Linux. This means that you can install software on them. But everything will be removed after it's done.
+- `14:05-15:44`: Know the various triggers in the pipelines: **Continuous Integration** (CI), **Continuous Delivery** (CD), **Scheduled** (CRON), **Manual** (Manual), **Pull Request** (PR), **Release** (Release), etc, and in GitHub you also have **Comment** triggers.
+- `15:45-16:51`: Build pipelines.
+- `16:52-18:04`: You can have multi-stage pipelines (with multiple stages) and parallel pipelines (with multiple jobs in a stage).
+- `18:05-19:03`: Microsoft hosted agents can only reach public endpoints, but self-hosted agents can reach public and private endpoints.
+- `19:04-21:23`: Manage agent pools. You can for example have an agent pool for each team or for each project. And know the difference between **interactive** (process with auto-logon enabled) and **service mode** (a service that starts automatically) agents.
+- `21:24-23:46`: You can use **Templates** in YAML pipelines to increase reusability. You can also use **Task groups** to group tasks together (old pipeline stuff). You can also use **Variable groups**. They are used to store values that you want to control and make available across multiple pipelines.
+- `23:47-25:11`: You need to use environments in Azure DevOps, if you need checks and approvals in YAML pipelines.
+- `25:12-26:29`: Understand other deployment strategies, like **run once** (deploy once and never again), **run to completion** (deploy once and then update it), **rolling** (deploy to a subset of servers and then to the rest), **canary** (deploy to a subset of servers and then to the rest, but with a rollback if something goes wrong).
+- `26:30-28:00`: Multiple jobs can depend on each other. You can use the `dependsOn` keyword to do this. It's `needs` in GitHub.
+- `28:01-29:09`: Blue-green deployments, where you have two identical environments and you switch between them. Typically requires a load balancer or slot swapping.
+- `29:10-29:58`: Design a hotfix path plan.
+- `29:59-30:50`: What are the load balancing tools, know the tools (like Azure Traffic Manager and Azure Web Apps). Also know the Lifecycle hooks: **Pre-deployment** (before the deployment), **Post-deployment** (after the deployment), **Pre-swap** (before the swap), **Post-swap** (after the swap), **Route-traffic** (when the traffic is routed), and more.
+- `30:51-32:26`: Implementing feature flags with Azure App Configuration. You can use feature flags to enable/disable features in your application. You can use Azure App Configuration to store the feature flags.
+- `32:27-33:12`: Know the overall deployment process. You have the **Build** (build the application), **Test** (test the application), **Package** (package the application), **Release** (deploy the application), **Configure** (configure the application), **Monitor** (monitor the application), and **Scale** (scale the application).
+- `33:13-34:43`: Know the infrastructure you're deploying too. Know the IaC tools like Azure Resource Manager (ARM) templates, Terraform, and Bicep. Know the syntax a little bit.
+- `34:44-36:39`: Use **Azure Desired State Configuration (DSC)** to configure the infrastructure. It's a declarative way to configure the infrastructure. You can use it to configure the infrastructure and to configure the application. For example, What would it take to get it up and running?
+- `36:40-37:12`: Know how to deploy a ARM template or Bicep in a pipeline.
+- `37:13-37:58`: IaC should be treated as code, you can lint and validate it.
+- `37:59-38:49`: Know the difference between Azure Automatization State Configuration, Azure Resource Manager or Bicep. They are: **Azure Automation State Configuration** (a service that can be used to configure the infrastructure), **Azure Resource Manager** (a service that can be used to deploy the infrastructure), and **Bicep** (a language that can be used to deploy the infrastructure).
+- `38:50-39:30`: Monitor pipeline health in the Analytics tab.
+- `39:31-40:45`: Know that you can use **Azure Artifacts** to store your package *if it deserves it's own lifecycle*. Otherwise, you can also use pipeline caching with a task called `Cache@2`.
+- `40:46-42:25`: Know how many build agents you need.
+- `42:26-43:16`: Design a retention strategy for artifacts, like how long do you want to keep them? Do we only want to keep the latest version? Do we want to keep all versions?
+
+And the recap:
+
+- Build automation overview.
+- Integrate the build pipeline with external tools.
+- Implement quality gates and Design a testing strategy.
+- Integrate multiple tools and Recommended package management tools.
+- Design and implement package feeds.
+- Design and implement a dependency versioning strategy.
+- Design a versioning strategy.
+- Select a deployment automation solution, including GitHub Actions and Azure Pipelines.
+- Design and implement build agent infrastructure.
+- Develop and implement build trigger rules and Develop build pipelines.
+- Design and implement a strategy for job execution order, including parallelism and multi-stage.
+- Develop complex pipeline scenarios such as containerized agents and hybrid.
+- Manage self-hosted build agents and Create reusable build subsystems.
+- Design and implement checks and approvals by using YAML environments.
+- Design and implement a release strategy.
+- Design the release pipeline to ensure reliable order of dependency deployments.
+- Plan for minimizing downtime during deployments.
+- Design a hotfix path plan for responding to high priority code fixes.
+- Implement a load balancing for deployment, including Azure Traffic Manager and Azure Web Apps.
+- Implement feature flags by using Azure App Configuration Feature Manager.
+- Develop application deployment process and Design and implement infrastructure as code.
+- Assess a configuration management mechanism for application infrastructure.
+- Implement a configuration management strategy for application infrastructure, including IaC.
+- Define an IaC strategy, including source control and automation for testing and deployment.
+- Select the appropriate desired state solution for a deployment environment.
+- Monitor pipeline health and Optimize build.
+- Analyze CI load to determine build agent configuration and capacity.
+- Design and implement a retention strategy for pipeline artifacts and dependencies.
 
 ## Preparing for AZ-400 - Develop a security and compliance plan (4 of 5)
 
